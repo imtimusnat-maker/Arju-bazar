@@ -13,7 +13,7 @@ export function Logo() {
     <Link href="/" className="flex items-center space-x-2">
        <GhorerBazarIcon />
        <div className="font-headline text-2xl font-bold tracking-tight text-foreground">
-        GHORER BAZAR
+        YOUR SHOP
       </div>
     </Link>
   );

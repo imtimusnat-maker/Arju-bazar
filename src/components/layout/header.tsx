@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, ShoppingCart, User, Heart, Menu, Phone, Mail } from 'lucide-react';
 import { Logo } from '@/components/logo';
@@ -5,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const categories = [
   { name: 'Men Collections', href: '/collections/men' },
@@ -15,8 +19,35 @@ const categories = [
 ];
 
 export function Header() {
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const controlNavbar = () => {
+      if (typeof window !== 'undefined') {
+        if (window.scrollY > lastScrollY && window.scrollY > 100) { // if scroll down
+          setIsVisible(false);
+        } else { // if scroll up
+          setIsVisible(true);
+        }
+        setLastScrollY(window.scrollY);
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', controlNavbar);
+
+      return () => {
+        window.removeEventListener('scroll', controlNavbar);
+      };
+    }
+  }, [lastScrollY]);
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className={cn(
+      "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-transform duration-300",
+      !isVisible && "-translate-y-full"
+    )}>
       {/* Top Bar */}
       <div className="bg-primary text-primary-foreground">
         <div className="container mx-auto flex h-10 max-w-screen-2xl items-center justify-between px-4 text-sm">

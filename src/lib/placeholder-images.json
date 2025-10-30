@@ -19,58 +19,28 @@
       "imageHint": "men accessories"
     },
     {
-      "id": "category-men",
-      "description": "Man wearing a stylish coat",
-      "imageUrl": "https://images.unsplash.com/photo-1507680434567-5739c80be1ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxtYW4lMjBmYXNoaW9ufGVufDB8fHx8MTc2MTc0Njk2M3ww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "man fashion"
-    },
-    {
-      "id": "category-women",
-      "description": "Woman wearing a summer dress",
-      "imageUrl": "https://images.unsplash.com/photo-1549062572-544a64fb0c56?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx3b21hbiUyMGZhc2hpb258ZW58MHx8fHwxNzYxNzc2OTM0fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "woman fashion"
-    },
-    {
-      "id": "category-kids",
-      "description": "Kid playing with toys",
-      "imageUrl": "https://images.unsplash.com/photo-1618570624585-43156608a47c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxjaGlsZCUyMHBsYXlpbmd8ZW58MHx8fHwxNzYxNzc1Nzc2fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "child playing"
-    },
-    {
-      "id": "category-bedsheet",
-      "description": "Neatly made bed with a patterned bedsheet",
-      "imageUrl": "https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxiZWRyb29tJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzYxODM4MzczfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "bedroom interior"
-    },
-    {
-      "id": "category-furniture",
-      "description": "A stylish wooden chair",
-      "imageUrl": "https://images.unsplash.com/photo-1624816217535-58eebcafc90b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjaGFpciUyMGZ1cm5pdHVyZXxlbnwwfHx8fDE3NjE4NDY4ODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "chair furniture"
-    },
-    {
       "id": "product-1",
-      "description": "Product image 1",
-      "imageUrl": "https://images.unsplash.com/photo-1560769629-975ec94e6a86?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxmYXNoaW9uJTIwcHJvZHVjdHxlbnwwfHx8fDE3NjE4NDY4ODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "fashion product"
+      "description": "Ashwagandha powder in a bag",
+      "imageUrl": "https://images.unsplash.com/photo-1664956618403-175f565f18be?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzdXBwbGVtZW50JTIwcG93ZGVyfGVufDB8fHx8MTc2MTg1NTk5NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "supplement powder"
     },
     {
       "id": "product-2",
-      "description": "Product image 2",
-      "imageUrl": "https://images.unsplash.com/photo-1704273944705-9b63bc4f1be9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxmYXNoaW9uJTIwcHJvZHVjdHxlbnwwfHx8fDE3NjE4NDY4ODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "fashion product"
+      "description": "Himalayan pink salt in a package",
+      "imageUrl": "https://images.unsplash.com/photo-1614759258004-39da973d3268?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwaW5rJTIwc2FsdHxlbnwwfHx8fDE3NjE4NTU5OTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "pink salt"
     },
     {
       "id": "product-3",
-      "description": "Product image 3",
-      "imageUrl": "https://images.unsplash.com/photo-1704273944825-b9bcf7f85c59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxmYXNoaW9uJTIwcHJvZHVjdHxlbnwwfHx8fDE3NjE4NDY4ODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "fashion product"
+      "description": "Bottle of organic olive oil",
+      "imageUrl": "https://images.unsplash.com/photo-1527756898251-203e9ce0d9c4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxvbGl2ZSUyMG9pbHxlbnwwfHx8fDE3NjE4MzMxODB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "olive oil"
     },
     {
       "id": "product-4",
-      "description": "Product image 4",
-      "imageUrl": "https://images.unsplash.com/photo-1645743713592-9838c06a0453?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxob21lJTIwcHJvZHVjdHxlbnwwfHx8fDE3NjE4NDY4ODd8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "home product"
+      "description": "Jar of organic wild honey",
+      "imageUrl": "https://images.unsplash.com/photo-1633434644309-cc8d4f0c207d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8aG9uZXklMjBqYXJ8ZW58MHx8fHwxNzYxNzk2NjQ2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "honey jar"
     }
   ]
 }

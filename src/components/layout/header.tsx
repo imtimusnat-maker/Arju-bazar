@@ -15,28 +15,22 @@ import {
 import { cn } from '@/lib/utils';
 
 const topCategories = [
-    { name: 'OFFER ZONE', href: '/collections/offer-zone' },
-    { name: 'Best Seller', href: '/collections/best-seller' },
-    { name: 'Oil', href: '/collections/oil' },
-    { name: 'Ghee (ঘি)', href: '/collections/ghee' },
-    { name: 'Dates ( খেজুর)', href: '/collections/dates' },
-    { name: ' খেজুর গুড়', href: '/collections/jaggery' },
-    { name: 'Honey', href: '/collections/honey' },
-    { name: 'Masala', href: '/collections/masala' },
-    { name: 'Nuts & Seeds', href: '/collections/nuts-seeds' },
-    { name: 'Tea/Coffee', href: '/collections/tea-coffee' },
-    { name: 'Honeycomb', href: '/collections/honeycomb' },
-    { name: 'Organic Zone', href: '/collections/organic-zone' },
-    { name: 'Pickle', href: '/collections/pickle' },
-];
-
-const mobileCategories = [
   { name: 'Men Collections', href: '/collections/men' },
   { name: 'Women Collection', href: '/collections/women' },
   { name: 'Kids Collections', href: '/collections/kids' },
   { name: '3D Waterproof Bedsheet', href: '/collections/bedsheets' },
   { name: 'Furniture Collection', href: '/collections/furniture' },
+  { name: 'Best Seller', href: '/collections/best-seller' },
+  { name: 'Oil', href: '/collections/oil' },
+  { name: 'Ghee (ঘি)', href: '/collections/ghee' },
+  { name: 'Dates ( খেজুর)', href: '/collections/dates' },
+  { name: 'Honey', href: '/collections/honey' },
+  { name: 'Masala', href: '/collections/masala' },
+  { name: 'Nuts & Seeds', href: '/collections/nuts-seeds' },
+  { name: 'Tea/Coffee', href: '/collections/tea-coffee' },
 ];
+
+const mobileCategories = topCategories;
 
 const MAX_VISIBLE_CATEGORIES = 11;
 const visibleCategories = topCategories.slice(0, MAX_VISIBLE_CATEGORIES);

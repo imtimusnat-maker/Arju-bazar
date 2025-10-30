@@ -1,12 +1,28 @@
 "use client";
 
 import Link from 'next/link';
-import { Search, ShoppingCart, Menu, Phone } from 'lucide-react';
+import { Search, ShoppingCart, Menu, Phone, User } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
-const categories = [
+const topCategories = [
+    { name: 'OFFER ZONE', href: '/collections/offer-zone' },
+    { name: 'Best Seller', href: '/collections/best-seller' },
+    { name: 'Oil', href: '/collections/oil' },
+    { name: 'Ghee (ঘি)', href: '/collections/ghee' },
+    { name: 'Dates (খেজুর)', href: '/collections/dates' },
+    { name: ' খেজুর গুড়', href: '/collections/jaggery' },
+    { name: 'Honey', href: '/collections/honey' },
+    { name: 'Masala', href: '/collections/masala' },
+    { name: 'Nuts & Seeds', href: '/collections/nuts-seeds' },
+    { name: 'Tea/Coffee', href: '/collections/tea-coffee' },
+    { name: 'Honeycomb', href: '/collections/honeycomb' },
+    { name: 'Organic Zone', href: '/collections/organic-zone' },
+    { name: 'Pickle', href: '/collections/pickle' },
+];
+
+const mobileCategories = [
   { name: 'Men Collections', href: '/collections/men' },
   { name: 'Women Collection', href: '/collections/women' },
   { name: 'Kids Collections', href: '/collections/kids' },
@@ -43,7 +59,7 @@ export function Header() {
               </SheetTrigger>
               <SheetContent side="left" className="w-64 sm:w-80">
                 <nav className="flex flex-col space-y-6 pt-8">
-                  {categories.map((category) => (
+                  {mobileCategories.map((category) => (
                     <Link
                       key={category.name}
                       href={category.href}
@@ -56,9 +72,10 @@ export function Header() {
               </SheetContent>
             </Sheet>
             <div className="hidden md:block">
-               <Link href="/" className="flex items-center space-x-2">
-                 <Menu className="h-6 w-6" />
-               </Link>
+               <Button variant="ghost" size="icon">
+                  <Search className="h-6 w-6" />
+                  <span className="sr-only">Search</span>
+                </Button>
             </div>
         </div>
         
@@ -68,14 +85,29 @@ export function Header() {
 
         <div className="flex items-center justify-end space-x-2 md:space-x-4">
           <Button variant="ghost" size="icon">
-            <Search className="h-6 w-6" />
-            <span className="sr-only">Search</span>
+            <User className="h-6 w-6" />
+            <span className="sr-only">Account</span>
           </Button>
           <Button variant="ghost" size="icon" className="relative">
             <ShoppingCart className="h-6 w-6" />
             <span className="sr-only">Cart</span>
             <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">0</div>
           </Button>
+        </div>
+      </div>
+       <div className="hidden md:block border-t bg-background">
+        <div className="container mx-auto max-w-screen-2xl px-4">
+          <nav className="flex items-center justify-center space-x-6 overflow-x-auto py-2">
+            {topCategories.map((category) => (
+              <Link
+                key={category.name}
+                href={category.href}
+                className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap"
+              >
+                {category.name}
+              </Link>
+            ))}
+          </nav>
         </div>
       </div>
     </header>

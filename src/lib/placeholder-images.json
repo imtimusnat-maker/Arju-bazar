@@ -19,6 +19,12 @@
       "imageHint": "men accessories"
     },
     {
+      "id": "hero-4",
+      "description": "Jars of organic wild honey on display",
+      "imageUrl": "https://images.unsplash.com/photo-1560155255-dd322145e549?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "honey jars"
+    },
+    {
       "id": "product-1",
       "description": "Ashwagandha powder in a bag",
       "imageUrl": "https://images.unsplash.com/photo-1664956618403-175f565f18be?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzdXBwbGVtZW50JTIwcG93ZGVyfGVufDB8fHx8MTc2MTg1NTk5NXww&ixlib=rb-4.1.0&q=80&w=1080",
@@ -27,7 +33,7 @@
     {
       "id": "product-2",
       "description": "Himalayan pink salt in a package",
-      "imageUrl": "https://images.unsplash.com/photo-1614759258004-39da973d3268?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwaW5rJTIwc2FsdHxlbnwwfHx8fDE3NjE4NTU5OTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1614759258004-39da9t73d3268?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwaW5rJTIwc2FsdHxlbnwwfHx8fDE3NjE4NTU5OTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "pink salt"
     },
     {

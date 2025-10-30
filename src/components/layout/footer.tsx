@@ -1,4 +1,4 @@
-import { Home, LayoutGrid, ShoppingCart, ArrowUp } from 'lucide-react';
+import { Home, LayoutGrid, ShoppingCart, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function Footer() {
@@ -14,17 +14,14 @@ export function Footer() {
             <LayoutGrid className="h-6 w-6" />
             <span className="text-xs">Categories</span>
           </Button>
-          <div className="relative">
-             <Button variant="ghost" className="flex flex-col h-auto items-center gap-1 absolute bottom-0 left-1/2 -translate-x-1/2  w-20 h-20 rounded-full bg-background justify-center border-2 border-primary shadow-lg">
-                <ArrowUp className="h-8 w-8 text-primary" />
-             </Button>
-          </div>
-          <Button variant="ghost" className="flex flex-col h-auto items-center gap-1">
+          <Button variant="ghost" className="flex flex-col h-auto items-center gap-1 relative">
             <ShoppingCart className="h-6 w-6" />
             <span className="text-xs">Cart</span>
+            <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs rounded-full h-4 w-4 flex items-center justify-center -translate-y-1/2 translate-x-1/2">0</div>
           </Button>
            <Button variant="ghost" className="flex flex-col h-auto items-center gap-1">
-            Chat
+            <Search className="h-6 w-6" />
+            <span className="text-xs">Search</span>
           </Button>
         </div>
       </div>

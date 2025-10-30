@@ -1,10 +1,12 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, ShoppingCart, Menu, Phone, User } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
 
 const topCategories = [
     { name: 'OFFER ZONE', href: '/collections/offer-zone' },
@@ -31,8 +33,30 @@ const mobileCategories = [
 ];
 
 export function Header() {
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  const handleScroll = () => {
+    if (window.scrollY > lastScrollY && window.scrollY > 100) {
+      setIsVisible(false);
+    } else {
+      setIsVisible(true);
+    }
+    setLastScrollY(window.scrollY);
+  };
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background">
+    <header className={cn(
+      "sticky top-0 z-50 w-full border-b bg-background transition-transform duration-300",
+      isVisible ? "transform-none" : "-translate-y-full"
+    )}>
       <div className="bg-primary text-primary-foreground py-2 text-sm">
         <div className="container mx-auto flex max-w-screen-2xl items-center justify-center px-4">
             <div className="flex items-center gap-4 text-center">

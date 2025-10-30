@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import { ShoppingBag } from 'lucide-react';
+import { Store } from 'lucide-react';
 
 const YourShopIcon = () => (
-    <ShoppingBag className="h-8 w-8 text-primary" strokeWidth={2.5} />
+    <Store className="h-8 w-8 text-primary" strokeWidth={2.5} />
 )
 
 

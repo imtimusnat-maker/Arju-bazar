@@ -32,10 +32,6 @@ const topCategories = [
 
 const mobileCategories = topCategories;
 
-const MAX_VISIBLE_CATEGORIES = 8;
-const visibleCategories = topCategories.slice(0, MAX_VISIBLE_CATEGORIES);
-const moreCategories = topCategories.slice(MAX_VISIBLE_CATEGORIES);
-
 export function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -125,8 +121,8 @@ export function Header() {
       </div>
        <div className="hidden md:block border-t bg-background">
         <div className="container mx-auto max-w-screen-2xl px-4">
-          <nav className="flex items-center justify-center space-x-6 overflow-x-auto py-2">
-            {visibleCategories.map((category) => (
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 py-2">
+            {topCategories.map((category) => (
               <Link
                 key={category.name}
                 href={category.href}
@@ -135,22 +131,6 @@ export function Header() {
                 {category.name}
               </Link>
             ))}
-             {moreCategories.length > 0 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap">
-                    More <ChevronDown className="ml-1 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  {moreCategories.map((category) => (
-                    <DropdownMenuItem key={category.name} asChild>
-                      <Link href={category.href}>{category.name}</Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
           </nav>
         </div>
       </div>

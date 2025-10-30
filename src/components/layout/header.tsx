@@ -2,10 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, ShoppingCart, Menu, Phone, User } from 'lucide-react';
+import { Search, ShoppingCart, Menu, Phone, User, ChevronDown } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { cn } from '@/lib/utils';
 
 const topCategories = [
@@ -13,7 +19,7 @@ const topCategories = [
     { name: 'Best Seller', href: '/collections/best-seller' },
     { name: 'Oil', href: '/collections/oil' },
     { name: 'Ghee (ঘি)', href: '/collections/ghee' },
-    { name: 'Dates (খেজুর)', href: '/collections/dates' },
+    { name: 'Dates ( খেজুর)', href: '/collections/dates' },
     { name: ' খেজুর গুড়', href: '/collections/jaggery' },
     { name: 'Honey', href: '/collections/honey' },
     { name: 'Masala', href: '/collections/masala' },
@@ -31,6 +37,10 @@ const mobileCategories = [
   { name: '3D Waterproof Bedsheet', href: '/collections/bedsheets' },
   { name: 'Furniture Collection', href: '/collections/furniture' },
 ];
+
+const MAX_VISIBLE_CATEGORIES = 11;
+const visibleCategories = topCategories.slice(0, MAX_VISIBLE_CATEGORIES);
+const moreCategories = topCategories.slice(MAX_VISIBLE_CATEGORIES);
 
 export function Header() {
   const [isVisible, setIsVisible] = useState(true);
@@ -122,7 +132,7 @@ export function Header() {
        <div className="hidden md:block border-t bg-background">
         <div className="container mx-auto max-w-screen-2xl px-4">
           <nav className="flex items-center justify-center space-x-6 overflow-x-auto py-2">
-            {topCategories.map((category) => (
+            {visibleCategories.map((category) => (
               <Link
                 key={category.name}
                 href={category.href}
@@ -131,6 +141,22 @@ export function Header() {
                 {category.name}
               </Link>
             ))}
+             {moreCategories.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap">
+                    More <ChevronDown className="ml-1 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  {moreCategories.map((category) => (
+                    <DropdownMenuItem key={category.name} asChild>
+                      <Link href={category.href}>{category.name}</Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </nav>
         </div>
       </div>

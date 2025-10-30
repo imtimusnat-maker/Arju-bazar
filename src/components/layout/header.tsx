@@ -32,7 +32,7 @@ const topCategories = [
 
 const mobileCategories = topCategories;
 
-const MAX_VISIBLE_CATEGORIES = 11;
+const MAX_VISIBLE_CATEGORIES = 8;
 const visibleCategories = topCategories.slice(0, MAX_VISIBLE_CATEGORIES);
 const moreCategories = topCategories.slice(MAX_VISIBLE_CATEGORIES);
 

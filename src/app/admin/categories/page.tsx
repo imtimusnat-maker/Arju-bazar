@@ -108,9 +108,7 @@ const authenticator = async () => {
 
 const generateKeywords = (name: string): string[] => {
     if (!name) return [];
-    const nameLower = name.toLowerCase();
-    // Split by spaces and filter out any empty strings
-    return nameLower.split(' ').filter(word => word);
+    return name.toLowerCase().split(' ').filter(word => word);
 }
 
 

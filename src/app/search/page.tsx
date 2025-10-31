@@ -25,7 +25,7 @@ function SearchResults() {
       collection(firestore, 'products'),
       where('keywords', 'array-contains-any', searchTerms)
     );
-  }, [firestore, q]); // q is used to re-trigger the memoization
+  }, [firestore, q]); 
 
   const { data: products, isLoading } = useCollection<Product>(productsQuery);
 

@@ -207,23 +207,23 @@ export function Header() {
     )}>
       {settings && (
         <div className="bg-primary text-primary-foreground py-2 text-xs sm:text-sm">
-            <div className="container mx-auto flex max-w-screen-2xl items-center justify-center px-4">
-                <div className="flex flex-col sm:flex-row items-center gap-x-4 gap-y-1 text-center">
+             <div className="container mx-auto flex max-w-screen-2xl items-center justify-center px-4">
+                <div className="flex flex-col sm:flex-row items-center sm:gap-x-4 gap-y-1 text-center">
                     <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-                    {settings.whatsappNumber && (
-                        <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4" />
-                            <span>{settings.whatsappNumber}</span>
-                        </div>
-                    )}
-                    {settings.hotlineNumber && (
-                        <>
-                        <span className="hidden sm:inline">|</span>
-                        <div className="flex items-center gap-2">
-                            <span>হট লাইন: {settings.hotlineNumber}</span>
-                        </div>
-                        </>
-                    )}
+                        {settings.whatsappNumber && (
+                            <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4" />
+                                <span>{settings.whatsappNumber}</span>
+                            </div>
+                        )}
+                        {settings.hotlineNumber && (
+                            <>
+                            <span className="hidden sm:inline">|</span>
+                            <div className="flex items-center gap-2">
+                                <span>হট লাইন: {settings.hotlineNumber}</span>
+                            </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

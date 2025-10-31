@@ -193,8 +193,9 @@ export default function AdminProductsPage() {
 
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
     const category = categories?.find(c => c.id === data.categoryId);
-    const productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'> & { updatedAt: any } = {
+    const productData = {
       name: data.name,
+      slug,
       description: data.description,
       price: data.price,
       stockQuantity: data.stockQuantity,
@@ -203,7 +204,6 @@ export default function AdminProductsPage() {
       categoryId: data.categoryId,
       categorySlug: category?.slug || '',
       subcategoryId: data.subcategoryId || '',
-      slug,
       updatedAt: serverTimestamp(),
     };
 
@@ -500,3 +500,5 @@ export default function AdminProductsPage() {
     </div>
   );
 }
+
+    

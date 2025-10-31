@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Search, ShoppingCart, Menu, Phone, User } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Search, ShoppingCart, Menu, Phone, User, X } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,16 +11,79 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/cart-context';
 import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { collection, doc, query, where, limit } from 'firebase/firestore';
 import type { Category } from '@/lib/categories';
 import type { Settings } from '@/lib/settings';
+import { useDebounce } from '@/hooks/use-debounce';
+import type { Product } from '@/lib/products';
+import Image from 'next/image';
+
+function LiveSearchResults({ searchTerm, onResultClick }: { searchTerm: string, onResultClick: () => void }) {
+    const firestore = useFirestore();
+    const debouncedSearchTerm = useDebounce(searchTerm.toLowerCase(), 300);
+
+    const productsQuery = useMemoFirebase(() => {
+        if (!firestore || !debouncedSearchTerm || debouncedSearchTerm.length < 2) return null;
+        return query(
+            collection(firestore, 'products'),
+            where('keywords', 'array-contains', debouncedSearchTerm),
+            limit(5)
+        );
+    }, [firestore, debouncedSearchTerm]);
+
+    const { data: products, isLoading } = useCollection<Product>(productsQuery);
+
+    if (!debouncedSearchTerm) return null;
+
+    return (
+        <div className="absolute top-full left-0 w-full bg-background border border-t-0 rounded-b-lg shadow-lg z-10">
+            {isLoading && <p className="p-4 text-sm text-muted-foreground">Searching...</p>}
+            {!isLoading && products && products.length === 0 && debouncedSearchTerm.length > 1 && (
+                <p className="p-4 text-sm text-muted-foreground">No results for "{debouncedSearchTerm}"</p>
+            )}
+            {products && products.length > 0 && (
+                <div className="flex flex-col">
+                    {products.map(product => (
+                        <Link
+                            key={product.id}
+                            href={`/product/${product.slug}`}
+                            onClick={onResultClick}
+                            className="flex items-center gap-4 p-3 hover:bg-accent transition-colors"
+                        >
+                            <div className="relative h-12 w-12 flex-shrink-0">
+                                <Image 
+                                    src={product.imageCdnUrl || 'https://placehold.co/400'} 
+                                    alt={product.name}
+                                    fill
+                                    className="object-contain"
+                                />
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                                <p className="font-medium truncate text-sm">{product.name}</p>
+                                <p className="text-primary font-semibold text-sm">Tk {product.price}</p>
+                            </div>
+                        </Link>
+                    ))}
+                    <Button variant="ghost" asChild onClick={onResultClick} className="w-full justify-center rounded-t-none">
+                        <Link href={`/search?q=${debouncedSearchTerm}`}>
+                            View all results
+                        </Link>
+                    </Button>
+                </div>
+            )}
+        </div>
+    );
+}
 
 export function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const { cart } = useCart();
   const router = useRouter();
+  const pathname = usePathname();
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
 
   const firestore = useFirestore();
   const categoriesCollection = useMemoFirebase(
@@ -51,12 +114,25 @@ export function Header() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [lastScrollY]);
+  
+  // Close search results when navigating away
+  useEffect(() => {
+    setIsSearchFocused(false);
+    setSearchTerm('');
+  }, [pathname]);
+
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!searchTerm.trim()) return;
     router.push(`/search?q=${searchTerm}`);
+    setIsSearchFocused(false);
+    // Note: don't clear searchTerm here, so user sees what they searched for on the results page.
   };
+  
+  const handleClearSearch = () => {
+    setSearchTerm('');
+  }
 
 
   return (
@@ -118,18 +194,30 @@ export function Header() {
         </div>
         
         <div className="flex-1 justify-center hidden md:flex">
-             <form onSubmit={handleSearchSubmit} className="w-full max-w-md">
+             <form onSubmit={handleSearchSubmit} className="w-full max-w-md relative">
                 <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
                     <Input 
                         placeholder="Search for products..."
-                        className="w-full"
+                        className="w-full pl-10"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
+                        onFocus={() => setIsSearchFocused(true)}
+                        onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)} // Delay to allow click on results
                     />
-                    <Button type="submit" size="icon" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8">
-                        <Search className="h-5 w-5 text-muted-foreground" />
-                    </Button>
+                     {searchTerm && (
+                        <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                            onClick={handleClearSearch}
+                        >
+                            <X className="h-5 w-5 text-muted-foreground" />
+                        </Button>
+                    )}
                 </div>
+                 {isSearchFocused && searchTerm.length > 1 && <LiveSearchResults searchTerm={searchTerm} onResultClick={() => setIsSearchFocused(false)} />}
             </form>
         </div>
 
@@ -138,6 +226,12 @@ export function Header() {
         </div>
 
         <div className="flex items-center justify-end space-x-2 md:space-x-4">
+           <Button asChild variant="ghost" size="icon" className="md:hidden">
+            <Link href="/search">
+              <Search className="h-6 w-6" />
+              <span className="sr-only">Search</span>
+            </Link>
+          </Button>
           <Button variant="ghost" size="icon">
             <User className="h-6 w-6" />
             <span className="sr-only">Account</span>

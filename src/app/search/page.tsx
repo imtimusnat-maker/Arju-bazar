@@ -75,11 +75,12 @@ function SearchBar() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search for products..."
-            className="w-full h-12 text-base"
+            className="w-full h-12 text-base pl-10"
           />
            <Button type="submit" size="icon" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10">
               <SearchIcon className="h-6 w-6 text-muted-foreground" />
            </Button>
+           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
         </div>
       </form>
     </div>

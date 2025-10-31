@@ -75,6 +75,17 @@
         "description"
       ]
     },
+    "Subcategory": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Subcategory",
+        "type": "object",
+        "description": "Represents a sub-category of products within a main category.",
+        "properties": {
+            "id": { "type": "string", "description": "Unique identifier for the subcategory." },
+            "name": { "type": "string", "description": "Name of the subcategory." }
+        },
+        "required": ["id", "name"]
+    },
     "User": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
@@ -244,6 +255,18 @@
               "name": "categoryId",
               "description": "The unique identifier of the category."
             }
+          ]
+        }
+      },
+      {
+        "path": "/categories/{categoryId}/subcategories/{subcategoryId}",
+        "definition": {
+          "entityName": "Subcategory",
+          "schema": { "$ref": "#/backend/entities/Subcategory" },
+          "description": "Stores subcategories for a given category. Accessible to all users for reading, but restricted to admins for write access.",
+          "params": [
+            { "name": "categoryId", "description": "The unique identifier of the parent category." },
+            { "name": "subcategoryId", "description": "The unique identifier of the subcategory." }
           ]
         }
       },

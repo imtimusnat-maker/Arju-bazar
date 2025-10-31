@@ -12,10 +12,12 @@ import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase
 import { collection, doc } from 'firebase/firestore';
 import type { Category } from '@/lib/categories';
 import type { Settings } from '@/lib/settings';
+import { SearchDialog } from '@/components/search-dialog';
 
 export function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { cart } = useCart();
 
   const firestore = useFirestore();
@@ -47,36 +49,50 @@ export function Header() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [lastScrollY]);
+  
+  // Open search dialog on cmd+k
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        setIsSearchOpen((open) => !open)
+      }
+    }
+    document.addEventListener('keydown', down)
+    return () => document.removeEventListener('keydown', down)
+  }, [])
+
 
   return (
+    <>
     <header className={cn(
       "sticky top-0 z-50 w-full border-b bg-background transition-transform duration-300",
       isVisible ? "transform-none" : "-translate-y-full"
     )}>
       {settings && (
-      <div className="bg-primary text-primary-foreground py-2 text-xs sm:text-sm">
-        <div className="container mx-auto flex max-w-screen-2xl items-center justify-center px-4">
-            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center">
-                <span className="font-semibold">আমাদের যে কোন পণ্য অর্ডার করতে কল বা WhatsApp করুন:</span>
-                <div className="flex items-center gap-4">
-                  {settings.whatsappNumber && (
-                    <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4" />
-                        <span>{settings.whatsappNumber}</span>
+        <div className="bg-primary text-primary-foreground py-2 text-xs sm:text-sm">
+            <div className="container mx-auto flex max-w-screen-2xl items-center justify-center px-4">
+                <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center">
+                    <span className="font-semibold hidden sm:inline">আমাদের যে কোন পণ্য অর্ডার করতে কল বা WhatsApp করুন:</span>
+                    <div className="flex items-center gap-4">
+                    {settings.whatsappNumber && (
+                        <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4" />
+                            <span>{settings.whatsappNumber}</span>
+                        </div>
+                    )}
+                    {settings.hotlineNumber && (
+                        <>
+                        <span className="hidden sm:inline">|</span>
+                        <div className="flex items-center gap-2">
+                            <span>হট লাইন: {settings.hotlineNumber}</span>
+                        </div>
+                        </>
+                    )}
                     </div>
-                  )}
-                  {settings.hotlineNumber && (
-                    <>
-                      <span className="hidden sm:inline">|</span>
-                      <div className="flex items-center gap-2">
-                          <span>হট লাইন: {settings.hotlineNumber}</span>
-                      </div>
-                    </>
-                  )}
                 </div>
             </div>
         </div>
-      </div>
       )}
       <div className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4">
         <div className="flex items-center gap-4">
@@ -102,7 +118,7 @@ export function Header() {
               </SheetContent>
             </Sheet>
             <div className="hidden md:block">
-               <Button variant="ghost" size="icon">
+               <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(true)}>
                   <Search className="h-6 w-6" />
                   <span className="sr-only">Search</span>
                 </Button>
@@ -128,5 +144,7 @@ export function Header() {
         </div>
       </div>
     </header>
+    <SearchDialog open={isSearchOpen} onOpenChange={setIsSearchOpen} />
+    </>
   );
 }

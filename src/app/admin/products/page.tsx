@@ -94,6 +94,21 @@ const authenticator = async () => {
     }
 };
 
+const generateKeywords = (name: string): string[] => {
+    if (!name) return [];
+    const lowerName = name.toLowerCase();
+    const nameParts = lowerName.split(' ');
+    const keywords = new Set<string>([lowerName, ...nameParts]);
+    // Add partial strings
+    for (const part of nameParts) {
+        for (let i = 1; i < part.length; i++) {
+            keywords.add(part.substring(0, i));
+        }
+    }
+    return Array.from(keywords);
+}
+
+
 export default function AdminProductsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -193,11 +208,13 @@ export default function AdminProductsPage() {
 
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
     const category = categories?.find(c => c.id === data.categoryId);
+    const keywords = generateKeywords(data.name);
     
     if (editingProduct) {
        const productData = {
         ...data,
         slug,
+        keywords,
         categorySlug: category?.slug || '',
         updatedAt: serverTimestamp(),
       };
@@ -211,6 +228,7 @@ export default function AdminProductsPage() {
        const newProductData = {
         ...data,
         slug,
+        keywords,
         categorySlug: category?.slug || '',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),

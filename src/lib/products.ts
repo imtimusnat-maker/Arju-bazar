@@ -17,6 +17,7 @@ export type Product = {
   categoryId: string;
   categorySlug: string;
   subcategoryId: string;
+  keywords?: string[];
 };
 
 export const products: Product[] = [];

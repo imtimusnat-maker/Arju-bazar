@@ -443,8 +443,8 @@ export default function AdminProductsPage() {
                 <FormLabel>Product Image</FormLabel>
                 <FormControl>
                   <IKContext
-                    publicKey="public_c4ZeIR2RUTeVp4nR4SoIF3R8f1w="
-                    urlEndpoint="https://ik.imagekit.io/yajy2sbsw"
+                    publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY}
+                    urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}
                     authenticator={authenticator}
                   >
                     <div className="flex items-center gap-4">
@@ -481,3 +481,5 @@ export default function AdminProductsPage() {
     </div>
   );
 }
+
+    

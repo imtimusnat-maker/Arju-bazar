@@ -516,8 +516,8 @@ export default function AdminCategoriesPage() {
                 <FormLabel>Category Image</FormLabel>
                 <FormControl>
                   <IKContext
-                      publicKey="public_c4ZeIR2RUTeVp4nR4SoIF3R8f1w="
-                      urlEndpoint="https://ik.imagekit.io/yajy2sbsw"
+                      publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY}
+                      urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}
                       authenticator={authenticator}
                     >
                   <div className="flex items-center gap-4">
@@ -580,8 +580,8 @@ export default function AdminCategoriesPage() {
                 <FormLabel>Subcategory Image</FormLabel>
                 <FormControl>
                   <IKContext
-                      publicKey="public_c4ZeIR2RUTeVp4nR4SoIF3R8f1w="
-                      urlEndpoint="https://ik.imagekit.io/yajy2sbsw"
+                      publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY}
+                      urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}
                       authenticator={authenticator}
                     >
                   <div className="flex items-center gap-4">
@@ -641,8 +641,8 @@ export default function AdminCategoriesPage() {
                 <FormLabel>Subcategory Image</FormLabel>
                 <FormControl>
                   <IKContext
-                      publicKey="public_c4ZeIR2RUTeVp4nR4SoIF3R8f1w="
-                      urlEndpoint="https://ik.imagekit.io/yajy2sbsw"
+                      publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY}
+                      urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}
                       authenticator={authenticator}
                     >
                   <div className="flex items-center gap-4">
@@ -676,3 +676,5 @@ export default function AdminCategoriesPage() {
     </div>
   );
 }
+
+    

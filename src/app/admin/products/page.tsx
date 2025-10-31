@@ -78,23 +78,6 @@ const productSchema = z.object({
 
 type ProductFormData = z.infer<typeof productSchema>;
 
-const authenticator = async () => {
-  try {
-    const response = await fetch('https://imagekit.io/api/v1/signatures');
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Request failed with status ${response.status}: ${errorText}`
-      );
-    }
-    const data = await response.json();
-    const { signature, expire, token } = data;
-    return { signature, expire, token };
-  } catch (error) {
-    throw new Error(`Authentication request failed: ${error.message}`);
-  }
-};
-
 export default function AdminProductsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -226,7 +209,7 @@ export default function AdminProductsPage() {
     toast({
       variant: 'destructive',
       title: 'Upload Failed',
-      description: 'There was a problem with the image upload.',
+      description: 'There was a problem with the image upload. Please ensure you have a valid ImageKit configuration.',
     });
   };
 
@@ -446,7 +429,6 @@ export default function AdminProductsPage() {
                   <IKContext
                     publicKey="public_c4ZeIR2RUTeVp4nR4SoIF3R8f1w="
                     urlEndpoint="https://ik.imagekit.io/yajy2sbsw"
-                    authenticator={authenticator}
                   >
                     <div className="flex items-center gap-4">
                       {form.watch('imageCdnUrl') && (

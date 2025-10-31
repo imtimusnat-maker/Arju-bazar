@@ -134,7 +134,8 @@ export default function AdminProductsPage() {
   const subcategoriesQuery = useMemoFirebase(() => {
     if (!firestore || !selectedCategoryId) return null;
     return query(
-        collection(firestore, `categories/${selectedCategoryId}/subcategories`)
+        collection(firestore, 'subcategories'),
+        where('categoryId', '==', selectedCategoryId)
     );
   }, [firestore, selectedCategoryId]);
 
@@ -191,6 +192,7 @@ export default function AdminProductsPage() {
     if (!firestore) return;
 
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
+    const category = categories?.find(c => c.id === data.categoryId);
     const productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'> & { updatedAt: any } = {
       name: data.name,
       description: data.description,
@@ -199,6 +201,7 @@ export default function AdminProductsPage() {
       imageUrl: data.imageUrl || '',
       imageCdnUrl: data.imageCdnUrl || '',
       categoryId: data.categoryId,
+      categorySlug: category?.slug || '',
       subcategoryId: data.subcategoryId || '',
       slug,
       updatedAt: serverTimestamp(),

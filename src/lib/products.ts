@@ -15,6 +15,7 @@ export type Product = {
   updatedAt: Timestamp;
   slug: string;
   categoryId: string;
+  categorySlug: string;
   subcategoryId: string;
 };
 

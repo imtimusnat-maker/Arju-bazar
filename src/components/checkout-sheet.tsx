@@ -16,12 +16,16 @@ import { Separator } from '@/components/ui/separator';
 import type { Product } from '@/lib/products';
 import { User, Phone, MapPin, X } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import type { useCart } from '@/context/cart-context';
+
+type CartItem = ReturnType<typeof useCart>['cart'][0];
 
 interface CheckoutSheetProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  product: Product;
+  product?: Product;
+  cartItems?: CartItem[];
 }
 
 const shippingOptions = [
@@ -30,9 +34,27 @@ const shippingOptions = [
   { id: 'outside', label: 'ঢাকা এবং চট্টগ্রাম সিটির বাহিরে', price: 130 },
 ];
 
-export function CheckoutSheet({ isOpen, onOpenChange, product }: CheckoutSheetProps) {
+export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: CheckoutSheetProps) {
+    if (!product && !cartItems) {
+        throw new Error("CheckoutSheet requires either 'product' or 'cartItems' prop.");
+    }
+
     const [shippingCost, setShippingCost] = useState(shippingOptions[0].price);
-    const subtotal = product.price;
+    
+    const subtotal = useMemo(() => {
+        if (product) {
+            return product.price;
+        }
+        return cartItems?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
+    }, [product, cartItems]);
+
+    const itemsToDisplay = useMemo(() => {
+        if (product) {
+            return [{ ...product, quantity: 1 }];
+        }
+        return cartItems || [];
+    }, [product, cartItems]);
+    
     const total = subtotal + shippingCost;
 
 
@@ -94,13 +116,15 @@ export function CheckoutSheet({ isOpen, onOpenChange, product }: CheckoutSheetPr
             </div>
 
             <div className="bg-gray-50 p-4 rounded-md space-y-3">
-                 <div className="flex items-center gap-3">
-                    <div className="relative h-14 w-14 rounded-md overflow-hidden border">
-                         <Image src={product.imageCdnUrl || 'https://placehold.co/400'} alt={product.name} fill className="object-contain" />
+                {itemsToDisplay.map((item, index) => (
+                    <div key={item.id + index} className="flex items-center gap-3">
+                        <div className="relative h-14 w-14 rounded-md overflow-hidden border">
+                            <Image src={item.imageCdnUrl || 'https://placehold.co/400'} alt={item.name} fill className="object-contain" />
+                        </div>
+                        <p className="flex-1 font-medium text-sm">{item.name} <span className="text-muted-foreground">x {item.quantity}</span></p>
+                        <p className="font-semibold">Tk {(item.price * item.quantity).toFixed(2)}</p>
                     </div>
-                    <p className="flex-1 font-medium">{product.name}</p>
-                    <p className="font-semibold">Tk {product.price.toFixed(2)}</p>
-                 </div>
+                ))}
                  <Separator />
                  <div className="space-y-1 text-sm">
                     <div className="flex justify-between">

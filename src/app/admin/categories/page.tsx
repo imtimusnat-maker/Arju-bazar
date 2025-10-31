@@ -106,6 +106,14 @@ const authenticator = async () => {
     }
 };
 
+const generateKeywords = (name: string): string[] => {
+    if (!name) return [];
+    // Create a clean, lowercase array of whole words from the name.
+    const keywords = name.toLowerCase().split(' ').filter(word => word);
+    return Array.from(new Set(keywords)); // Use Set to remove duplicates
+}
+
+
 function SubcategoryList({
   categoryId,
   onEdit,
@@ -276,11 +284,13 @@ export default function AdminCategoriesPage() {
     if (!firestore) return;
 
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
+    const keywords = generateKeywords(data.name);
     
     if (editingCategory) {
        const categoryData = {
         ...data,
         slug,
+        keywords,
         updatedAt: serverTimestamp(),
       };
       const categoryDoc = doc(firestore, 'categories', editingCategory.id);
@@ -293,6 +303,7 @@ export default function AdminCategoriesPage() {
       const newCategoryData = {
         ...data,
         slug,
+        keywords,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
@@ -312,9 +323,11 @@ export default function AdminCategoriesPage() {
     if (!firestore || !parentCategory) return;
     
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
+    const keywords = generateKeywords(data.name);
     const subcategoryData = {
         ...data,
         slug,
+        keywords,
         categoryId: parentCategory.id,
         categorySlug: parentCategory.slug,
         createdAt: serverTimestamp(),
@@ -336,9 +349,11 @@ export default function AdminCategoriesPage() {
     if (!firestore || !parentCategory || !editingSubcategory) return;
     
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
+    const keywords = generateKeywords(data.name);
     const subcategoryData = {
         ...data,
         slug,
+        keywords,
         updatedAt: serverTimestamp(),
     };
 

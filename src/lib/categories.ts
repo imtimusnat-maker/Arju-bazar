@@ -10,6 +10,7 @@ export type Subcategory = {
   imageCdnUrl?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+  keywords?: string[];
 };
 
 export type Category = {
@@ -21,4 +22,5 @@ export type Category = {
   imageCdnUrl?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+  keywords?: string[];
 };

@@ -39,14 +39,13 @@ import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Widget as UploadcareWidget } from '@uploadcare/react-widget';
+import { IKContext, IKUpload } from 'imagekitio-react';
 import Image from 'next/image';
 import { useFirestore, useCollection } from '@/firebase';
 import {
   collection,
   serverTimestamp,
   doc,
-  writeBatch,
 } from 'firebase/firestore';
 import {
   addDocumentNonBlocking,
@@ -72,6 +71,24 @@ const productSchema = z.object({
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
+
+const authenticator =  async () => {
+    try {
+        // You can also pass headers and query parameters to your auth backend
+        const response = await fetch('https://imagekit.io/api/v1/signatures');
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Request failed with status ${response.status}: ${errorText}`);
+        }
+
+        const data = await response.json();
+        const { signature, expire, token } = data;
+        return { signature, expire, token };
+    } catch (error) {
+        throw new Error(`Authentication request failed: ${error.message}`);
+    }
+};
 
 export default function AdminProductsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -168,6 +185,21 @@ export default function AdminProductsPage() {
     setIsDialogOpen(false);
     setEditingProduct(null);
   };
+  
+  const onUploadSuccess = (res: any) => {
+    form.setValue('imageUrl', res.url);
+    form.setValue('imageCdnUrl', res.url);
+  };
+
+  const onUploadError = (err: any) => {
+    console.error("Upload error", err);
+    toast({
+      variant: "destructive",
+      title: "Upload Failed",
+      description: "There was a problem with the image upload.",
+    });
+  };
+
 
   return (
     <div>
@@ -329,6 +361,11 @@ export default function AdminProductsPage() {
               <FormItem>
                 <FormLabel>Product Image</FormLabel>
                 <FormControl>
+                  <IKContext
+                      publicKey="public_c4ZeIR2RUTeVp4nR4SoIF3R8f1w="
+                      urlEndpoint="https://ik.imagekit.io/yajy2sbsw"
+                      authenticator={authenticator}
+                    >
                   <div className="flex items-center gap-4">
                     {form.watch('imageCdnUrl') && (
                       <Image
@@ -339,18 +376,13 @@ export default function AdminProductsPage() {
                         className="rounded-md object-cover"
                       />
                     )}
-                    <UploadcareWidget
-                      publicKey="8a36dc68d775720c733b"
-                      onFileSelect={(file) => {
-                        if (file) {
-                          file.done((fileInfo) => {
-                            form.setValue('imageUrl', fileInfo.originalUrl || '');
-                            form.setValue('imageCdnUrl', fileInfo.cdnUrl || '');
-                          });
-                        }
-                      }}
+                    <IKUpload
+                      fileName="product-image.jpg"
+                      onError={onUploadError}
+                      onSuccess={onUploadSuccess}
                     />
                   </div>
+                  </IKContext>
                 </FormControl>
                 <FormMessage />
               </FormItem>

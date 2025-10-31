@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Card,
   CardHeader,
@@ -139,6 +139,15 @@ export default function AdminProductsPage() {
   }, [firestore, selectedCategoryId]);
 
   const { data: subcategories, isLoading: subcategoriesLoading } = useCollection<Subcategory>(subcategoriesQuery);
+  
+  // Effect to reset subcategory when category changes
+  useEffect(() => {
+    // only reset if the category is being changed by the user, not on initial load
+    if (form.formState.isDirty && form.formState.dirtyFields.categoryId) {
+        form.resetField('subcategoryId', { defaultValue: '' });
+    }
+  }, [selectedCategoryId, form]);
+
 
   const handleDialogOpen = (product: Product | null = null) => {
     setEditingProduct(product);
@@ -151,7 +160,7 @@ export default function AdminProductsPage() {
         imageUrl: product.imageUrl,
         imageCdnUrl: product.imageCdnUrl,
         categoryId: product.categoryId,
-        subcategoryId: product.subcategoryId,
+        subcategoryId: product.subcategoryId || '',
       });
     } else {
       form.reset({
@@ -182,8 +191,15 @@ export default function AdminProductsPage() {
     if (!firestore) return;
 
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
-    const productData = {
-      ...data,
+    const productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'> & { updatedAt: any } = {
+      name: data.name,
+      description: data.description,
+      price: data.price,
+      stockQuantity: data.stockQuantity,
+      imageUrl: data.imageUrl || '',
+      imageCdnUrl: data.imageCdnUrl || '',
+      categoryId: data.categoryId,
+      subcategoryId: data.subcategoryId || '',
       slug,
       updatedAt: serverTimestamp(),
     };
@@ -368,7 +384,7 @@ export default function AdminProductsPage() {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Category</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select a category" />
@@ -481,5 +497,3 @@ export default function AdminProductsPage() {
     </div>
   );
 }
-
-    

@@ -15,7 +15,7 @@ export type Product = {
   updatedAt: Timestamp;
   slug: string;
   categoryId: string;
-  subcategoryId?: string;
+  subcategoryId: string;
 };
 
 export const products: Product[] = [];

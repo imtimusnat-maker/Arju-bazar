@@ -54,24 +54,26 @@ export function Header() {
       isVisible ? "transform-none" : "-translate-y-full"
     )}>
       {settings && (
-      <div className="bg-primary text-primary-foreground py-2 text-sm">
+      <div className="bg-primary text-primary-foreground py-2 text-xs sm:text-sm">
         <div className="container mx-auto flex max-w-screen-2xl items-center justify-center px-4">
-            <div className="flex items-center gap-4 text-center">
-                <span>আমাদের যে কোন পণ্য অর্ডার করতে কল বা WhatsApp করুন:</span>
-                {settings.whatsappNumber && (
-                  <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4" />
-                      <span>{settings.whatsappNumber}</span>
-                  </div>
-                )}
-                 {settings.hotlineNumber && (
-                  <>
-                    <span>|</span>
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center">
+                <span className="font-semibold">আমাদের যে কোন পণ্য অর্ডার করতে কল বা WhatsApp করুন:</span>
+                <div className="flex items-center gap-4">
+                  {settings.whatsappNumber && (
                     <div className="flex items-center gap-2">
-                        <span>হট লাইন: {settings.hotlineNumber}</span>
+                        <Phone className="h-4 w-4" />
+                        <span>{settings.whatsappNumber}</span>
                     </div>
-                  </>
-                 )}
+                  )}
+                  {settings.hotlineNumber && (
+                    <>
+                      <span className="hidden sm:inline">|</span>
+                      <div className="flex items-center gap-2">
+                          <span>হট লাইন: {settings.hotlineNumber}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
             </div>
         </div>
       </div>

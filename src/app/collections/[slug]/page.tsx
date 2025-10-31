@@ -60,8 +60,17 @@ export default function CollectionPage() {
               subcategories?.map((subcategory) => (
                 <Link key={subcategory.id} href={`/collections/${category.slug}/${subcategory.slug}`} className="group block">
                   <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-100 transition-all duration-300 group-hover:shadow-md">
-                    {/* Subcategories do not have images in the current implementation */}
-                    <div className="w-full h-full bg-gray-100"></div>
+                    {subcategory.imageCdnUrl ? (
+                        <Image
+                            src={subcategory.imageCdnUrl}
+                            alt={subcategory.name}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 50vw, 20vw"
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-gray-100"></div>
+                    )}
                   </div>
                   <h3 className="mt-2 text-center font-body text-sm leading-tight">{subcategory.name}</h3>
                 </Link>

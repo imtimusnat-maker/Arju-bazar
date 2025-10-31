@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
-import { useForm, type SubmitHandler } from 'react-hook-form';
+import { useForm, type SubmitHandler, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { IKContext, IKUpload } from 'imagekitio-react';
@@ -82,6 +82,8 @@ type CategoryFormData = z.infer<typeof categorySchema>;
 
 const subcategorySchema = z.object({
   name: z.string().min(1, 'Subcategory name is required'),
+  imageUrl: z.string().optional(),
+  imageCdnUrl: z.string().optional(),
 });
 
 type SubcategoryFormData = z.infer<typeof subcategorySchema>;
@@ -130,7 +132,18 @@ function SubcategoryList({
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
         {subcategories.map((sub) => (
           <div key={sub.id} className="flex items-center justify-between p-2 text-sm border rounded-md bg-white">
-            <span>{sub.name}</span>
+            <div className="flex items-center gap-2">
+                 {sub.imageCdnUrl && (
+                    <Image
+                      src={sub.imageCdnUrl}
+                      alt={sub.name}
+                      width={24}
+                      height={24}
+                      className="rounded-sm object-cover"
+                    />
+                  )}
+                <span>{sub.name}</span>
+            </div>
             <div className="flex items-center">
               <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onEdit(sub)}>
                 <Pencil className="h-4 w-4" />
@@ -170,6 +183,7 @@ export default function AdminCategoriesPage() {
   const [parentCategory, setParentCategory] = useState<Category | null>(null);
   const [isEditSubcategoryDialogOpen, setIsEditSubcategoryDialogOpen] = useState(false);
   const [editingSubcategory, setEditingSubcategory] = useState<Subcategory | null>(null);
+  const [activeForm, setActiveForm] = useState<'category' | 'subcategory' | null>(null);
 
 
   const { toast } = useToast();
@@ -195,12 +209,17 @@ export default function AdminCategoriesPage() {
 
   const subcategoryForm = useForm<SubcategoryFormData>({
     resolver: zodResolver(subcategorySchema),
-    defaultValues: { name: '' },
+    defaultValues: {
+      name: '',
+      imageUrl: '',
+      imageCdnUrl: '',
+    },
   });
 
 
   const handleCategoryDialogOpen = (category: Category | null = null) => {
     setEditingCategory(category);
+    setActiveForm('category');
     if (category) {
       categoryForm.reset({
         name: category.name,
@@ -221,14 +240,20 @@ export default function AdminCategoriesPage() {
   
   const handleAddSubcategoryDialogOpen = (category: Category) => {
     setParentCategory(category);
-    subcategoryForm.reset({ name: '' });
+    setActiveForm('subcategory');
+    subcategoryForm.reset({ name: '', imageUrl: '', imageCdnUrl: '' });
     setIsSubcategoryDialogOpen(true);
   };
   
   const handleEditSubcategoryDialogOpen = (subcategory: Subcategory, category: Category) => {
       setParentCategory(category);
       setEditingSubcategory(subcategory);
-      subcategoryForm.reset({ name: subcategory.name });
+      setActiveForm('subcategory');
+      subcategoryForm.reset({ 
+          name: subcategory.name,
+          imageUrl: subcategory.imageUrl,
+          imageCdnUrl: subcategory.imageCdnUrl,
+      });
       setIsEditSubcategoryDialogOpen(true);
   };
 
@@ -324,8 +349,17 @@ export default function AdminCategoriesPage() {
   };
 
   const onUploadSuccess = (res: any) => {
-    categoryForm.setValue('imageUrl', res.url);
-    categoryForm.setValue('imageCdnUrl', res.thumbnailUrl.replace('tr:n-media_library_thumbnail', ''));
+    let form: UseFormReturn<CategoryFormData> | UseFormReturn<SubcategoryFormData> | null = null;
+    if (activeForm === 'category') {
+      form = categoryForm;
+    } else if (activeForm === 'subcategory') {
+      form = subcategoryForm;
+    }
+    
+    if (form) {
+        form.setValue('imageUrl', res.url);
+        form.setValue('imageCdnUrl', res.thumbnailUrl.replace('tr:n-media_library_thumbnail', ''));
+    }
   };
 
   const onUploadError = (err: any) => {
@@ -541,6 +575,35 @@ export default function AdminCategoriesPage() {
                   </FormItem>
                 )}
               />
+               <FormItem>
+                <FormLabel>Subcategory Image</FormLabel>
+                <FormControl>
+                  <IKContext
+                      publicKey="public_c4ZeIR2RUTeVp4nR4SoIF3R8f1w="
+                      urlEndpoint="https://ik.imagekit.io/yajy2sbsw"
+                      authenticator={authenticator}
+                    >
+                  <div className="flex items-center gap-4">
+                    {subcategoryForm.watch('imageCdnUrl') && (
+                      <Image
+                        src={subcategoryForm.watch('imageCdnUrl')!}
+                        alt="Subcategory preview"
+                        width={64}
+                        height={64}
+                        className="rounded-md object-cover"
+                      />
+                    )}
+                    <IKUpload
+                      fileName="subcategory-image.jpg"
+                      onError={onUploadError}
+                      onSuccess={onUploadSuccess}
+                      useUniqueFileName={true}
+                    />
+                  </div>
+                  </IKContext>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
               <DialogFooter>
                 <Button type="submit">Add Subcategory</Button>
               </DialogFooter>
@@ -573,6 +636,35 @@ export default function AdminCategoriesPage() {
                   </FormItem>
                 )}
               />
+              <FormItem>
+                <FormLabel>Subcategory Image</FormLabel>
+                <FormControl>
+                  <IKContext
+                      publicKey="public_c4ZeIR2RUTeVp4nR4SoIF3R8f1w="
+                      urlEndpoint="https://ik.imagekit.io/yajy2sbsw"
+                      authenticator={authenticator}
+                    >
+                  <div className="flex items-center gap-4">
+                    {subcategoryForm.watch('imageCdnUrl') && (
+                      <Image
+                        src={subcategoryForm.watch('imageCdnUrl')!}
+                        alt="Subcategory preview"
+                        width={64}
+                        height={64}
+                        className="rounded-md object-cover"
+                      />
+                    )}
+                    <IKUpload
+                      fileName="subcategory-image.jpg"
+                      onError={onUploadError}
+                      onSuccess={onUploadSuccess}
+                      useUniqueFileName={true}
+                    />
+                  </div>
+                  </IKContext>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
               <DialogFooter>
                 <Button type="submit">Save Changes</Button>
               </DialogFooter>

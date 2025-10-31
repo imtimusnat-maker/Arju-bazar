@@ -68,6 +68,10 @@ service cloud.firestore {
       allow get: if true;
       allow list: if true;
       allow write: if isAdmin();
+
+      // Index for search functionality
+      // This is not a security rule, but a note for developers.
+      // An index on `searchKeywords` is required for the `orderBy` clause in queries.
     }
     
     /**
@@ -78,6 +82,9 @@ service cloud.firestore {
       allow get: if true;
       allow list: if true;
       allow write: if isAdmin();
+      
+      // Index for search functionality
+      // An index on `searchKeywords` is required for the `orderBy` clause in queries.
     }
 
     /**
@@ -88,6 +95,9 @@ service cloud.firestore {
       allow get: if true;
       allow list: if true;
       allow write: if isAdmin();
+      
+      // Index for search functionality
+      // An index on `searchKeywords` is required for the `orderBy` clause in queries.
     }
     
     /**
@@ -133,5 +143,38 @@ service cloud.firestore {
       allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);
     }
+    
+    // The following are not security rules, but Firestore index definitions in comment form.
+    // Firebase requires these to be defined for compound queries.
+    // The Firebase CLI can be used to deploy these indexes from a `firestore.indexes.json` file.
+    /*
+    {
+      "indexes": [
+        {
+          "collectionGroup": "products",
+          "queryScope": "COLLECTION",
+          "fields": [
+            { "fieldPath": "searchKeywords", "order": "ASCENDING" }
+          ]
+        },
+        {
+          "collectionGroup": "categories",
+          "queryScope": "COLLECTION",
+          "fields": [
+            { "fieldPath": "searchKeywords", "order": "ASCENDING" }
+          ]
+        },
+        {
+          "collectionGroup": "subcategories",
+          "queryScope": "COLLECTION",
+          "fields": [
+            { "fieldPath": "searchKeywords", "order": "ASCENDING" }
+          ]
+        }
+      ]
+    }
+    */
   }
 }
+
+    

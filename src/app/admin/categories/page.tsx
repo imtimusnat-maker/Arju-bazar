@@ -106,10 +106,10 @@ const authenticator = async () => {
     }
 };
 
-const generateKeywords = (name: string): string[] => {
-    if (!name) return [];
-    return name.toLowerCase().split(' ').filter(word => word);
-}
+const generateSearchKeywords = (name: string): string => {
+    if (!name) return '';
+    return name.toLowerCase().replace(/\s+/g, '');
+};
 
 
 function SubcategoryList({
@@ -282,13 +282,13 @@ export default function AdminCategoriesPage() {
     if (!firestore) return;
 
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
-    const keywords = generateKeywords(data.name);
+    const searchKeywords = generateSearchKeywords(data.name);
     
     if (editingCategory) {
        const categoryData = {
         ...data,
         slug,
-        keywords,
+        searchKeywords,
         updatedAt: serverTimestamp(),
       };
       const categoryDoc = doc(firestore, 'categories', editingCategory.id);
@@ -301,7 +301,7 @@ export default function AdminCategoriesPage() {
       const newCategoryData = {
         ...data,
         slug,
-        keywords,
+        searchKeywords,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
@@ -321,11 +321,11 @@ export default function AdminCategoriesPage() {
     if (!firestore || !parentCategory) return;
     
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
-    const keywords = generateKeywords(data.name);
+    const searchKeywords = generateSearchKeywords(data.name);
     const subcategoryData = {
         ...data,
         slug,
-        keywords,
+        searchKeywords,
         categoryId: parentCategory.id,
         categorySlug: parentCategory.slug,
         createdAt: serverTimestamp(),
@@ -347,11 +347,11 @@ export default function AdminCategoriesPage() {
     if (!firestore || !parentCategory || !editingSubcategory) return;
     
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
-    const keywords = generateKeywords(data.name);
+    const searchKeywords = generateSearchKeywords(data.name);
     const subcategoryData = {
         ...data,
         slug,
-        keywords,
+        searchKeywords,
         updatedAt: serverTimestamp(),
     };
 
@@ -695,3 +695,5 @@ export default function AdminCategoriesPage() {
     </div>
   );
 }
+
+    

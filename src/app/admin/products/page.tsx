@@ -94,10 +94,10 @@ const authenticator = async () => {
     }
 };
 
-const generateKeywords = (name: string): string[] => {
-    if (!name) return [];
-    return name.toLowerCase().split(' ').filter(word => word);
-}
+const generateSearchKeywords = (name: string): string => {
+    if (!name) return '';
+    return name.toLowerCase().replace(/\s+/g, '');
+};
 
 
 export default function AdminProductsPage() {
@@ -199,13 +199,13 @@ export default function AdminProductsPage() {
 
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
     const category = categories?.find(c => c.id === data.categoryId);
-    const keywords = generateKeywords(data.name);
+    const searchKeywords = generateSearchKeywords(data.name);
     
     if (editingProduct) {
        const productData = {
         ...data,
         slug,
-        keywords,
+        searchKeywords,
         categorySlug: category?.slug || '',
         updatedAt: serverTimestamp(),
       };
@@ -219,7 +219,7 @@ export default function AdminProductsPage() {
        const newProductData = {
         ...data,
         slug,
-        keywords,
+        searchKeywords,
         categorySlug: category?.slug || '',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -505,3 +505,5 @@ export default function AdminProductsPage() {
     </div>
   );
 }
+
+    

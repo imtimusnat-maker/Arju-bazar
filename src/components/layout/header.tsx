@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/cart-context';
 import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, doc, query, where, limit, where as whereFn } from 'firebase/firestore';
+import { collection, doc, query, orderBy, startAt, endAt, limit } from 'firebase/firestore';
 import type { Category, Subcategory } from '@/lib/categories';
 import type { Settings } from '@/lib/settings';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -20,34 +20,39 @@ import Image from 'next/image';
 
 function LiveSearchResults({ searchTerm, onResultClick }: { searchTerm: string, onResultClick: () => void }) {
     const firestore = useFirestore();
-    const debouncedSearchTerm = useDebounce(searchTerm.toLowerCase(), 300);
-    const searchTerms = debouncedSearchTerm.split(' ').filter(term => term);
+    const debouncedSearchTerm = useDebounce(searchTerm.toLowerCase().replace(/\s+/g, ''), 300);
 
     const productsQuery = useMemoFirebase(() => {
-        if (!firestore || searchTerms.length === 0) return null;
+        if (!firestore || !debouncedSearchTerm) return null;
         return query(
             collection(firestore, 'products'),
-            whereFn('keywords', 'array-contains-any', searchTerms),
+            orderBy('searchKeywords'),
+            startAt(debouncedSearchTerm),
+            endAt(debouncedSearchTerm + '\uf8ff'),
             limit(5)
         );
     }, [firestore, debouncedSearchTerm]);
     const { data: products, isLoading: productsLoading } = useCollection<Product>(productsQuery);
 
     const categoriesQuery = useMemoFirebase(() => {
-        if (!firestore || searchTerms.length === 0) return null;
+        if (!firestore || !debouncedSearchTerm) return null;
         return query(
             collection(firestore, 'categories'),
-            whereFn('keywords', 'array-contains-any', searchTerms),
+            orderBy('searchKeywords'),
+            startAt(debouncedSearchTerm),
+            endAt(debouncedSearchTerm + '\uf8ff'),
             limit(3)
         );
     }, [firestore, debouncedSearchTerm]);
     const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(categoriesQuery);
 
     const subcategoriesQuery = useMemoFirebase(() => {
-        if (!firestore || searchTerms.length === 0) return null;
+        if (!firestore || !debouncedSearchTerm) return null;
         return query(
             collection(firestore, 'subcategories'),
-            whereFn('keywords', 'array-contains-any', searchTerms),
+            orderBy('searchKeywords'),
+            startAt(debouncedSearchTerm),
+            endAt(debouncedSearchTerm + '\uf8ff'),
             limit(3)
         );
     }, [firestore, debouncedSearchTerm]);
@@ -313,3 +318,5 @@ export function Header() {
     </>
   );
 }
+
+    

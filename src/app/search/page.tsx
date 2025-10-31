@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query, orderBy, startAt, endAt, limit } from 'firebase/firestore';
 import type { Product } from '@/lib/products';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
@@ -17,13 +17,17 @@ function SearchResults() {
   const q = searchParams.get('q');
   const firestore = useFirestore();
 
-  const searchTerms = q?.toLowerCase().split(' ').filter(term => term) || [];
-
   const productsQuery = useMemoFirebase(() => {
-    if (!firestore || searchTerms.length === 0) return null;
+    if (!firestore || !q) return null;
+    const lowerCaseSearchTerm = q.toLowerCase().replace(/\s+/g, '');
+    if (lowerCaseSearchTerm.length === 0) return null;
+
     return query(
       collection(firestore, 'products'),
-      where('keywords', 'array-contains-any', searchTerms)
+      orderBy('searchKeywords'),
+      startAt(lowerCaseSearchTerm),
+      endAt(lowerCaseSearchTerm + '\uf8ff'),
+      limit(20) // Limit results on the search page
     );
   }, [firestore, q]); 
 
@@ -106,3 +110,5 @@ export default function SearchPage() {
     </div>
   );
 }
+
+    

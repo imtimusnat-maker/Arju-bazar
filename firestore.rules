@@ -60,33 +60,36 @@ service cloud.firestore {
 
     /**
      * @description Grants public read access, but restricts write access to admins only.
+     * `allow read` covers get, list, and query operations.
      * @path /categories/{categoryId}
      */
     match /categories/{categoryId} {
-      allow get, list: if true;
+      allow read: if true;
       allow write: if isAdmin();
     }
     
     /**
      * @description Grants public read access, but restricts write access to admins only for subcategories.
+     * `allow read` covers get, list, and query operations.
      * @path /subcategories/{subcategoryId}
      */
     match /subcategories/{subcategoryId} {
-      allow get, list: if true;
+      allow read: if true;
       allow write: if isAdmin();
     }
 
     /**
      * @description Grants public read access, but restricts write access to admins only.
+     * `allow read` covers get, list, and query operations.
      * @path /products/{productId}
      */
     match /products/{productId} {
-      allow get, list: if true;
+      allow read: if true;
       allow write: if isAdmin();
     }
     
     /**
-     * @description Grants public read access, but restricts write access to admins only for settings.
+     * @description Grants public read access for the single settings doc, but restricts write access to admins only.
      * @path /settings/{settingId}
      */
     match /settings/{settingId} {
@@ -112,7 +115,7 @@ service cloud.firestore {
      * @path /users/{userId}/orders/{orderId}
      */
     match /users/{userId}/orders/{orderId} {
-      allow get, list: if isOwner(userId);
+      allow read: if isOwner(userId);
       allow create: if isOwner(userId);
       allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);
@@ -123,7 +126,7 @@ service cloud.firestore {
      * @path /users/{userId}/orders/{orderId}/orderItems/{orderItemId}
      */
     match /users/{userId}/orders/{orderId}/orderItems/{orderItemId} {
-      allow get, list: if isOwner(userId);
+      allow read: if isOwner(userId);
       allow create: if isOwner(userId);
       allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);

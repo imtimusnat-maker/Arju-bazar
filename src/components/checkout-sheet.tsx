@@ -16,8 +16,12 @@ import { Separator } from '@/components/ui/separator';
 import type { Product } from '@/lib/products';
 import { User, Phone, MapPin, X } from 'lucide-react';
 import Image from 'next/image';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { useCart } from '@/context/cart-context';
+import { useFirestore, useDoc } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { Settings } from '@/lib/settings';
+
 
 type CartItem = ReturnType<typeof useCart>['cart'][0];
 
@@ -28,18 +32,27 @@ interface CheckoutSheetProps {
   cartItems?: CartItem[];
 }
 
-const shippingOptions = [
-  { id: 'dhaka', label: 'ঢাকা সিটির ভিতরে', price: 70 },
-  { id: 'chittagong', label: 'চট্টগ্রাম সিটির ভিতরে', price: 70 },
-  { id: 'outside', label: 'ঢাকা এবং চট্টগ্রাম সিটির বাহিরে', price: 130 },
-];
-
 export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: CheckoutSheetProps) {
     if (!product && !cartItems) {
         throw new Error("CheckoutSheet requires either 'product' or 'cartItems' prop.");
     }
+    
+    const firestore = useFirestore();
+    const settingsDocRef = useMemo(
+        () => (firestore ? doc(firestore, 'settings', 'global') : null),
+        [firestore]
+    );
+    const { data: settings } = useDoc<Settings>(settingsDocRef);
+    
+    const shippingOptions = settings?.shippingOptions || [];
 
-    const [shippingCost, setShippingCost] = useState(shippingOptions[0].price);
+    const [shippingCost, setShippingCost] = useState(0);
+
+    useEffect(() => {
+        if (shippingOptions.length > 0) {
+            setShippingCost(shippingOptions[0].price);
+        }
+    }, [shippingOptions]);
     
     const subtotal = useMemo(() => {
         if (product) {
@@ -99,20 +112,28 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
 
             <div>
                 <Label className="text-sm font-medium">শিপিং মেথড</Label>
-                <RadioGroup defaultValue={shippingOptions[0].id} className="mt-2 space-y-2" onValueChange={(value) => {
-                    const option = shippingOptions.find(o => o.id === value);
-                    if(option) setShippingCost(option.price);
-                }}>
-                    {shippingOptions.map((option) => (
-                        <Label key={option.id} htmlFor={option.id} className="flex items-center justify-between p-3 border rounded-md cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5">
-                            <div className="flex items-center">
-                                <RadioGroupItem value={option.id} id={option.id} />
-                                <span className="ml-3 font-medium">{option.label}</span>
-                            </div>
-                            <span className="font-semibold">Tk {option.price.toFixed(2)}</span>
-                        </Label>
-                    ))}
-                </RadioGroup>
+                {shippingOptions.length > 0 ? (
+                    <RadioGroup 
+                        defaultValue={shippingOptions[0].id} 
+                        className="mt-2 space-y-2" 
+                        onValueChange={(value) => {
+                            const option = shippingOptions.find(o => o.id === value);
+                            if(option) setShippingCost(option.price);
+                        }}
+                    >
+                        {shippingOptions.map((option) => (
+                            <Label key={option.id} htmlFor={option.id} className="flex items-center justify-between p-3 border rounded-md cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                <div className="flex items-center">
+                                    <RadioGroupItem value={option.id} id={option.id} />
+                                    <span className="ml-3 font-medium">{option.label}</span>
+                                </div>
+                                <span className="font-semibold">Tk {option.price.toFixed(2)}</span>
+                            </Label>
+                        ))}
+                    </RadioGroup>
+                ) : (
+                    <p className="text-sm text-muted-foreground mt-2">No shipping options available. Please configure them in the admin panel.</p>
+                )}
             </div>
 
             <div className="bg-gray-50 p-4 rounded-md space-y-3">
@@ -157,3 +178,5 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
     </Sheet>
   );
 }
+
+    

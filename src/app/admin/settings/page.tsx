@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useForm, type SubmitHandler } from 'react-hook-form';
+import { useForm, useFieldArray, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
@@ -15,7 +15,13 @@ import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import type { Settings } from '@/lib/settings';
 import { IKContext, IKUpload } from 'imagekitio-react';
 import Image from 'next/image';
-import { Separator } from '@/components/ui/separator';
+import { Trash2, PlusCircle } from 'lucide-react';
+
+const shippingOptionSchema = z.object({
+  id: z.string().optional(), // ID is generated, so optional at first
+  label: z.string().min(1, 'Label is required'),
+  price: z.coerce.number().min(0, 'Price cannot be negative'),
+});
 
 const settingsSchema = z.object({
   whatsappNumber: z.string().min(1, 'WhatsApp number is required'),
@@ -23,6 +29,7 @@ const settingsSchema = z.object({
   hotlineNumber: z.string().optional(),
   heroImageUrl: z.string().optional(),
   heroImageCdnUrl: z.string().optional(),
+  shippingOptions: z.array(shippingOptionSchema).optional(),
 });
 
 type SettingsFormData = z.infer<typeof settingsSchema>;
@@ -64,12 +71,21 @@ export default function AdminSettingsPage() {
       hotlineNumber: '',
       heroImageUrl: '',
       heroImageCdnUrl: '',
+      shippingOptions: [],
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "shippingOptions",
   });
 
   useEffect(() => {
     if (settingsData) {
-      form.reset(settingsData);
+      form.reset({
+        ...settingsData,
+        shippingOptions: settingsData.shippingOptions || []
+      });
     }
   }, [settingsData, form]);
 
@@ -90,7 +106,16 @@ export default function AdminSettingsPage() {
   const onSubmit: SubmitHandler<SettingsFormData> = (data) => {
     if (!settingsDocRef) return;
     
-    setDocumentNonBlocking(settingsDocRef, data, { merge: true });
+    // Ensure each shipping option has a unique ID
+    const processedData = {
+        ...data,
+        shippingOptions: data.shippingOptions?.map(option => ({
+            ...option,
+            id: option.id || `shipping_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        }))
+    }
+
+    setDocumentNonBlocking(settingsDocRef, processedData, { merge: true });
 
     toast({
       title: 'Settings Saved',
@@ -197,6 +222,57 @@ export default function AdminSettingsPage() {
                  </CardContent>
               </Card>
 
+              <Card>
+                <CardHeader>
+                    <CardTitle>Shipping Methods</CardTitle>
+                    <CardDescription>Manage shipping options for checkout.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {fields.map((field, index) => (
+                        <div key={field.id} className="flex items-end gap-4 p-4 border rounded-lg">
+                            <FormField
+                                control={form.control}
+                                name={`shippingOptions.${index}.label`}
+                                render={({ field }) => (
+                                    <FormItem className="flex-1">
+                                        <FormLabel>Label</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="e.g. ঢাকা সিটির ভিতরে" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name={`shippingOptions.${index}.price`}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Price (Tk)</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" placeholder="70" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ))}
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => append({ label: '', price: 0, id: '' })}
+                    >
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add Shipping Option
+                    </Button>
+                </CardContent>
+              </Card>
+
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 Save All Settings
               </Button>
@@ -206,3 +282,5 @@ export default function AdminSettingsPage() {
     </div>
   );
 }
+
+    

@@ -97,12 +97,20 @@ const authenticator = async () => {
 const generateKeywords = (name: string): string[] => {
     if (!name) return [];
     const lowerName = name.toLowerCase();
+    const keywords = new Set<string>();
+
+    // Add whole words
     const nameParts = lowerName.split(' ');
-    const keywords = new Set<string>([lowerName, ...nameParts]);
-    // Add partial strings
+    nameParts.forEach(part => {
+        if (part) keywords.add(part);
+    });
+
+    // Add substrings of each word
     for (const part of nameParts) {
-        for (let i = 1; i < part.length; i++) {
-            keywords.add(part.substring(0, i));
+        for (let i = 1; i <= part.length; i++) {
+            for (let j = 0; j <= part.length - i; j++) {
+                keywords.add(part.substring(j, j + i));
+            }
         }
     }
     return Array.from(keywords);

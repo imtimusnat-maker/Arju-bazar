@@ -13,6 +13,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { CreditCard, MessageCircle, ShoppingCart } from 'lucide-react';
+import { ProductCard } from '@/components/product-card';
 
 // WhatsApp and Messenger icons as inline SVGs for styling flexibility
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -73,8 +74,12 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
   const { image } = product;
 
+  // Filter out the current product and take the first 4 for suggestions
+  const suggestedProducts = products.filter(p => p.id !== product.id).slice(0, 5);
+
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-background pb-20 md:pb-0">
       <Header />
       <main className="flex-1 py-8 px-4">
         <div className="container mx-auto max-w-lg">
@@ -139,6 +144,15 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                 </AccordionItem>
               </Accordion>
             </div>
+          </div>
+        </div>
+
+        <div className="container mx-auto max-w-screen-xl px-4 py-8 mt-8">
+          <h2 className="text-xl font-bold mb-6">You Might Also Like</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+            {suggestedProducts.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
           </div>
         </div>
       </main>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { products } from '@/lib/products';
@@ -16,6 +17,7 @@ import { CreditCard, ShoppingCart } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
+import { CheckoutSheet } from '@/components/checkout-sheet';
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -47,6 +49,7 @@ export default function ProductPage() {
   const product = products.find((p) => p.slug === params.slug);
   const { addToCart } = useCart();
   const { toast } = useToast();
+  const [isCheckoutOpen, setCheckoutOpen] = useState(false);
 
   if (!product) {
     notFound();
@@ -60,6 +63,10 @@ export default function ProductPage() {
     });
   };
 
+  const handleCodOrder = () => {
+    setCheckoutOpen(true);
+  };
+
   const { image } = product;
 
   // Filter out the current product and take the first 4 for suggestions
@@ -67,84 +74,91 @@ export default function ProductPage() {
 
 
   return (
-    <div className="flex min-h-screen flex-col bg-background pb-20 md:pb-0">
-      <Header />
-      <main className="flex-1 py-8 px-4">
-        <div className="container mx-auto max-w-lg">
-          <div className="bg-white rounded-lg overflow-hidden">
-            <div className="relative w-full aspect-square border-b">
-              {image && (
-                 <Image
-                    src={image.imageUrl}
-                    alt={image.description}
-                    fill
-                    className="object-contain p-4"
-                    data-ai-hint={image.imageHint}
-                />
-              )}
-            </div>
-            <div className="p-4">
-              <h1 className="text-xl font-bold mb-2">{product.name}</h1>
-              <p className="text-lg font-bold text-primary mb-6">Tk {product.price.toFixed(2)}</p>
-
-              <div className="space-y-3">
-                 <Button onClick={handleAddToCart} className="w-full h-12 bg-black text-white hover:bg-gray-800 text-lg">
-                  Add to cart
-                </Button>
-                <Button className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 text-lg">
-                  <ShoppingCart className="mr-2 h-5 w-5" />
-                  ক্যাশ অন ডেলিভারিতে অর্ডার করুন
-                </Button>
-                <Button className="w-full h-12 bg-yellow-400 text-black hover:bg-yellow-500 text-lg">
-                    <CreditCard className="mr-2 h-5 w-5" />
-                    Pay Online
-                </Button>
-                <Button className="w-full h-12 bg-[#0084FF] text-white hover:bg-[#0072ff] text-lg">
-                    <MessengerIcon className="mr-2 h-6 w-6" />
-                    Chat with us
-                </Button>
-                 <Button className="w-full h-12 bg-[#25D366] text-white hover:bg-[#1ebe57] text-lg">
-                    <WhatsAppIcon className="mr-2 h-6 w-6" />
-                    WhatsApp Us
-                </Button>
+    <>
+      <div className="flex min-h-screen flex-col bg-background pb-20 md:pb-0">
+        <Header />
+        <main className="flex-1 py-8 px-4">
+          <div className="container mx-auto max-w-lg">
+            <div className="bg-white rounded-lg overflow-hidden">
+              <div className="relative w-full aspect-square border-b">
+                {image && (
+                   <Image
+                      src={image.imageUrl}
+                      alt={image.description}
+                      fill
+                      className="object-contain p-4"
+                      data-ai-hint={image.imageHint}
+                  />
+                )}
               </div>
+              <div className="p-4">
+                <h1 className="text-xl font-bold mb-2">{product.name}</h1>
+                <p className="text-lg font-bold text-primary mb-6">Tk {product.price.toFixed(2)}</p>
 
-              <Accordion type="single" collapsible className="w-full mt-8">
-                <AccordionItem value="item-1">
-                  <AccordionTrigger className="text-lg font-semibold">Description</AccordionTrigger>
-                  <AccordionContent className="text-base text-muted-foreground pt-2">
-                    <div className="prose max-w-none">
-                      <p>
-                        বহুকাল যাবত আয়ুর্বেদিক চিকিৎসায় অশ্বগন্ধা ব্যবহৃত হচ্ছে
-                        মানসিক চাপ, ক্লান্তি, ঘুমের সমস্যা ও বিভিন্ন রোগ প্রতিরোধে।
-                        যত্নসহকারে তৈরি হওয়ায় স্বাদ মাটির ঘ্রাণে ভরপুর ও স্বাস্থ্যকর দ্রব্য
-                        হিসেবে পরিচিত; গরম/ঠান্ডা দুধ বা খুদি বা পানি কিংবা হালকা
-                        খাবারের সঙ্গে মিশিয়ে সহজেই গ্রহীত।
-                      </p>
-                      <h4 className="font-bold mt-4">অশ্বগন্ধার স্বাস্থ্য উপকারিতা:</h4>
-                      <ul>
-                        <li>মানসিক চাপ কমাতে এবং মানসিক সুস্থতায় সহায়তা করে; স্বীকৃত গবেষণায় ইতিবাচক ফলাফল প্রদর্শন করেছে।</li>
-                        <li>ঘুম ও বিশ্রামের মান উন্নত করে, ইনসমনিয়া ও সাধারণ ক্লান্তিতে কার্যকর।</li>
-                        <li>দেহের শক্তি ও কর্মদক্ষতা বৃদ্ধিতে সহায়তা করে, যা স্ট্যামিনা ও রিকভারি বাড়ায়।</li>
-                      </ul>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+                <div className="space-y-3">
+                   <Button onClick={handleAddToCart} className="w-full h-12 bg-black text-white hover:bg-gray-800 text-lg">
+                    Add to cart
+                  </Button>
+                  <Button onClick={handleCodOrder} className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 text-lg">
+                    <ShoppingCart className="mr-2 h-5 w-5" />
+                    ক্যাশ অন ডেলিভারিতে অর্ডার করুন
+                  </Button>
+                  <Button className="w-full h-12 bg-yellow-400 text-black hover:bg-yellow-500 text-lg">
+                      <CreditCard className="mr-2 h-5 w-5" />
+                      Pay Online
+                  </Button>
+                  <Button className="w-full h-12 bg-[#0084FF] text-white hover:bg-[#0072ff] text-lg">
+                      <MessengerIcon className="mr-2 h-6 w-6" />
+                      Chat with us
+                  </Button>
+                   <Button className="w-full h-12 bg-[#25D366] text-white hover:bg-[#1ebe57] text-lg">
+                      <WhatsAppIcon className="mr-2 h-6 w-6" />
+                      WhatsApp Us
+                  </Button>
+                </div>
+
+                <Accordion type="single" collapsible className="w-full mt-8">
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger className="text-lg font-semibold">Description</AccordionTrigger>
+                    <AccordionContent className="text-base text-muted-foreground pt-2">
+                      <div className="prose max-w-none">
+                        <p>
+                          বহুকাল যাবত আয়ুর্বেদিক চিকিৎসায় অশ্বগন্ধা ব্যবহৃত হচ্ছে
+                          মানসিক চাপ, ক্লান্তি, ঘুমের সমস্যা ও বিভিন্ন রোগ প্রতিরোধে।
+                          যত্নসহকারে তৈরি হওয়ায় স্বাদ মাটির ঘ্রাণে ভরপুর ও স্বাস্থ্যকর দ্রব্য
+                          হিসেবে পরিচিত; গরম/ঠান্ডা দুধ বা খুদি বা পানি কিংবা হালকা
+                          খাবারের সঙ্গে মিশিয়ে সহজেই গ্রহীত।
+                        </p>
+                        <h4 className="font-bold mt-4">অশ্বগন্ধার স্বাস্থ্য উপকারিতা:</h4>
+                        <ul>
+                          <li>মানসিক চাপ কমাতে এবং মানসিক সুস্থতায় সহায়তা করে; স্বীকৃত গবেষণায় ইতিবাচক ফলাফল প্রদর্শন করেছে।</li>
+                          <li>ঘুম ও বিশ্রামের মান উন্নত করে, ইনসমনিয়া ও সাধারণ ক্লান্তিতে কার্যকর।</li>
+                          <li>দেহের শক্তি ও কর্মদক্ষতা বৃদ্ধিতে সহায়তা করে, যা স্ট্যামিনা ও রিকভারি বাড়ায়।</li>
+                        </ul>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="container mx-auto max-w-screen-xl px-4 py-8 mt-8">
-          <h2 className="text-xl font-bold mb-6">You Might Also Like</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
-            {suggestedProducts.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+          <div className="container mx-auto max-w-screen-xl px-4 py-8 mt-8">
+            <h2 className="text-xl font-bold mb-6">You Might Also Like</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+              {suggestedProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
           </div>
-        </div>
-      </main>
-      <Footer />
-    </div>
+        </main>
+        <Footer />
+      </div>
+      <CheckoutSheet
+        isOpen={isCheckoutOpen}
+        onOpenChange={setCheckoutOpen}
+        product={product}
+      />
+    </>
   );
 }

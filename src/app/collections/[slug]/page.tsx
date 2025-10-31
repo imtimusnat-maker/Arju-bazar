@@ -5,12 +5,38 @@ import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
-import { categories } from '@/lib/categories';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, where, limit } from 'firebase/firestore';
+import type { Category, Subcategory } from '@/lib/categories';
 
 export default function CollectionPage() {
   const params = useParams<{ slug: string }>();
-  const category = categories.find((c) => c.slug === params.slug);
+  const firestore = useFirestore();
+
+  const categoryQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'categories'), where('slug', '==', params.slug), limit(1));
+  }, [firestore, params.slug]);
+
+  const { data: categoryData, isLoading: isCategoryLoading } = useCollection<Category>(categoryQuery);
+  const category = categoryData?.[0];
+
+  const subcategoriesCollection = useMemoFirebase(() => {
+    if (!firestore || !category) return null;
+    return collection(firestore, `categories/${category.id}/subcategories`);
+  }, [firestore, category]);
+
+  const { data: subcategories, isLoading: areSubcategoriesLoading } = useCollection<Subcategory>(subcategoriesCollection);
+
+  if (isCategoryLoading) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <Header />
+        <main className="flex-1 text-center py-20">Loading...</main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!category) {
     notFound();
@@ -23,27 +49,24 @@ export default function CollectionPage() {
         <div className="container mx-auto max-w-screen-xl px-4 py-8">
           <h1 className="mb-6 text-center font-headline text-2xl font-bold">{category.name}</h1>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 md:gap-6">
-            {category.subcategories.map((subcategory) => {
-              const subcategoryImage = PlaceHolderImages.find((i) => i.id === subcategory.imageId);
-              return (
-                <Link key={subcategory.name} href={`/collections/${category.slug}/${subcategory.slug}`} className="group block">
+            {areSubcategoriesLoading ? (
+               Array.from({ length: 5 }).map((_, index) => (
+                <div key={index} className="space-y-2">
+                   <div className="relative aspect-square bg-gray-100 rounded-lg"></div>
+                   <div className="h-4 bg-gray-200 rounded-md w-3/4 mx-auto"></div>
+                </div>
+              ))
+            ) : (
+              subcategories?.map((subcategory) => (
+                <Link key={subcategory.id} href={`/collections/${category.slug}/${subcategory.slug}`} className="group block">
                   <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-100 transition-all duration-300 group-hover:shadow-md">
-                    {subcategoryImage && (
-                      <Image
-                        src={subcategoryImage.imageUrl}
-                        alt={subcategoryImage.description}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 50vw, 20vw"
-                        data-ai-hint={subcategoryImage.imageHint}
-                      />
-                    )}
+                    {/* Subcategories do not have images in the current implementation */}
+                    <div className="w-full h-full bg-gray-100"></div>
                   </div>
                   <h3 className="mt-2 text-center font-body text-sm leading-tight">{subcategory.name}</h3>
-                  <p className="text-center text-xs text-muted-foreground">{subcategory.itemCount} items</p>
                 </Link>
-              );
-            })}
+              ))
+            )}
           </div>
         </div>
       </main>

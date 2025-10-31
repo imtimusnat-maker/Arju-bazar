@@ -24,6 +24,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogClose
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -59,16 +60,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
+import type { Category, Subcategory } from '@/lib/categories';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
-// Define the type for a Category based on your data structure
-export type Category = {
-  id: string;
-  name: string;
-  description: string;
-  imageUrl: string;
-  imageCdnUrl: string;
-  slug: string;
-};
 
 const categorySchema = z.object({
   name: z.string().min(1, 'Category name is required'),
@@ -78,6 +77,12 @@ const categorySchema = z.object({
 });
 
 type CategoryFormData = z.infer<typeof categorySchema>;
+
+const subcategorySchema = z.object({
+  name: z.string().min(1, 'Subcategory name is required'),
+});
+
+type SubcategoryFormData = z.infer<typeof subcategorySchema>;
 
 const authenticator =  async () => {
     try {
@@ -94,12 +99,50 @@ const authenticator =  async () => {
     }
 };
 
-export default function AdminCategoriesPage() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const { toast } = useToast();
+function SubcategoryList({ categoryId }: { categoryId: string }) {
+    const firestore = useFirestore();
+    const subcategoriesCollection = useMemoFirebase(
+      () => (firestore ? collection(firestore, `categories/${categoryId}/subcategories`) : null),
+      [firestore, categoryId]
+    );
+    const { data: subcategories, isLoading } = useCollection<Subcategory>(subcategoriesCollection);
 
+    const handleDelete = (subcategoryId: string) => {
+        if (!firestore) return;
+        const subcategoryDoc = doc(firestore, `categories/${categoryId}/subcategories`, subcategoryId);
+        deleteDocumentNonBlocking(subcategoryDoc);
+    };
+
+    if (isLoading) return <p>Loading subcategories...</p>
+    if (!subcategories || subcategories.length === 0) return <p className="px-4 py-2 text-sm text-muted-foreground">No subcategories found.</p>
+
+    return (
+        <div className="px-4 py-2 bg-gray-50/50">
+            <h4 className="font-semibold text-sm mb-2">Subcategories:</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {subcategories.map(sub => (
+                    <div key={sub.id} className="flex items-center justify-between p-2 text-sm border rounded-md bg-white">
+                        <span>{sub.name}</span>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500" onClick={() => handleDelete(sub.id)}>
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
+}
+
+
+export default function AdminCategoriesPage() {
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [isSubcategoryDialogOpen, setIsSubcategoryDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [parentCategory, setParentCategory] = useState<Category | null>(null);
+
+  const { toast } = useToast();
   const firestore = useFirestore();
+
   const categoriesCollection = useMemoFirebase(
     () => (firestore ? collection(firestore, 'categories') : null),
     [firestore]
@@ -108,7 +151,7 @@ export default function AdminCategoriesPage() {
     categoriesCollection
   );
 
-  const form = useForm<CategoryFormData>({
+  const categoryForm = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
       name: '',
@@ -118,27 +161,39 @@ export default function AdminCategoriesPage() {
     },
   });
 
-  const handleDialogOpen = (category: Category | null = null) => {
+  const subcategoryForm = useForm<SubcategoryFormData>({
+    resolver: zodResolver(subcategorySchema),
+    defaultValues: { name: '' },
+  });
+
+
+  const handleCategoryDialogOpen = (category: Category | null = null) => {
     setEditingCategory(category);
     if (category) {
-      form.reset({
+      categoryForm.reset({
         name: category.name,
         description: category.description,
         imageUrl: category.imageUrl,
         imageCdnUrl: category.imageCdnUrl,
       });
     } else {
-      form.reset({
+      categoryForm.reset({
         name: '',
         description: '',
         imageUrl: '',
         imageCdnUrl: '',
       });
     }
-    setIsDialogOpen(true);
+    setIsCategoryDialogOpen(true);
+  };
+  
+  const handleSubcategoryDialogOpen = (category: Category) => {
+    setParentCategory(category);
+    subcategoryForm.reset({ name: '' });
+    setIsSubcategoryDialogOpen(true);
   };
 
-  const handleDelete = (categoryId: string) => {
+  const handleCategoryDelete = (categoryId: string) => {
     if (!firestore) return;
     const categoryDoc = doc(firestore, 'categories', categoryId);
     deleteDocumentNonBlocking(categoryDoc);
@@ -148,7 +203,7 @@ export default function AdminCategoriesPage() {
     });
   };
 
-  const onSubmit: SubmitHandler<CategoryFormData> = async (data) => {
+  const onCategorySubmit: SubmitHandler<CategoryFormData> = async (data) => {
     if (!firestore) return;
 
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
@@ -177,14 +232,36 @@ export default function AdminCategoriesPage() {
       });
     }
 
-    form.reset();
-    setIsDialogOpen(false);
+    categoryForm.reset();
+    setIsCategoryDialogOpen(false);
     setEditingCategory(null);
   };
+
+   const onSubcategorySubmit: SubmitHandler<SubcategoryFormData> = async (data) => {
+    if (!firestore || !parentCategory) return;
+    
+    const slug = data.name.toLowerCase().replace(/\s+/g, '-');
+    const subcategoryData = {
+        ...data,
+        slug,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+    }
+
+    addDocumentNonBlocking(collection(firestore, `categories/${parentCategory.id}/subcategories`), subcategoryData);
+    toast({
+        title: 'Subcategory Added',
+        description: `${data.name} has been added to ${parentCategory.name}.`,
+    });
+    
+    subcategoryForm.reset();
+    setIsSubcategoryDialogOpen(false);
+    setParentCategory(null);
+   };
   
   const onUploadSuccess = (res: any) => {
-    form.setValue('imageUrl', res.url);
-    form.setValue('imageCdnUrl', res.url);
+    categoryForm.setValue('imageUrl', res.url);
+    categoryForm.setValue('imageCdnUrl', res.thumbnailUrl.replace('tr:n-media_library_thumbnail', ''));
   };
 
   const onUploadError = (err: any) => {
@@ -201,7 +278,7 @@ export default function AdminCategoriesPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Categories</h1>
-        <Button onClick={() => handleDialogOpen()}>
+        <Button onClick={() => handleCategoryDialogOpen()}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Add Category
         </Button>
@@ -210,77 +287,71 @@ export default function AdminCategoriesPage() {
         <CardHeader>
           <CardTitle>Manage Categories</CardTitle>
           <CardDescription>
-            Here you can add, edit, and delete product categories.
+            Here you can add, edit, and manage product categories and subcategories.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[80px]">Image</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center">
-                    Loading...
-                  </TableCell>
-                </TableRow>
+          <Accordion type="single" collapsible className="w-full">
+             {isLoading ? (
+                <p className="text-center py-4">Loading...</p>
               ) : categories && categories.length > 0 ? (
                 categories.map((category) => (
-                  <TableRow key={category.id}>
-                    <TableCell>
-                      <Image
-                        src={category.imageCdnUrl || 'https://placehold.co/400'}
-                        alt={category.name}
-                        width={40}
-                        height={40}
-                        className="rounded-md object-cover"
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium">{category.name}</TableCell>
-                    <TableCell>{category.description}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem onClick={() => handleDialogOpen(category)}>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(category.id)}
-                            className="text-red-500"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
+                    <AccordionItem value={category.id} key={category.id}>
+                        <AccordionTrigger>
+                            <div className="flex items-center gap-4 flex-1 pr-4">
+                                <Image
+                                    src={category.imageCdnUrl || 'https://placehold.co/400'}
+                                    alt={category.name}
+                                    width={40}
+                                    height={40}
+                                    className="rounded-md object-cover"
+                                />
+                                <div className="text-left">
+                                    <p className="font-medium">{category.name}</p>
+                                    <p className="text-sm text-muted-foreground">{category.description}</p>
+                                </div>
+                                <div className="ml-auto">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                        <Button variant="ghost" size="icon">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                        <DropdownMenuItem onClick={() => handleSubcategoryDialogOpen(category)}>
+                                            <PlusCircle className="mr-2 h-4 w-4" />
+                                            Add Subcategory
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleCategoryDialogOpen(category)}>
+                                            <Pencil className="mr-2 h-4 w-4" />
+                                            Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() => handleCategoryDelete(category.id)}
+                                            className="text-red-500"
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Delete
+                                        </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                           <SubcategoryList categoryId={category.id} />
+                        </AccordionContent>
+                    </AccordionItem>
                 ))
               ) : (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center">
-                    No categories found.
-                  </TableCell>
-                </TableRow>
+                <p className="text-center py-4">No categories found.</p>
               )}
-            </TableBody>
-          </Table>
+          </Accordion>
         </CardContent>
       </Card>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      {/* Category Dialog */}
+      <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>
@@ -292,10 +363,10 @@ export default function AdminCategoriesPage() {
                 : 'Add a new category to your store.'}
             </DialogDescription>
           </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <Form {...categoryForm}>
+            <form onSubmit={categoryForm.handleSubmit(onCategorySubmit)} className="space-y-4">
               <FormField
-                control={form.control}
+                control={categoryForm.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
@@ -308,7 +379,7 @@ export default function AdminCategoriesPage() {
                 )}
               />
               <FormField
-                control={form.control}
+                control={categoryForm.control}
                 name="description"
                 render={({ field }) => (
                   <FormItem>
@@ -333,9 +404,9 @@ export default function AdminCategoriesPage() {
                       authenticator={authenticator}
                     >
                   <div className="flex items-center gap-4">
-                    {form.watch('imageCdnUrl') && (
+                    {categoryForm.watch('imageCdnUrl') && (
                       <Image
-                        src={form.watch('imageCdnUrl')!}
+                        src={categoryForm.watch('imageCdnUrl')!}
                         alt="Category preview"
                         width={64}
                         height={64}
@@ -346,6 +417,7 @@ export default function AdminCategoriesPage() {
                       fileName="category-image.jpg"
                       onError={onUploadError}
                       onSuccess={onUploadSuccess}
+                      useUniqueFileName={true}
                     />
                   </div>
                   </IKContext>
@@ -357,6 +429,38 @@ export default function AdminCategoriesPage() {
                 <Button type="submit">
                   {editingCategory ? 'Save Changes' : 'Add Category'}
                 </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+    {/* Subcategory Dialog */}
+     <Dialog open={isSubcategoryDialogOpen} onOpenChange={setIsSubcategoryDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add Subcategory</DialogTitle>
+            <DialogDescription>
+              Add a new subcategory to {parentCategory?.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...subcategoryForm}>
+            <form onSubmit={subcategoryForm.handleSubmit(onSubcategorySubmit)} className="space-y-4">
+              <FormField
+                control={subcategoryForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Subcategory Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Panjabi" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button type="submit">Add Subcategory</Button>
               </DialogFooter>
             </form>
           </Form>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Card,
   CardHeader,
@@ -33,6 +33,13 @@ import {
   FormControl,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
@@ -42,17 +49,14 @@ import { z } from 'zod';
 import { IKContext, IKUpload } from 'imagekitio-react';
 import Image from 'next/image';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import {
-  collection,
-  serverTimestamp,
-  doc,
-} from 'firebase/firestore';
+import { collection, serverTimestamp, doc, query, where } from 'firebase/firestore';
 import {
   addDocumentNonBlocking,
   deleteDocumentNonBlocking,
   updateDocumentNonBlocking,
 } from '@/firebase/non-blocking-updates';
 import type { Product } from '@/lib/products';
+import type { Category, Subcategory } from '@/lib/categories';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -68,26 +72,27 @@ const productSchema = z.object({
   stockQuantity: z.coerce.number().int().min(0, 'Stock must be a whole number'),
   imageUrl: z.string().optional(),
   imageCdnUrl: z.string().optional(),
+  categoryId: z.string().min(1, 'Please select a category'),
+  subcategoryId: z.string().optional(),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
 
-const authenticator =  async () => {
-    try {
-        // You can also pass headers and query parameters to your auth backend
-        const response = await fetch('https://imagekit.io/api/v1/signatures');
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Request failed with status ${response.status}: ${errorText}`);
-        }
-
-        const data = await response.json();
-        const { signature, expire, token } = data;
-        return { signature, expire, token };
-    } catch (error) {
-        throw new Error(`Authentication request failed: ${error.message}`);
+const authenticator = async () => {
+  try {
+    const response = await fetch('https://imagekit.io/api/v1/signatures');
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `Request failed with status ${response.status}: ${errorText}`
+      );
     }
+    const data = await response.json();
+    const { signature, expire, token } = data;
+    return { signature, expire, token };
+  } catch (error) {
+    throw new Error(`Authentication request failed: ${error.message}`);
+  }
 };
 
 export default function AdminProductsPage() {
@@ -96,13 +101,20 @@ export default function AdminProductsPage() {
   const { toast } = useToast();
 
   const firestore = useFirestore();
+
   const productsCollection = useMemoFirebase(
     () => (firestore ? collection(firestore, 'products') : null),
     [firestore]
   );
-  const { data: products, isLoading } = useCollection<Product>(
-    productsCollection
+  const { data: products, isLoading: productsLoading } =
+    useCollection<Product>(productsCollection);
+
+  const categoriesCollection = useMemoFirebase(
+    () => (firestore ? collection(firestore, 'categories') : null),
+    [firestore]
   );
+  const { data: categories, isLoading: categoriesLoading } =
+    useCollection<Category>(categoriesCollection);
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -113,8 +125,21 @@ export default function AdminProductsPage() {
       stockQuantity: 0,
       imageUrl: '',
       imageCdnUrl: '',
+      categoryId: '',
+      subcategoryId: '',
     },
   });
+
+  const selectedCategoryId = form.watch('categoryId');
+
+  const subcategoriesQuery = useMemoFirebase(() => {
+    if (!firestore || !selectedCategoryId) return null;
+    return query(
+        collection(firestore, `categories/${selectedCategoryId}/subcategories`)
+    );
+  }, [firestore, selectedCategoryId]);
+
+  const { data: subcategories, isLoading: subcategoriesLoading } = useCollection<Subcategory>(subcategoriesQuery);
 
   const handleDialogOpen = (product: Product | null = null) => {
     setEditingProduct(product);
@@ -126,6 +151,8 @@ export default function AdminProductsPage() {
         stockQuantity: product.stockQuantity,
         imageUrl: product.imageUrl,
         imageCdnUrl: product.imageCdnUrl,
+        categoryId: product.categoryId,
+        subcategoryId: product.subcategoryId,
       });
     } else {
       form.reset({
@@ -135,6 +162,8 @@ export default function AdminProductsPage() {
         stockQuantity: 0,
         imageUrl: '',
         imageCdnUrl: '',
+        categoryId: '',
+        subcategoryId: '',
       });
     }
     setIsDialogOpen(true);
@@ -161,7 +190,6 @@ export default function AdminProductsPage() {
     };
 
     if (editingProduct) {
-      // Update existing product
       const productDoc = doc(firestore, 'products', editingProduct.id);
       updateDocumentNonBlocking(productDoc, productData);
       toast({
@@ -169,12 +197,14 @@ export default function AdminProductsPage() {
         description: `${data.name} has been updated.`,
       });
     } else {
-      // Add new product
       const newProductData = {
         ...productData,
         createdAt: serverTimestamp(),
       };
-      addDocumentNonBlocking(collection(firestore, 'products'), newProductData);
+      addDocumentNonBlocking(
+        collection(firestore, 'products'),
+        newProductData
+      );
       toast({
         title: 'Product Added',
         description: `${data.name} has been successfully added.`,
@@ -185,21 +215,20 @@ export default function AdminProductsPage() {
     setIsDialogOpen(false);
     setEditingProduct(null);
   };
-  
+
   const onUploadSuccess = (res: any) => {
     form.setValue('imageUrl', res.url);
-    form.setValue('imageCdnUrl', res.url);
+    form.setValue('imageCdnUrl', res.thumbnailUrl.replace('tr:n-media_library_thumbnail', ''));
   };
 
   const onUploadError = (err: any) => {
-    console.error("Upload error", err);
+    console.error('Upload error', err);
     toast({
-      variant: "destructive",
-      title: "Upload Failed",
-      description: "There was a problem with the image upload.",
+      variant: 'destructive',
+      title: 'Upload Failed',
+      description: 'There was a problem with the image upload.',
     });
   };
-
 
   return (
     <div>
@@ -229,7 +258,7 @@ export default function AdminProductsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
+              {productsLoading ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center">
                     Loading...
@@ -258,7 +287,9 @@ export default function AdminProductsPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuItem onClick={() => handleDialogOpen(product)}>
+                          <DropdownMenuItem
+                            onClick={() => handleDialogOpen(product)}
+                          >
                             <Pencil className="mr-2 h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
@@ -329,6 +360,55 @@ export default function AdminProductsPage() {
                   </FormItem>
                 )}
               />
+               <div className="grid grid-cols-2 gap-4">
+                <FormField
+                    control={form.control}
+                    name="categoryId"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            {categoriesLoading ? <SelectItem value="loading" disabled>Loading...</SelectItem> :
+                                categories?.map(cat => (
+                                <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                                ))
+                            }
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                <FormField
+                    control={form.control}
+                    name="subcategoryId"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Subcategory</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ''} disabled={!selectedCategoryId || subcategoriesLoading}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a subcategory" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            {subcategoriesLoading && <SelectItem value="loading" disabled>Loading...</SelectItem>}
+                            {subcategories && subcategories.length > 0 ? subcategories.map(sub => (
+                                <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>
+                            )) : <SelectItem value="none" disabled>No subcategories</SelectItem>}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+               </div>
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -362,26 +442,27 @@ export default function AdminProductsPage() {
                 <FormLabel>Product Image</FormLabel>
                 <FormControl>
                   <IKContext
-                      publicKey="public_c4ZeIR2RUTeVp4nR4SoIF3R8f1w="
-                      urlEndpoint="https://ik.imagekit.io/yajy2sbsw"
-                      authenticator={authenticator}
-                    >
-                  <div className="flex items-center gap-4">
-                    {form.watch('imageCdnUrl') && (
-                      <Image
-                        src={form.watch('imageCdnUrl')!}
-                        alt="Product preview"
-                        width={64}
-                        height={64}
-                        className="rounded-md object-cover"
+                    publicKey="public_c4ZeIR2RUTeVp4nR4SoIF3R8f1w="
+                    urlEndpoint="https://ik.imagekit.io/yajy2sbsw"
+                    authenticator={authenticator}
+                  >
+                    <div className="flex items-center gap-4">
+                      {form.watch('imageCdnUrl') && (
+                        <Image
+                          src={form.watch('imageCdnUrl')!}
+                          alt="Product preview"
+                          width={64}
+                          height={64}
+                          className="rounded-md object-cover"
+                        />
+                      )}
+                      <IKUpload
+                        fileName="product-image.jpg"
+                        onError={onUploadError}
+                        onSuccess={onUploadSuccess}
+                        useUniqueFileName={true}
                       />
-                    )}
-                    <IKUpload
-                      fileName="product-image.jpg"
-                      onError={onUploadError}
-                      onSuccess={onUploadSuccess}
-                    />
-                  </div>
+                    </div>
                   </IKContext>
                 </FormControl>
                 <FormMessage />

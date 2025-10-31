@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -8,14 +8,21 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/cart-context';
-import { categories } from '@/lib/categories';
-
-const mobileCategories = categories;
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import type { Category } from '@/lib/categories';
 
 export function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const { cart } = useCart();
+
+  const firestore = useFirestore();
+  const categoriesCollection = useMemoFirebase(
+    () => (firestore ? collection(firestore, 'categories') : null),
+    [firestore]
+  );
+  const { data: categories } = useCollection<Category>(categoriesCollection);
 
   const handleScroll = () => {
     if (window.scrollY > lastScrollY && window.scrollY > 100) {
@@ -64,10 +71,10 @@ export function Header() {
               </SheetTrigger>
               <SheetContent side="left" className="w-64 sm:w-80">
                 <nav className="flex flex-col space-y-6 pt-8">
-                  {mobileCategories.map((category) => (
+                  {categories?.map((category) => (
                     <Link
-                      key={category.name}
-                      href={category.href}
+                      key={category.id}
+                      href={`/collections/${category.slug}`}
                       className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                     >
                       {category.name}

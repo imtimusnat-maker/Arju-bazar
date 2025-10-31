@@ -93,11 +93,6 @@ export function CheckoutSheet({ isOpen, onOpenChange, product }: CheckoutSheetPr
                 </RadioGroup>
             </div>
 
-            <div className="flex gap-2">
-                <Input placeholder="কুপন কোড" />
-                <Button variant="outline" className="shrink-0 border-primary text-primary hover:bg-primary hover:text-primary-foreground">এপ্লাই</Button>
-            </div>
-
             <div className="bg-gray-50 p-4 rounded-md space-y-3">
                  <div className="flex items-center gap-3">
                     <div className="relative h-14 w-14 rounded-md overflow-hidden border">

@@ -109,16 +109,8 @@ const authenticator = async () => {
 const generateKeywords = (name: string): string[] => {
     if (!name) return [];
     const nameLower = name.toLowerCase();
-    const words = nameLower.split(' ').filter(word => word);
-    const prefixes = new Set<string>();
-
-    words.forEach(word => {
-        for (let i = 1; i <= word.length; i++) {
-            prefixes.add(word.substring(0, i));
-        }
-    });
-
-    return Array.from(prefixes);
+    // Split by spaces and filter out any empty strings
+    return nameLower.split(' ').filter(word => word);
 }
 
 

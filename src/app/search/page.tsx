@@ -17,13 +17,15 @@ function SearchResults() {
   const q = searchParams.get('q');
   const firestore = useFirestore();
 
+  const searchTerms = q?.toLowerCase().split(' ').filter(term => term) || [];
+
   const productsQuery = useMemoFirebase(() => {
-    if (!firestore || !q) return null;
+    if (!firestore || searchTerms.length === 0) return null;
     return query(
       collection(firestore, 'products'),
-      where('keywords', 'array-contains', q.toLowerCase())
+      where('keywords', 'array-contains-any', searchTerms)
     );
-  }, [firestore, q]);
+  }, [firestore, q]); // q is used to re-trigger the memoization
 
   const { data: products, isLoading } = useCollection<Product>(productsQuery);
 

@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/cart-context';
 import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, doc, query, where, limit } from 'firebase/firestore';
+import { collection, doc, query, where, limit, where as whereFn } from 'firebase/firestore';
 import type { Category, Subcategory } from '@/lib/categories';
 import type { Settings } from '@/lib/settings';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -21,32 +21,33 @@ import Image from 'next/image';
 function LiveSearchResults({ searchTerm, onResultClick }: { searchTerm: string, onResultClick: () => void }) {
     const firestore = useFirestore();
     const debouncedSearchTerm = useDebounce(searchTerm.toLowerCase(), 300);
+    const searchTerms = debouncedSearchTerm.split(' ').filter(term => term);
 
     const productsQuery = useMemoFirebase(() => {
-        if (!firestore || !debouncedSearchTerm || debouncedSearchTerm.length < 1) return null;
+        if (!firestore || searchTerms.length === 0) return null;
         return query(
             collection(firestore, 'products'),
-            where('keywords', 'array-contains', debouncedSearchTerm),
+            whereFn('keywords', 'array-contains-any', searchTerms),
             limit(5)
         );
     }, [firestore, debouncedSearchTerm]);
     const { data: products, isLoading: productsLoading } = useCollection<Product>(productsQuery);
 
     const categoriesQuery = useMemoFirebase(() => {
-        if (!firestore || !debouncedSearchTerm || debouncedSearchTerm.length < 1) return null;
+        if (!firestore || searchTerms.length === 0) return null;
         return query(
             collection(firestore, 'categories'),
-            where('keywords', 'array-contains', debouncedSearchTerm),
+            whereFn('keywords', 'array-contains-any', searchTerms),
             limit(3)
         );
     }, [firestore, debouncedSearchTerm]);
     const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(categoriesQuery);
 
     const subcategoriesQuery = useMemoFirebase(() => {
-        if (!firestore || !debouncedSearchTerm || debouncedSearchTerm.length < 1) return null;
+        if (!firestore || searchTerms.length === 0) return null;
         return query(
             collection(firestore, 'subcategories'),
-            where('keywords', 'array-contains', debouncedSearchTerm),
+            whereFn('keywords', 'array-contains-any', searchTerms),
             limit(3)
         );
     }, [firestore, debouncedSearchTerm]);

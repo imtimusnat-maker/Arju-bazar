@@ -123,21 +123,6 @@ export function Header() {
           </Button>
         </div>
       </div>
-       <div className="hidden md:block border-t bg-background">
-        <div className="container mx-auto max-w-screen-2xl px-4">
-          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 py-2">
-            {topCategories.map((category) => (
-              <Link
-                key={category.name}
-                href={category.href}
-                className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap"
-              >
-                {category.name}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      </div>
     </header>
   );
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Search, ShoppingCart, Menu, Phone, User, X, Folder, ShoppingBag } from 'lucide-react';
+import { Search, ShoppingCart, Menu, Phone, User, X, Folder } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -208,7 +208,7 @@ export function Header() {
         <div className="bg-primary text-primary-foreground py-2 text-xs sm:text-sm">
             <div className="container mx-auto flex max-w-screen-2xl items-center justify-center px-4">
                 <div className="flex flex-col sm:flex-row items-center gap-x-4 gap-y-1 text-center">
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
                     {settings.whatsappNumber && (
                         <div className="flex items-center gap-2">
                             <Phone className="h-4 w-4" />

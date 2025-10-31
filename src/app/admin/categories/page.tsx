@@ -108,9 +108,17 @@ const authenticator = async () => {
 
 const generateKeywords = (name: string): string[] => {
     if (!name) return [];
-    // Create a clean, lowercase array of whole words from the name.
-    const keywords = name.toLowerCase().split(' ').filter(word => word);
-    return Array.from(new Set(keywords)); // Use Set to remove duplicates
+    const nameLower = name.toLowerCase();
+    const words = nameLower.split(' ').filter(word => word);
+    const prefixes = new Set<string>();
+
+    words.forEach(word => {
+        for (let i = 1; i <= word.length; i++) {
+            prefixes.add(word.substring(0, i));
+        }
+    });
+
+    return Array.from(prefixes);
 }
 
 

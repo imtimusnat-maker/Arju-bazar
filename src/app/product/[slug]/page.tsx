@@ -135,22 +135,24 @@ export default function ProductPage() {
                       <CreditCard className="mr-2 h-5 w-5" />
                       Pay Online
                   </Button>
-                  {settings?.messengerLink && (
-                    <Button asChild className="w-full h-12 bg-black text-white hover:bg-gray-800 text-lg">
-                        <Link href={settings.messengerLink} target="_blank">
-                          <MessengerIcon className="mr-2 h-6 w-6" />
-                          Chat with us
-                        </Link>
+                  <>
+                    {settings?.messengerLink && (
+                        <Button asChild className="w-full h-12 bg-black text-white hover:bg-gray-800 text-lg">
+                            <Link href={settings.messengerLink} target="_blank">
+                            <MessengerIcon className="mr-2 h-6 w-6" />
+                            Chat with us
+                            </Link>
+                        </Button>
+                    )}
+                    {settings?.whatsappNumber && (
+                        <Button asChild className="w-full h-12 bg-black text-white hover:bg-gray-800 text-lg">
+                            <Link href={whatsAppUrl} target="_blank">
+                                <WhatsAppIcon className="mr-2 h-6 w-6 fill-[#25D366]" />
+                                WhatsApp Us
+                            </Link>
                     </Button>
-                  )}
-                   {settings?.whatsappNumber && (
-                    <Button asChild className="w-full h-12 bg-black text-white hover:bg-gray-800 text-lg">
-                        <Link href={whatsAppUrl} target="_blank">
-                            <WhatsAppIcon className="mr-2 h-6 w-6 fill-[#25D366]" />
-                            WhatsApp Us
-                        </Link>
-                   </Button>
-                   )}
+                    )}
+                  </>
                 </div>
 
                 <Accordion type="single" collapsible className="w-full mt-8">

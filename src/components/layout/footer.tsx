@@ -11,13 +11,17 @@ export function Footer() {
     <footer className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t md:hidden">
       <div className="container mx-auto max-w-screen-xl px-4">
         <div className="flex justify-around items-center h-16">
-          <Button variant="ghost" className="flex flex-col h-auto items-center gap-1">
-            <Home className="h-6 w-6" />
-            <span className="text-xs">Home</span>
+          <Button asChild variant="ghost" className="flex flex-col h-auto items-center gap-1">
+            <Link href="/">
+              <Home className="h-6 w-6" />
+              <span className="text-xs">Home</span>
+            </Link>
           </Button>
-          <Button variant="ghost" className="flex flex-col h-auto items-center gap-1">
-            <LayoutGrid className="h-6 w-6" />
-            <span className="text-xs">Categories</span>
+          <Button asChild variant="ghost" className="flex flex-col h-auto items-center gap-1">
+             <Link href="/">
+              <LayoutGrid className="h-6 w-6" />
+              <span className="text-xs">Categories</span>
+            </Link>
           </Button>
           <Button asChild variant="ghost" className="flex flex-col h-auto items-center gap-1 relative">
             <Link href="/cart">

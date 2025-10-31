@@ -10,13 +10,16 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from '@/components/ui/table';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import {
   Dialog,
   DialogContent,
@@ -24,7 +27,6 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -99,38 +101,65 @@ const authenticator =  async () => {
     }
 };
 
-function SubcategoryList({ categoryId }: { categoryId: string }) {
-    const firestore = useFirestore();
-    const subcategoriesCollection = useMemoFirebase(
-      () => (firestore ? collection(firestore, `categories/${categoryId}/subcategories`) : null),
-      [firestore, categoryId]
-    );
-    const { data: subcategories, isLoading } = useCollection<Subcategory>(subcategoriesCollection);
+function SubcategoryList({
+  categoryId,
+  onEdit,
+}: {
+  categoryId: string;
+  onEdit: (subcategory: Subcategory) => void;
+}) {
+  const firestore = useFirestore();
+  const subcategoriesCollection = useMemoFirebase(
+    () => (firestore ? collection(firestore, `categories/${categoryId}/subcategories`) : null),
+    [firestore, categoryId]
+  );
+  const { data: subcategories, isLoading } = useCollection<Subcategory>(subcategoriesCollection);
 
-    const handleDelete = (subcategoryId: string) => {
-        if (!firestore) return;
-        const subcategoryDoc = doc(firestore, `categories/${categoryId}/subcategories`, subcategoryId);
-        deleteDocumentNonBlocking(subcategoryDoc);
-    };
+  const handleDelete = (subcategoryId: string) => {
+    if (!firestore) return;
+    const subcategoryDoc = doc(firestore, `categories/${categoryId}/subcategories`, subcategoryId);
+    deleteDocumentNonBlocking(subcategoryDoc);
+  };
 
-    if (isLoading) return <p>Loading subcategories...</p>
-    if (!subcategories || subcategories.length === 0) return <p className="px-4 py-2 text-sm text-muted-foreground">No subcategories found.</p>
+  if (isLoading) return <p>Loading subcategories...</p>;
+  if (!subcategories || subcategories.length === 0) return <p className="px-4 py-2 text-sm text-muted-foreground">No subcategories found.</p>;
 
-    return (
-        <div className="px-4 py-2 bg-gray-50/50">
-            <h4 className="font-semibold text-sm mb-2">Subcategories:</h4>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                {subcategories.map(sub => (
-                    <div key={sub.id} className="flex items-center justify-between p-2 text-sm border rounded-md bg-white">
-                        <span>{sub.name}</span>
-                        <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500" onClick={() => handleDelete(sub.id)}>
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                    </div>
-                ))}
+  return (
+    <div className="px-4 py-2 bg-gray-50/50">
+      <h4 className="font-semibold text-sm mb-2">Subcategories:</h4>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+        {subcategories.map((sub) => (
+          <div key={sub.id} className="flex items-center justify-between p-2 text-sm border rounded-md bg-white">
+            <span>{sub.name}</span>
+            <div className="flex items-center">
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onEdit(sub)}>
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                   <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:text-red-600">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete the subcategory "{sub.name}".
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleDelete(sub.id)}>Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
-        </div>
-    )
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 
@@ -139,6 +168,9 @@ export default function AdminCategoriesPage() {
   const [isSubcategoryDialogOpen, setIsSubcategoryDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [parentCategory, setParentCategory] = useState<Category | null>(null);
+  const [isEditSubcategoryDialogOpen, setIsEditSubcategoryDialogOpen] = useState(false);
+  const [editingSubcategory, setEditingSubcategory] = useState<Subcategory | null>(null);
+
 
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -187,15 +219,24 @@ export default function AdminCategoriesPage() {
     setIsCategoryDialogOpen(true);
   };
   
-  const handleSubcategoryDialogOpen = (category: Category) => {
+  const handleAddSubcategoryDialogOpen = (category: Category) => {
     setParentCategory(category);
     subcategoryForm.reset({ name: '' });
     setIsSubcategoryDialogOpen(true);
   };
+  
+  const handleEditSubcategoryDialogOpen = (subcategory: Subcategory, category: Category) => {
+      setParentCategory(category);
+      setEditingSubcategory(subcategory);
+      subcategoryForm.reset({ name: subcategory.name });
+      setIsEditSubcategoryDialogOpen(true);
+  };
+
 
   const handleCategoryDelete = (categoryId: string) => {
     if (!firestore) return;
     const categoryDoc = doc(firestore, 'categories', categoryId);
+    // TODO: Also delete subcollections and related products, or handle this via a cloud function.
     deleteDocumentNonBlocking(categoryDoc);
     toast({
       title: 'Category Deleted',
@@ -237,7 +278,7 @@ export default function AdminCategoriesPage() {
     setEditingCategory(null);
   };
 
-   const onSubcategorySubmit: SubmitHandler<SubcategoryFormData> = async (data) => {
+   const onAddSubcategorySubmit: SubmitHandler<SubcategoryFormData> = async (data) => {
     if (!firestore || !parentCategory) return;
     
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
@@ -258,7 +299,30 @@ export default function AdminCategoriesPage() {
     setIsSubcategoryDialogOpen(false);
     setParentCategory(null);
    };
-  
+   
+  const onEditSubcategorySubmit: SubmitHandler<SubcategoryFormData> = async (data) => {
+    if (!firestore || !parentCategory || !editingSubcategory) return;
+    
+    const slug = data.name.toLowerCase().replace(/\s+/g, '-');
+    const subcategoryData = {
+        ...data,
+        slug,
+        updatedAt: serverTimestamp(),
+    };
+
+    const subcategoryDoc = doc(firestore, `categories/${parentCategory.id}/subcategories`, editingSubcategory.id);
+    updateDocumentNonBlocking(subcategoryDoc, subcategoryData);
+    toast({
+      title: 'Subcategory Updated',
+      description: `${data.name} has been updated.`,
+    });
+    
+    subcategoryForm.reset();
+    setIsEditSubcategoryDialogOpen(false);
+    setEditingSubcategory(null);
+    setParentCategory(null);
+  };
+
   const onUploadSuccess = (res: any) => {
     categoryForm.setValue('imageUrl', res.url);
     categoryForm.setValue('imageCdnUrl', res.thumbnailUrl.replace('tr:n-media_library_thumbnail', ''));
@@ -318,28 +382,44 @@ export default function AdminCategoriesPage() {
                                         </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
-                                        <DropdownMenuItem onClick={() => handleSubcategoryDialogOpen(category)}>
+                                        <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleAddSubcategoryDialogOpen(category)}}>
                                             <PlusCircle className="mr-2 h-4 w-4" />
                                             Add Subcategory
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleCategoryDialogOpen(category)}>
+                                        <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleCategoryDialogOpen(category)}}>
                                             <Pencil className="mr-2 h-4 w-4" />
                                             Edit
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            onClick={() => handleCategoryDelete(category.id)}
-                                            className="text-red-500"
-                                        >
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            Delete
-                                        </DropdownMenuItem>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-500">
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    Delete
+                                                </DropdownMenuItem>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                    This will permanently delete the category "{category.name}" and all its subcategories. This action cannot be undone.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleCategoryDelete(category.id)}>Delete</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
                             </div>
                         </AccordionTrigger>
                         <AccordionContent>
-                           <SubcategoryList categoryId={category.id} />
+                           <SubcategoryList
+                              categoryId={category.id}
+                              onEdit={(subcategory) => handleEditSubcategoryDialogOpen(subcategory, category)}
+                            />
                         </AccordionContent>
                     </AccordionItem>
                 ))
@@ -350,7 +430,7 @@ export default function AdminCategoriesPage() {
         </CardContent>
       </Card>
 
-      {/* Category Dialog */}
+      {/* Category Dialog (Add/Edit) */}
       <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -435,7 +515,7 @@ export default function AdminCategoriesPage() {
         </DialogContent>
       </Dialog>
 
-    {/* Subcategory Dialog */}
+    {/* Add Subcategory Dialog */}
      <Dialog open={isSubcategoryDialogOpen} onOpenChange={setIsSubcategoryDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -445,7 +525,7 @@ export default function AdminCategoriesPage() {
             </DialogDescription>
           </DialogHeader>
           <Form {...subcategoryForm}>
-            <form onSubmit={subcategoryForm.handleSubmit(onSubcategorySubmit)} className="space-y-4">
+            <form onSubmit={subcategoryForm.handleSubmit(onAddSubcategorySubmit)} className="space-y-4">
               <FormField
                 control={subcategoryForm.control}
                 name="name"
@@ -461,6 +541,38 @@ export default function AdminCategoriesPage() {
               />
               <DialogFooter>
                 <Button type="submit">Add Subcategory</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      
+    {/* Edit Subcategory Dialog */}
+     <Dialog open={isEditSubcategoryDialogOpen} onOpenChange={setIsEditSubcategoryDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Subcategory</DialogTitle>
+            <DialogDescription>
+              Editing subcategory in {parentCategory?.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...subcategoryForm}>
+            <form onSubmit={subcategoryForm.handleSubmit(onEditSubcategorySubmit)} className="space-y-4">
+              <FormField
+                control={subcategoryForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Subcategory Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Panjabi" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button type="submit">Save Changes</Button>
               </DialogFooter>
             </form>
           </Form>

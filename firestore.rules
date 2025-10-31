@@ -63,7 +63,7 @@ service cloud.firestore {
      * @path /categories/{categoryId}
      */
     match /categories/{categoryId} {
-      allow read: if true;
+      allow get, list: if true;
       allow write: if isAdmin();
     }
     
@@ -72,7 +72,7 @@ service cloud.firestore {
      * @path /subcategories/{subcategoryId}
      */
     match /subcategories/{subcategoryId} {
-      allow read: if true;
+      allow get, list: if true;
       allow write: if isAdmin();
     }
 
@@ -81,7 +81,7 @@ service cloud.firestore {
      * @path /products/{productId}
      */
     match /products/{productId} {
-      allow read: if true;
+      allow get, list: if true;
       allow write: if isAdmin();
     }
     

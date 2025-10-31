@@ -3,14 +3,7 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-
-const categories = [
-    { name: 'Men Collections', href: '/collections/men', imageId: 'cat-men' },
-    { name: 'Women Collection', href: '/collections/women', imageId: 'cat-women' },
-    { name: 'Kids Collections', href: '/collections/kids', imageId: 'cat-kids' },
-    { name: '3D Waterproof Bedsheet', href: '/collections/bedsheets', imageId: 'cat-bedsheet' },
-    { name: 'Furniture Collection', href: '/collections/furniture', imageId: 'cat-furniture' },
-];
+import { categories } from '@/lib/categories';
 
 export default function Home() {
   const heroImage = PlaceHolderImages.find(i => i.id === 'hero-4');
@@ -18,7 +11,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 pb-20 md:pb-0">
         {heroImage && (
           <div className="container mx-auto max-w-screen-xl px-4 py-4">
               <div className="relative w-full aspect-[2/1] md:aspect-[3/1] rounded-lg overflow-hidden">

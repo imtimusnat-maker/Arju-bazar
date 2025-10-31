@@ -3,14 +3,7 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-
-const categories = [
-    { name: 'Men Collections', href: '/collections/men', imageId: 'cat-men' },
-    { name: 'Women Collection', href: '/collections/women', imageId: 'cat-women' },
-    { name: 'Kids Collections', href: '/collections/kids', imageId: 'cat-kids' },
-    { name: '3D Waterproof Bedsheet', href: '/collections/bedsheets', imageId: 'cat-bedsheet' },
-    { name: 'Furniture Collection', href: '/collections/furniture', imageId: 'cat-furniture' },
-];
+import { categories } from '@/lib/categories';
 
 export default function CollectionsPage() {
   

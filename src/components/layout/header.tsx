@@ -2,36 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, ShoppingCart, Menu, Phone, User, ChevronDown } from 'lucide-react';
+import { Search, ShoppingCart, Menu, Phone, User } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/cart-context';
+import { categories } from '@/lib/categories';
 
-const topCategories = [
-  { name: 'Men Collections', href: '/collections/men' },
-  { name: 'Women Collection', href: '/collections/women' },
-  { name: 'Kids Collections', href: '/collections/kids' },
-  { name: '3D Waterproof Bedsheet', href: '/collections/bedsheets' },
-  { name: 'Furniture Collection', href: '/collections/furniture' },
-  { name: 'Best Seller', href: '/collections/best-seller' },
-  { name: 'Oil', href: '/collections/oil' },
-  { name: 'Ghee (ঘি)', href: '/collections/ghee' },
-  { name: 'Dates ( খেজুর)', href: '/collections/dates' },
-  { name: 'Honey', href: '/collections/honey' },
-  { name: 'Masala', href: '/collections/masala' },
-  { name: 'Nuts & Seeds', href: '/collections/nuts-seeds' },
-  { name: 'Tea/Coffee', href: '/collections/tea-coffee' },
-];
-
-const mobileCategories = topCategories;
+const mobileCategories = categories;
 
 export function Header() {
   const [isVisible, setIsVisible] = useState(true);

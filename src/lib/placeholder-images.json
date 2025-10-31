@@ -77,6 +77,48 @@
       "description": "A stylish modern living room with a sofa and chairs.",
       "imageUrl": "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "imageHint": "modern furniture"
+    },
+    {
+      "id": "subcat-panjabi",
+      "description": "Man wearing a traditional panjabi",
+      "imageUrl": "https://images.unsplash.com/photo-1629288465751-07e42186084f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxtYW4lMjBwYW5qYWJpfGVufDB8fHx8MTc2MTkwNTE2Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man panjabi"
+    },
+    {
+      "id": "subcat-shirt",
+      "description": "A collection of men's shirts",
+      "imageUrl": "https://images.unsplash.com/photo-1605794432120-f4bb5dc9067d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtZW4lMjBzaGlydHN8ZW58MHx8fHwxNzYxODk4ODI5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "men shirts"
+    },
+    {
+      "id": "subcat-t-shirt",
+      "description": "A collection of men's t-shirts",
+      "imageUrl": "https://images.unsplash.com/photo-1516442443906-71605254b628?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxtZW4lMjB0LXNoaXJ0c3xlbnwwfHx8fDE3NjE4OTg4Mjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "men t-shirts"
+    },
+    {
+      "id": "subcat-shoes",
+      "description": "A pair of men's leather shoes",
+      "imageUrl": "https://images.unsplash.com/photo-1632477575277-ade91dd5d8d5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxtZW4lMjBzaG9lc3xlbnwwfHx8fDE3NjE4ODYzMDR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "men shoes"
+    },
+    {
+      "id": "subcat-saree",
+      "description": "A woman wearing a colorful saree",
+      "imageUrl": "https://images.unsplash.com/photo-1678705730064-a7ecbab4b3fb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8d29tYW4lMjBzYXJlZXxlbnwwfHx8fDE3NjE5MDUxNjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman saree"
+    },
+    {
+      "id": "subcat-kurti",
+      "description": "A collection of women's kurtis",
+      "imageUrl": "https://images.unsplash.com/photo-1759840278381-bf7d5e332050?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHx3b21lbiUyMGt1cnRpfGVufDB8fHx8MTc2MTg5NjQwN3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "women kurti"
+    },
+    {
+      "id": "subcat-handbag",
+      "description": "A stylish women's handbag",
+      "imageUrl": "https://images.unsplash.com/photo-1656396795249-8efb9bdebf51?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx3b21lbiUyMGhhbmRiYWd8ZW58MHx8fHwxNzYxOTA1MTY2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "women handbag"
     }
   ]
 }

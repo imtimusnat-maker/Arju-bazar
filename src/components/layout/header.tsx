@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from '@/lib/utils';
+import { useCart } from '@/context/cart-context';
 
 const topCategories = [
   { name: 'Men Collections', href: '/collections/men' },
@@ -35,6 +36,7 @@ const mobileCategories = topCategories;
 export function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const { cart } = useCart();
 
   const handleScroll = () => {
     if (window.scrollY > lastScrollY && window.scrollY > 100) {
@@ -112,10 +114,12 @@ export function Header() {
             <User className="h-6 w-6" />
             <span className="sr-only">Account</span>
           </Button>
-          <Button variant="ghost" size="icon" className="relative">
-            <ShoppingCart className="h-6 w-6" />
-            <span className="sr-only">Cart</span>
-            <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">0</div>
+          <Button asChild variant="ghost" size="icon" className="relative">
+            <Link href="/cart">
+              <ShoppingCart className="h-6 w-6" />
+              <span className="sr-only">Cart</span>
+              <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">{cart.length}</div>
+            </Link>
           </Button>
         </div>
       </div>

@@ -1,21 +1,31 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { ImagePlaceholder } from '@/lib/placeholder-images';
+import { useCart } from '@/context/cart-context';
+import type { Product } from '@/lib/products';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProductCardProps {
-  product: {
-    id: string;
-    name: string;
-    price: number;
-    originalPrice?: number;
-    image: ImagePlaceholder;
-    slug: string;
-  };
+  product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const { addToCart } = useCart();
+  const { toast } = useToast();
+
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product);
+    toast({
+        title: "Added to cart",
+        description: `${product.name} has been added to your cart.`,
+    });
+  };
 
   return (
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-md border border-gray-200 rounded-lg">
@@ -44,7 +54,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </CardContent>
       </Link>
       <div className="px-4 pb-4">
-        <Button className="w-full bg-primary text-primary-foreground h-9 rounded-md text-sm font-semibold">
+        <Button onClick={handleAddToCart} className="w-full bg-primary text-primary-foreground h-9 rounded-md text-sm font-semibold">
           Quick Add
         </Button>
       </div>

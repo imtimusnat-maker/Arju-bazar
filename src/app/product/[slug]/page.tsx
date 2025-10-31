@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/accordion';
 import { CreditCard, ShoppingCart } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
+import { useCart } from '@/context/cart-context';
+import { useToast } from '@/hooks/use-toast';
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -42,10 +44,20 @@ const MessengerIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export default function ProductPage({ params }: { params: { slug: string } }) {
   const product = products.find((p) => p.slug === params.slug);
+  const { addToCart } = useCart();
+  const { toast } = useToast();
 
   if (!product) {
     notFound();
   }
+
+  const handleAddToCart = () => {
+    addToCart(product);
+    toast({
+      title: "Added to cart",
+      description: `${product.name} has been added to your cart.`,
+    });
+  };
 
   const { image } = product;
 
@@ -75,7 +87,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               <p className="text-lg font-bold text-primary mb-6">Tk {product.price.toFixed(2)}</p>
 
               <div className="space-y-3">
-                 <Button className="w-full h-12 bg-black text-white hover:bg-gray-800 text-lg">
+                 <Button onClick={handleAddToCart} className="w-full h-12 bg-black text-white hover:bg-gray-800 text-lg">
                   Add to cart
                 </Button>
                 <Button className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 text-lg">

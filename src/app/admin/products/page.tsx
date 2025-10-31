@@ -193,17 +193,11 @@ export default function AdminProductsPage() {
 
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
     const category = categories?.find(c => c.id === data.categoryId);
+    
     const productData = {
-      name: data.name,
+      ...data,
       slug,
-      description: data.description,
-      price: data.price,
-      stockQuantity: data.stockQuantity,
-      imageUrl: data.imageUrl || '',
-      imageCdnUrl: data.imageCdnUrl || '',
-      categoryId: data.categoryId,
       categorySlug: category?.slug || '',
-      subcategoryId: data.subcategoryId || '',
       updatedAt: serverTimestamp(),
     };
 
@@ -500,7 +494,5 @@ export default function AdminProductsPage() {
     </div>
   );
 }
-
-    
 
     

@@ -1,13 +1,14 @@
 'use client';
 
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { ProductCard } from '@/components/product-card';
 import { products } from '@/lib/products';
 import { categories } from '@/lib/categories';
 
-export default function SubCategoryPage({ params }: { params: { slug: string, subSlug: string } }) {
+export default function SubCategoryPage() {
+  const params = useParams<{ slug: string; subSlug: string }>();
   const category = categories.find((c) => c.slug === params.slug);
   const subcategory = category?.subcategories.find((sc) => sc.slug === params.subSlug);
 

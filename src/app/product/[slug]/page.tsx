@@ -1,6 +1,6 @@
 'use client';
 
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { products } from '@/lib/products';
 import { Header } from '@/components/layout/header';
@@ -42,7 +42,8 @@ const MessengerIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 
-export default function ProductPage({ params }: { params: { slug: string } }) {
+export default function ProductPage() {
+  const params = useParams<{ slug: string }>();
   const product = products.find((p) => p.slug === params.slug);
   const { addToCart } = useCart();
   const { toast } = useToast();

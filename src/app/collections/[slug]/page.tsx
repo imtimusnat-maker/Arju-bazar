@@ -2,13 +2,14 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { categories } from '@/lib/categories';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
-export default function CollectionPage({ params }: { params: { slug: string } }) {
+export default function CollectionPage() {
+  const params = useParams<{ slug: string }>();
   const category = categories.find((c) => c.slug === params.slug);
 
   if (!category) {

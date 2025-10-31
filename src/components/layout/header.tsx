@@ -23,7 +23,7 @@ function LiveSearchResults({ searchTerm, onResultClick }: { searchTerm: string, 
     const debouncedSearchTerm = useDebounce(searchTerm.toLowerCase(), 300);
 
     const productsQuery = useMemoFirebase(() => {
-        if (!firestore || !debouncedSearchTerm || debouncedSearchTerm.length < 2) return null;
+        if (!firestore || !debouncedSearchTerm || debouncedSearchTerm.length < 1) return null;
         return query(
             collection(firestore, 'products'),
             where('keywords', 'array-contains', debouncedSearchTerm),
@@ -38,7 +38,7 @@ function LiveSearchResults({ searchTerm, onResultClick }: { searchTerm: string, 
     return (
         <div className="absolute top-full left-0 w-full bg-background border border-t-0 rounded-b-lg shadow-lg z-10">
             {isLoading && <p className="p-4 text-sm text-muted-foreground">Searching...</p>}
-            {!isLoading && products && products.length === 0 && debouncedSearchTerm.length > 1 && (
+            {!isLoading && products && products.length === 0 && debouncedSearchTerm.length > 0 && (
                 <p className="p-4 text-sm text-muted-foreground">No results for "{debouncedSearchTerm}"</p>
             )}
             {products && products.length > 0 && (
@@ -217,7 +217,7 @@ export function Header() {
                         </Button>
                     )}
                 </div>
-                 {isSearchFocused && searchTerm.length > 1 && <LiveSearchResults searchTerm={searchTerm} onResultClick={() => setIsSearchFocused(false)} />}
+                 {isSearchFocused && searchTerm.length > 0 && <LiveSearchResults searchTerm={searchTerm} onResultClick={() => setIsSearchFocused(false)} />}
             </form>
         </div>
 

@@ -35,8 +35,8 @@ export default function CartPage() {
                   <div key={item.id} className="flex items-center bg-white p-4 rounded-lg shadow">
                     <div className="relative h-20 w-20 rounded-md overflow-hidden mr-4">
                       <Image
-                        src={item.image.imageUrl}
-                        alt={item.image.description}
+                        src={item.imageCdnUrl || 'https://placehold.co/400'}
+                        alt={item.name}
                         fill
                         className="object-contain"
                       />

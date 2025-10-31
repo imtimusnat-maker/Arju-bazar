@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import type { ImagePlaceholder } from '@/lib/placeholder-images';
 import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/products';
 import { useToast } from '@/hooks/use-toast';
@@ -33,13 +32,12 @@ export function ProductCard({ product }: ProductCardProps) {
         <CardContent className="p-0">
           <div className="relative aspect-square bg-gray-100 flex items-center justify-center border-b border-gray-200">
             <Image
-              src={product.image.imageUrl}
-              alt={product.image.description}
+              src={product.imageCdnUrl || 'https://placehold.co/400'}
+              alt={product.name}
               width={200}
               height={200}
               className="object-contain h-full w-full p-4"
               sizes="(max-width: 768px) 50vw, 25vw"
-              data-ai-hint={product.image.imageHint}
             />
           </div>
           <div className="p-4 text-center space-y-2">

@@ -96,7 +96,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product }: CheckoutSheetPr
             <div className="bg-gray-50 p-4 rounded-md space-y-3">
                  <div className="flex items-center gap-3">
                     <div className="relative h-14 w-14 rounded-md overflow-hidden border">
-                         <Image src={product.image.imageUrl} alt={product.image.description} fill className="object-contain" />
+                         <Image src={product.imageCdnUrl || 'https://placehold.co/400'} alt={product.name} fill className="object-contain" />
                     </div>
                     <p className="flex-1 font-medium">{product.name}</p>
                     <p className="font-semibold">Tk {product.price.toFixed(2)}</p>

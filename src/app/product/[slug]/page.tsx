@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { products } from '@/lib/products';
+import { useDoc, useCollection, useFirestore } from '@/firebase';
+import { doc, collection, query, where, limit } from 'firebase/firestore';
+import type { Product } from '@/lib/products';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
@@ -46,10 +48,34 @@ const MessengerIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export default function ProductPage() {
   const params = useParams<{ slug: string }>();
-  const product = products.find((p) => p.slug === params.slug);
+  const firestore = useFirestore();
+
+  const productQuery = useMemo(() => {
+    if (!firestore || !params.slug) return null;
+    return query(collection(firestore, 'products'), where('slug', '==', params.slug), limit(1));
+  }, [firestore, params.slug]);
+
+  const { data: productData, isLoading: isProductLoading } = useCollection<Product>(productQuery);
+  const product = productData?.[0];
+
   const { addToCart } = useCart();
   const { toast } = useToast();
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
+
+  const suggestedProductsQuery = useMemo(() => {
+    if (!firestore || !product) return null;
+    return query(
+      collection(firestore, 'products'),
+      where('id', '!=', product.id),
+      limit(5)
+    );
+  }, [firestore, product]);
+
+  const { data: suggestedProducts, isLoading: areSuggestionsLoading } = useCollection<Product>(suggestedProductsQuery);
+
+  if (isProductLoading) {
+    return <div>Loading...</div>; // Or a proper skeleton loader
+  }
 
   if (!product) {
     notFound();
@@ -67,11 +93,6 @@ export default function ProductPage() {
     setCheckoutOpen(true);
   };
 
-  const { image } = product;
-
-  // Filter out the current product and take the first 4 for suggestions
-  const suggestedProducts = products.filter(p => p.id !== product.id).slice(0, 5);
-
 
   return (
     <>
@@ -81,15 +102,12 @@ export default function ProductPage() {
           <div className="container mx-auto max-w-lg">
             <div className="bg-white rounded-lg overflow-hidden">
               <div className="relative w-full aspect-square border-b">
-                {image && (
-                   <Image
-                      src={image.imageUrl}
-                      alt={image.description}
+                <Image
+                      src={product.imageCdnUrl || 'https://placehold.co/400'}
+                      alt={product.name}
                       fill
                       className="object-contain p-4"
-                      data-ai-hint={image.imageHint}
                   />
-                )}
               </div>
               <div className="p-4">
                 <h1 className="text-xl font-bold mb-2">{product.name}</h1>
@@ -122,19 +140,7 @@ export default function ProductPage() {
                     <AccordionTrigger className="text-lg font-semibold">Description</AccordionTrigger>
                     <AccordionContent className="text-base text-muted-foreground pt-2">
                       <div className="prose max-w-none">
-                        <p>
-                          বহুকাল যাবত আয়ুর্বেদিক চিকিৎসায় অশ্বগন্ধা ব্যবহৃত হচ্ছে
-                          মানসিক চাপ, ক্লান্তি, ঘুমের সমস্যা ও বিভিন্ন রোগ প্রতিরোধে।
-                          যত্নসহকারে তৈরি হওয়ায় স্বাদ মাটির ঘ্রাণে ভরপুর ও স্বাস্থ্যকর দ্রব্য
-                          হিসেবে পরিচিত; গরম/ঠান্ডা দুধ বা খুদি বা পানি কিংবা হালকা
-                          খাবারের সঙ্গে মিশিয়ে সহজেই গ্রহীত।
-                        </p>
-                        <h4 className="font-bold mt-4">অশ্বগন্ধার স্বাস্থ্য উপকারিতা:</h4>
-                        <ul>
-                          <li>মানসিক চাপ কমাতে এবং মানসিক সুস্থতায় সহায়তা করে; স্বীকৃত গবেষণায় ইতিবাচক ফলাফল প্রদর্শন করেছে।</li>
-                          <li>ঘুম ও বিশ্রামের মান উন্নত করে, ইনসমনিয়া ও সাধারণ ক্লান্তিতে কার্যকর।</li>
-                          <li>দেহের শক্তি ও কর্মদক্ষতা বৃদ্ধিতে সহায়তা করে, যা স্ট্যামিনা ও রিকভারি বাড়ায়।</li>
-                        </ul>
+                        <p>{product.description}</p>
                       </div>
                     </AccordionContent>
                   </AccordionItem>
@@ -146,7 +152,7 @@ export default function ProductPage() {
           <div className="container mx-auto max-w-screen-xl px-4 py-8 mt-8">
             <h2 className="text-xl font-bold mb-6">You Might Also Like</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
-              {suggestedProducts.map((p) => (
+              {suggestedProducts && suggestedProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
             </div>

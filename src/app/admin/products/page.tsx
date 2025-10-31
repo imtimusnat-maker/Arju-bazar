@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   CardHeader,
@@ -41,7 +41,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { IKContext, IKUpload } from 'imagekitio-react';
 import Image from 'next/image';
-import { useFirestore, useCollection } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import {
   collection,
   serverTimestamp,
@@ -96,7 +96,7 @@ export default function AdminProductsPage() {
   const { toast } = useToast();
 
   const firestore = useFirestore();
-  const productsCollection = useMemo(
+  const productsCollection = useMemoFirebase(
     () => (firestore ? collection(firestore, 'products') : null),
     [firestore]
   );

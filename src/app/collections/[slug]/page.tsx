@@ -21,12 +21,12 @@ export default function CollectionPage() {
   const { data: categoryData, isLoading: isCategoryLoading } = useCollection<Category>(categoryQuery);
   const category = categoryData?.[0];
 
-  const subcategoriesCollection = useMemoFirebase(() => {
+  const subcategoriesQuery = useMemoFirebase(() => {
     if (!firestore || !category) return null;
-    return collection(firestore, `categories/${category.id}/subcategories`);
+    return query(collection(firestore, 'subcategories'), where('categoryId', '==', category.id));
   }, [firestore, category]);
 
-  const { data: subcategories, isLoading: areSubcategoriesLoading } = useCollection<Subcategory>(subcategoriesCollection);
+  const { data: subcategories, isLoading: areSubcategoriesLoading } = useCollection<Subcategory>(subcategoriesQuery);
 
   if (isCategoryLoading) {
     return (

@@ -48,6 +48,8 @@ import {
   collection,
   serverTimestamp,
   doc,
+  query,
+  where,
 } from 'firebase/firestore';
 import {
   addDocumentNonBlocking,
@@ -112,15 +114,15 @@ function SubcategoryList({
   onEdit: (subcategory: Subcategory) => void;
 }) {
   const firestore = useFirestore();
-  const subcategoriesCollection = useMemoFirebase(
-    () => (firestore ? collection(firestore, `categories/${categoryId}/subcategories`) : null),
+  const subcategoriesQuery = useMemoFirebase(
+    () => (firestore ? query(collection(firestore, 'subcategories'), where('categoryId', '==', categoryId)) : null),
     [firestore, categoryId]
   );
-  const { data: subcategories, isLoading } = useCollection<Subcategory>(subcategoriesCollection);
+  const { data: subcategories, isLoading } = useCollection<Subcategory>(subcategoriesQuery);
 
   const handleDelete = (subcategoryId: string) => {
     if (!firestore) return;
-    const subcategoryDoc = doc(firestore, `categories/${categoryId}/subcategories`, subcategoryId);
+    const subcategoryDoc = doc(firestore, `subcategories`, subcategoryId);
     deleteDocumentNonBlocking(subcategoryDoc);
   };
 
@@ -311,11 +313,13 @@ export default function AdminCategoriesPage() {
     const subcategoryData = {
         ...data,
         slug,
+        categoryId: parentCategory.id,
+        categorySlug: parentCategory.slug,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
     }
 
-    addDocumentNonBlocking(collection(firestore, `categories/${parentCategory.id}/subcategories`), subcategoryData);
+    addDocumentNonBlocking(collection(firestore, 'subcategories'), subcategoryData);
     toast({
         title: 'Subcategory Added',
         description: `${data.name} has been added to ${parentCategory.name}.`,
@@ -336,7 +340,7 @@ export default function AdminCategoriesPage() {
         updatedAt: serverTimestamp(),
     };
 
-    const subcategoryDoc = doc(firestore, `categories/${parentCategory.id}/subcategories`, editingSubcategory.id);
+    const subcategoryDoc = doc(firestore, `subcategories`, editingSubcategory.id);
     updateDocumentNonBlocking(subcategoryDoc, subcategoryData);
     toast({
       title: 'Subcategory Updated',
@@ -676,5 +680,3 @@ export default function AdminCategoriesPage() {
     </div>
   );
 }
-
-    

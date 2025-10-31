@@ -82,9 +82,11 @@
         "description": "Represents a sub-category of products within a main category.",
         "properties": {
             "id": { "type": "string", "description": "Unique identifier for the subcategory." },
-            "name": { "type": "string", "description": "Name of the subcategory." }
+            "name": { "type": "string", "description": "Name of the subcategory." },
+            "categoryId": { "type": "string", "description": "The ID of the parent category." },
+            "categorySlug": { "type": "string", "description": "The slug of the parent category for URL generation." }
         },
-        "required": ["id", "name"]
+        "required": ["id", "name", "categoryId", "categorySlug"]
     },
     "User": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -259,13 +261,12 @@
         }
       },
       {
-        "path": "/categories/{categoryId}/subcategories/{subcategoryId}",
+        "path": "/subcategories/{subcategoryId}",
         "definition": {
           "entityName": "Subcategory",
           "schema": { "$ref": "#/backend/entities/Subcategory" },
-          "description": "Stores subcategories for a given category. Accessible to all users for reading, but restricted to admins for write access.",
+          "description": "Stores subcategories for all categories in a flat structure. Accessible to all users for reading, but restricted to admins for write access.",
           "params": [
-            { "name": "categoryId", "description": "The unique identifier of the parent category." },
             { "name": "subcategoryId", "description": "The unique identifier of the subcategory." }
           ]
         }

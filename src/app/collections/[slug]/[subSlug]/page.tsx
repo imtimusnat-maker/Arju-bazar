@@ -5,31 +5,30 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { ProductCard } from '@/components/product-card';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, limit } from 'firebase/firestore';
-import type { Category, Subcategory } from '@/lib/categories';
+import { collection, query, where, limit, and } from 'firebase/firestore';
+import type { Subcategory } from '@/lib/categories';
 import type { Product } from '@/lib/products';
 
 export default function SubCategoryPage() {
   const params = useParams<{ slug: string; subSlug: string }>();
   const firestore = useFirestore();
 
-  // 1. Fetch Category by slug
-  const categoryQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'categories'), where('slug', '==', params.slug), limit(1));
-  }, [firestore, params.slug]);
-  const { data: categoryData, isLoading: categoryLoading } = useCollection<Category>(categoryQuery);
-  const category = categoryData?.[0];
-
-  // 2. Fetch Subcategory by slug
+  // 1. Fetch Subcategory by slug and categorySlug
   const subcategoryQuery = useMemoFirebase(() => {
-    if (!firestore || !category) return null;
-    return query(collection(firestore, `categories/${category.id}/subcategories`), where('slug', '==', params.subSlug), limit(1));
-  }, [firestore, category, params.subSlug]);
+    if (!firestore) return null;
+    return query(
+      collection(firestore, 'subcategories'), 
+      and(
+        where('slug', '==', params.subSlug),
+        where('categorySlug', '==', params.slug)
+      ),
+      limit(1)
+    );
+  }, [firestore, params.slug, params.subSlug]);
   const { data: subcategoryData, isLoading: subcategoryLoading } = useCollection<Subcategory>(subcategoryQuery);
   const subcategory = subcategoryData?.[0];
   
-  // 3. Fetch products for the subcategory
+  // 2. Fetch products for the subcategory
   const productsQuery = useMemoFirebase(() => {
     if (!firestore || !subcategory) return null;
     return query(collection(firestore, 'products'), where('subcategoryId', '==', subcategory.id));
@@ -37,7 +36,7 @@ export default function SubCategoryPage() {
   const { data: products, isLoading: productsLoading } = useCollection<Product>(productsQuery);
 
 
-  if (categoryLoading || subcategoryLoading) {
+  if (subcategoryLoading) {
     return (
         <div className="flex min-h-screen flex-col bg-background">
           <Header />
@@ -47,7 +46,7 @@ export default function SubCategoryPage() {
       );
   }
 
-  if (!category || !subcategory) {
+  if (!subcategory) {
     notFound();
   }
 

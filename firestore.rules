@@ -3,11 +3,11 @@
  *
  * Core Philosophy:
  * This ruleset enforces a multi-tenant data model where users own their profiles and orders.
- * Products and categories are publicly readable but only modifiable by a designated admin.
+ * Products, categories, and subcategories are publicly readable but only modifiable by a designated admin.
  *
  * Data Structure:
  * - /categories/{categoryId}: Stores product categories.
- * - /categories/{categoryId}/subcategories/{subcategoryId}: Stores subcategories for a given category.
+ * - /subcategories/{subcategoryId}: Stores subcategories for all categories.
  * - /products/{productId}: Stores product information.
  * - /users/{userId}: Stores user profiles.
  * - /users/{userId}/orders/{orderId}: Stores orders placed by a user.
@@ -65,12 +65,15 @@ service cloud.firestore {
     match /categories/{categoryId} {
       allow read: if true;
       allow write: if isAdmin();
-
-        // Allow subcategory access with the same rules.
-        match /subcategories/{subcategoryId} {
-            allow read: if true;
-            allow write: if isAdmin();
-        }
+    }
+    
+    /**
+     * @description Grants public read access, but restricts write access to admins only for subcategories.
+     * @path /subcategories/{subcategoryId}
+     */
+    match /subcategories/{subcategoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     /**

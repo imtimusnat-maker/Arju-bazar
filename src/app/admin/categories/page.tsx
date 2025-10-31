@@ -88,6 +88,22 @@ const subcategorySchema = z.object({
 
 type SubcategoryFormData = z.infer<typeof subcategorySchema>;
 
+const authenticator = async () => {
+    try {
+        const response = await fetch('/api/imagekit/auth');
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Request failed with status ${response.status}: ${errorText}`);
+        }
+        const data = await response.json();
+        const { signature, expire, token } = data;
+        return { signature, expire, token };
+    } catch (error) {
+        console.error("Authentication request failed:", error);
+        throw new Error("Failed to authenticate with ImageKit.");
+    }
+};
+
 function SubcategoryList({
   categoryId,
   onEdit,
@@ -502,6 +518,7 @@ export default function AdminCategoriesPage() {
                   <IKContext
                       publicKey="public_c4ZeIR2RUTeVp4nR4SoIF3R8f1w="
                       urlEndpoint="https://ik.imagekit.io/yajy2sbsw"
+                      authenticator={authenticator}
                     >
                   <div className="flex items-center gap-4">
                     {categoryForm.watch('imageCdnUrl') && (
@@ -565,6 +582,7 @@ export default function AdminCategoriesPage() {
                   <IKContext
                       publicKey="public_c4ZeIR2RUTeVp4nR4SoIF3R8f1w="
                       urlEndpoint="https://ik.imagekit.io/yajy2sbsw"
+                      authenticator={authenticator}
                     >
                   <div className="flex items-center gap-4">
                     {subcategoryForm.watch('imageCdnUrl') && (
@@ -625,6 +643,7 @@ export default function AdminCategoriesPage() {
                   <IKContext
                       publicKey="public_c4ZeIR2RUTeVp4nR4SoIF3R8f1w="
                       urlEndpoint="https://ik.imagekit.io/yajy2sbsw"
+                      authenticator={authenticator}
                     >
                   <div className="flex items-center gap-4">
                     {subcategoryForm.watch('imageCdnUrl') && (

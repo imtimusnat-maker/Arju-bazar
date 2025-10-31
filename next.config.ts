@@ -28,8 +28,19 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'ik.imagekit.io',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
+  env: {
+    NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY: 'public_c4ZeIR2RUTeVp4nR4SoIF3R8f1w=',
+    IMAGEKIT_PRIVATE_KEY: 'private_zgQlXrn5R1TAAo0jgoELO/NfvyI=',
+    NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT: 'https://ik.imagekit.io/yajy2sbsw',
+  }
 };
 
 export default nextConfig;

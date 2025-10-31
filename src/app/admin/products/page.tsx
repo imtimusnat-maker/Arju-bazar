@@ -209,7 +209,7 @@ export default function AdminProductsPage() {
     toast({
       variant: 'destructive',
       title: 'Upload Failed',
-      description: 'There was a problem with the image upload. Please ensure you have a valid ImageKit configuration.',
+      description: 'There was a problem with the image upload. Please try again.',
     });
   };
 

@@ -101,9 +101,9 @@ export default function AdminLayout({
       </Sidebar>
       <SidebarInset>
         <header className="flex h-14 items-center justify-between border-b bg-background px-4">
-            <SidebarTrigger className="md:hidden" />
-            <div className="flex items-center gap-4">
-                <h1 className="text-xl font-semibold">Admin Panel</h1>
+            <div className="flex items-center gap-2">
+                <SidebarTrigger className="md:hidden" />
+                <h1 className="text-lg font-semibold hidden md:block">Admin Panel</h1>
             </div>
              <div className="flex items-center gap-2">
                 <Button asChild variant="outline" size="sm">

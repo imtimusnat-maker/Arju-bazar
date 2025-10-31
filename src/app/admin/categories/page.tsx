@@ -129,22 +129,22 @@ function SubcategoryList({
   return (
     <div className="px-4 py-2 bg-gray-50/50">
       <h4 className="font-semibold text-sm mb-2">Subcategories:</h4>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
         {subcategories.map((sub) => (
           <div key={sub.id} className="flex items-center justify-between p-2 text-sm border rounded-md bg-white">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 overflow-hidden">
                  {sub.imageCdnUrl && (
                     <Image
                       src={sub.imageCdnUrl}
                       alt={sub.name}
                       width={24}
                       height={24}
-                      className="rounded-sm object-cover"
+                      className="rounded-sm object-cover flex-shrink-0"
                     />
                   )}
-                <span>{sub.name}</span>
+                <span className="truncate">{sub.name}</span>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center flex-shrink-0">
               <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onEdit(sub)}>
                 <Pencil className="h-4 w-4" />
               </Button>
@@ -396,7 +396,7 @@ export default function AdminCategoriesPage() {
                 categories.map((category) => (
                     <AccordionItem value={category.id} key={category.id}>
                        <div className="flex items-center w-full">
-                        <AccordionTrigger className="flex-1">
+                        <AccordionTrigger className="flex-1 py-2">
                             <div className="flex items-center gap-4">
                                 <Image
                                     src={category.imageCdnUrl || 'https://placehold.co/400'}
@@ -407,7 +407,7 @@ export default function AdminCategoriesPage() {
                                 />
                                 <div className="text-left">
                                     <p className="font-medium">{category.name}</p>
-                                    <p className="text-sm text-muted-foreground">{category.description}</p>
+                                    <p className="text-sm text-muted-foreground hidden sm:block">{category.description}</p>
                                 </div>
                             </div>
                         </AccordionTrigger>
@@ -468,7 +468,7 @@ export default function AdminCategoriesPage() {
 
       {/* Category Dialog (Add/Edit) */}
       <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
               {editingCategory ? 'Edit Category' : 'Add Category'}
@@ -553,7 +553,7 @@ export default function AdminCategoriesPage() {
 
     {/* Add Subcategory Dialog */}
      <Dialog open={isSubcategoryDialogOpen} onOpenChange={setIsSubcategoryDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Add Subcategory</DialogTitle>
             <DialogDescription>
@@ -614,7 +614,7 @@ export default function AdminCategoriesPage() {
       
     {/* Edit Subcategory Dialog */}
      <Dialog open={isEditSubcategoryDialogOpen} onOpenChange={setIsEditSubcategoryDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Subcategory</DialogTitle>
             <DialogDescription>

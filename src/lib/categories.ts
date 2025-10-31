@@ -5,7 +5,7 @@ export type Subcategory = {
   name: string;
   slug: string;
   categoryId: string;
-  categorySlug: string;
+  categorySlug?: string;
   imageUrl?: string;
   imageCdnUrl?: string;
   createdAt: Timestamp;

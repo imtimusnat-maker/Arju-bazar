@@ -12,56 +12,31 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { CreditCard, MessageCircle, ShoppingCart } from 'lucide-react';
+import { CreditCard, ShoppingCart } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 
-// WhatsApp and Messenger icons as inline SVGs for styling flexibility
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-      viewBox="0 0 32 32"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
-        <path
-        d="M19.11 17.205c-.372 0-1.088 1.39-1.518 1.39a.63.63 0 0 1-.315-.1c-.802-.402-1.504-.817-2.163-1.447-.545-.516-1.146-1.29-1.46-1.963a.426.426 0 0 1-.073-.215c0-.33.99-.945.99-1.49 0-.46-1.207-1.39-1.39-1.39a.571.571 0 0 0-.49-.275c-.315 0-1.08.16-1.38.39-1.01.775-1.213 2.13-1.213 3.343 0 1.212.77 2.275 1.49 2.92.51.51 1.77 1.49 3.25 1.49 1.95 0 3.23-1.74 3.23-1.74s.2-.51.2-.51a.571.571 0 0 0-.49-.57z"
-        fill="#fff"
-        />
-        <path
-        d="M26.56 25.319c-1.82-1.256-3.64-2.51-5.46-3.766-1.82-1.254-3.64-2.508-5.46-3.762-1.82-1.254-2.88-2.022-3.34-2.383-1.137-.9-2.27-2.45-2.27-4.282 0-1.777 1.02-3.387 2.67-4.35-1.017-1.307-1.017-2.843 0-4.15 1.138-1.46 3.12-2.31 5.24-2.31 1.93 0 3.81.69 5.24 2.31 1.01 1.31 1.01 2.84 0 4.15-1.65 1.01-2.67 2.63-2.67 4.35 0 1.77 1.13 3.32 2.27 4.28.46.36 1.52 1.13 3.34 2.38 1.82 1.26 3.64 2.51 5.46 3.77 1.82 1.25 3.64 2.51 5.46 3.76"
-        fill="#00e676"
-        transform="matrix(.08 0 0 .08 15 15)"
-        />
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    {...props}
+  >
+    <path d="M20.52 3.48A11.92 11.92 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.56 4.18 1.63 5.99L0 24l6.21-1.61A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-1.98-.45-3.85-1.48-5.52zM12 21.5c-1.5 0-2.97-.39-4.26-1.14l-.31-.17-3.68.95.98-3.59-.2-.33A9.5 9.5 0 1 1 21.5 12 9.51 9.51 0 0 1 12 21.5z" />
+    <path fill="#fff" d="M17.03 14.18c-.28-.14-1.66-.82-1.92-.91-.26-.09-.45-.14-.64.14-.2.28-.75.91-.92 1.1-.17.19-.34.21-.62.07-.28-.14-1.16-.43-2.21-1.36-.82-.72-1.37-1.61-1.53-1.89-.16-.29-.02-.45.12-.59.12-.12.28-.31.42-.47.14-.16.19-.28.29-.47.1-.19.05-.36-.02-.5-.07-.14-.64-1.54-.88-2.11-.23-.56-.47-.48-.64-.49-.17-.01-.37-.01-.57-.01-.19 0-.5.07-.77.36-.28.29-1.06 1.03-1.06 2.51 0 1.47 1.09 2.9 1.24 3.1.14.2 2.14 3.35 5.19 4.69 3.06 1.34 3.06.89 3.62.84.56-.06 1.83-.74 2.09-1.46.26-.72.26-1.34.18-1.46-.08-.12-.29-.19-.57-.33z" />
   </svg>
 );
 
 const MessengerIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
-      viewBox="0 0 32 32"
       xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
       {...props}
     >
-        <path
-        d="M16 4.438c-6.398 0-11.562 4.336-11.562 9.688 0 3.375 2.016 6.336 4.96 7.968v4.46L13.837 24a13.98 13.98 0 0 0 2.163.188c6.398 0 11.562-4.336 11.562-9.688S22.398 4.438 16 4.438z"
-        fill="url(#a)"
-        />
-        <path
-        d="m10.19 14.28 3.06-3.098 5.43 3.107 4.01-3.107-3.06 3.098-5.43-3.107z"
-        fill="#fff"
-        />
-        <defs>
-        <linearGradient
-            id="a"
-            x1="4.438"
-            x2="27.562"
-            y1="4.438"
-            y2="27.562"
-            gradientUnits="userSpaceOnUse"
-        >
-            <stop stopColor="#00c6ff" offset="0" />
-            <stop stopColor="#0072ff" offset="1" />
-        </linearGradient>
-        </defs>
-    </svg>
+        <path d="M12 0C5.37 0 0 4.92 0 11c0 2.92 1.13 5.6 2.98 7.64L2 24l5.55-2.98A11.93 11.93 0 0 0 12 24c6.63 0 12-4.92 12-11S18.63 0 12 0z" />
+        <path fill="#fff" d="m6.5 13.6 2.8-6.4 4.2 5.2 2.9-6.6-9.9 7.8z" />
+  </svg>
 );
 
 
@@ -111,11 +86,11 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                     <CreditCard className="mr-2 h-5 w-5" />
                     Pay Online
                 </Button>
-                <Button className="w-full h-12 bg-black text-white hover:bg-gray-800 text-lg">
+                <Button className="w-full h-12 bg-[#0084FF] text-white hover:bg-[#0072ff] text-lg">
                     <MessengerIcon className="mr-2 h-6 w-6" />
                     Chat with us
                 </Button>
-                 <Button className="w-full h-12 bg-black text-white hover:bg-gray-800 text-lg">
+                 <Button className="w-full h-12 bg-[#25D366] text-white hover:bg-[#1ebe57] text-lg">
                     <WhatsAppIcon className="mr-2 h-6 w-6" />
                     WhatsApp Us
                 </Button>

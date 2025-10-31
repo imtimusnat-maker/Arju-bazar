@@ -63,12 +63,12 @@ service cloud.firestore {
      */
     match /categories/{categoryId} {
       allow get, list: if true;
-      allow create, update, delete: if isAdmin();
+      allow write: if isAdmin();
 
         // Allow subcategory access with the same rules.
         match /subcategories/{subcategoryId} {
             allow get, list: if true;
-            allow create, update, delete: if isAdmin();
+            allow write: if isAdmin();
         }
     }
 
@@ -78,7 +78,17 @@ service cloud.firestore {
      */
     match /products/{productId} {
       allow get, list: if true;
-      allow create, update, delete: if isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    /**
+     * @description Grants public read access, but restricts write access to admins only for settings.
+     * @path /settings/{settingId}
+     */
+    match /settings/{settingId} {
+      allow get: if true;
+      allow list: if false; // Only a single 'global' settings doc is expected
+      allow write: if isAdmin();
     }
 
     /**

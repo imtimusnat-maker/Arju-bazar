@@ -186,6 +186,31 @@
         "quantity",
         "price"
       ]
+    },
+    "Setting": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Setting",
+      "type": "object",
+      "description": "Represents site-wide configuration settings.",
+      "properties": {
+        "whatsappNumber": {
+          "type": "string",
+          "description": "The contact number for WhatsApp."
+        },
+        "messengerLink": {
+          "type": "string",
+          "description": "The URL for Facebook Messenger chat.",
+          "format": "uri"
+        },
+        "hotlineNumber": {
+          "type": "string",
+          "description": "The hotline number for the shop."
+        }
+      },
+      "required": [
+        "whatsappNumber",
+        "messengerLink"
+      ]
     }
   },
   "auth": {
@@ -284,6 +309,22 @@
             {
               "name": "orderItemId",
               "description": "The unique identifier of the order item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/settings/{settingId}",
+        "definition": {
+          "entityName": "Setting",
+          "schema": {
+            "$ref": "#/backend/entities/Setting"
+          },
+          "description": "Stores global site settings. Publicly readable, but only writable by admins.",
+          "params": [
+            {
+              "name": "settingId",
+              "description": "The unique identifier for the settings document (e.g., 'global')."
             }
           ]
         }

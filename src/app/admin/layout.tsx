@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, ShoppingBag, Folder, LayoutGrid, Users, LogOut } from 'lucide-react';
+import { Home, ShoppingBag, Folder, LayoutGrid, Users, LogOut, Settings } from 'lucide-react';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
 
@@ -27,6 +27,7 @@ const menuItems = [
   { href: '/admin/categories', label: 'Categories', icon: Folder },
   { href: '/admin/orders', label: 'Orders', icon: Home },
   { href: '/admin/customers', label: 'Customers', icon: Users },
+  { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
 const ADMIN_UID = 'BS1kBWdHZ4cE43xsC36iglVcjL22';
@@ -59,7 +60,9 @@ export default function AdminLayout({
   }, [user, isUserLoading, pathname, router]);
 
   const handleSignOut = async () => {
-    await signOut(auth);
+    if(auth) {
+        await signOut(auth);
+    }
     router.push('/admin/login');
   };
   

@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { useDoc, useCollection, useFirestore } from '@/firebase';
+import { useDoc, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, where, limit } from 'firebase/firestore';
 import type { Product } from '@/lib/products';
 import { Header } from '@/components/layout/header';
@@ -20,6 +20,8 @@ import { ProductCard } from '@/components/product-card';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
 import { CheckoutSheet } from '@/components/checkout-sheet';
+import type { Settings } from '@/lib/settings';
+import Link from 'next/link';
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -50,7 +52,7 @@ export default function ProductPage() {
   const params = useParams<{ slug: string }>();
   const firestore = useFirestore();
 
-  const productQuery = useMemo(() => {
+  const productQuery = useMemoFirebase(() => {
     if (!firestore || !params.slug) return null;
     return query(collection(firestore, 'products'), where('slug', '==', params.slug), limit(1));
   }, [firestore, params.slug]);
@@ -58,11 +60,18 @@ export default function ProductPage() {
   const { data: productData, isLoading: isProductLoading } = useCollection<Product>(productQuery);
   const product = productData?.[0];
 
+  const settingsDocRef = useMemoFirebase(
+    () => (firestore ? doc(firestore, 'settings', 'global') : null),
+    [firestore]
+  );
+  const { data: settings } = useDoc<Settings>(settingsDocRef);
+
+
   const { addToCart } = useCart();
   const { toast } = useToast();
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
 
-  const suggestedProductsQuery = useMemo(() => {
+  const suggestedProductsQuery = useMemoFirebase(() => {
     if (!firestore || !product) return null;
     return query(
       collection(firestore, 'products'),
@@ -92,6 +101,8 @@ export default function ProductPage() {
   const handleCodOrder = () => {
     setCheckoutOpen(true);
   };
+
+  const whatsAppUrl = settings?.whatsappNumber ? `https://wa.me/${settings.whatsappNumber.replace(/\D/g, '')}` : '#';
 
 
   return (
@@ -125,14 +136,22 @@ export default function ProductPage() {
                       <CreditCard className="mr-2 h-5 w-5" />
                       Pay Online
                   </Button>
-                  <Button className="w-full h-12 bg-[#0084FF] text-white hover:bg-[#0072ff] text-lg">
-                      <MessengerIcon className="mr-2 h-6 w-6" />
-                      Chat with us
-                  </Button>
-                   <Button className="w-full h-12 bg-[#25D366] text-white hover:bg-[#1ebe57] text-lg">
-                      <WhatsAppIcon className="mr-2 h-6 w-6" />
-                      WhatsApp Us
-                  </Button>
+                  {settings?.messengerLink && (
+                    <Button asChild className="w-full h-12 bg-[#0084FF] text-white hover:bg-[#0072ff] text-lg">
+                        <Link href={settings.messengerLink} target="_blank">
+                          <MessengerIcon className="mr-2 h-6 w-6" />
+                          Chat with us
+                        </Link>
+                    </Button>
+                  )}
+                   {settings?.whatsappNumber && (
+                    <Button asChild className="w-full h-12 bg-[#25D366] text-white hover:bg-[#1ebe57] text-lg">
+                        <Link href={whatsAppUrl} target="_blank">
+                            <WhatsAppIcon className="mr-2 h-6 w-6" />
+                            WhatsApp Us
+                        </Link>
+                   </Button>
+                   )}
                 </div>
 
                 <Accordion type="single" collapsible className="w-full mt-8">

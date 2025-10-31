@@ -3,7 +3,7 @@
  *
  * Core Philosophy:
  * This ruleset enforces a multi-tenant data model where users own their profiles and orders.
- * Products and categories are publicly readable but only modifiable by authorized users (e.g., admins - not yet implemented in code).
+ * Products and categories are publicly readable but only modifiable by a designated admin.
  *
  * Data Structure:
  * - /categories/{categoryId}: Stores product categories.
@@ -13,98 +13,15 @@
  * - /users/{userId}/orders/{orderId}/orderItems/{orderItemId}: Stores items within an order.
  *
  * Key Security Decisions:
- * - Users can only read and write their own profile data.
- * - Users can only read and write their own orders and order items.
- * - Categories and products are publicly readable.
+ * - A specific user UID is designated as the admin.
+ * - Only the admin can create, update, or delete products and categories.
+ * - All users (including anonymous) can read products and categories.
+ * - Authenticated users can only read/write their own profile and order data.
  * - Listing of users is disallowed.
- * - No data validation is performed (prototyping mode).
- *
- * Denormalization for Authorization:
- * The data structure nests orders and orderItems under /users/{userId} to avoid needing complex `get()` calls to verify user ownership.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    /**
-     * @description Grants read access to all categories, but restricts write access.
-     * @path /categories/{categoryId}
-     * @allow get, list: if true;
-     * @allow create, update, delete: if isSignedIn();
-     * @principle Allows public read access to categories, but restricts write access to authenticated users.
-     */
-    match /categories/{categoryId} {
-      allow get, list: if true;
-      allow create, update, delete: if isSignedIn();
-    }
-    
-    match /categories/{categoryId}/subcategories/{subcategoryId} {
-      allow get, list: if true;
-      allow create, update, delete: if isSignedIn();
-    }
-
-    /**
-     * @description Grants read access to all products, but restricts write access.
-     * @path /products/{productId}
-     * @allow get, list: if true;
-     * @allow create, update, delete: if isSignedIn();
-     * @principle Allows public read access to products, but restricts write access to authenticated users.
-     */
-    match /products/{productId} {
-      allow get, list: if true;
-      allow create, update, delete: if isSignedIn();
-    }
-
-    /**
-     * @description Grants access to a user's profile only to the authenticated user.
-     * @path /users/{userId}
-     * @allow get, list: if isOwner(userId);
-     * @allow create: if request.auth.uid == userId;
-     * @allow update: if isExistingOwner(userId);
-     * @allow delete: if isExistingOwner(userId);
-     * @principle Enforces document ownership for user profiles.
-     */
-    match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if request.auth.uid == userId;
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Grants access to a user's orders only to the authenticated user.
-     * @path /users/{userId}/orders/{orderId}
-     * @allow get, list: if isOwner(userId);
-     * @allow create: if isOwner(userId);
-     * @allow update: if isExistingOwner(userId);
-     * @allow delete: if isExistingOwner(userId);
-     * @principle Enforces document ownership for orders.
-     */
-    match /users/{userId}/orders/{orderId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Grants access to a user's order items only to the authenticated user.
-     * @path /users/{userId}/orders/{orderId}/orderItems/{orderItemId}
-     * @allow get, list: if isOwner(userId);
-     * @allow create: if isOwner(userId);
-     * @allow update: if isExistingOwner(userId);
-     * @allow delete: if isExistingOwner(userId);
-     * @principle Enforces document ownership for order items.
-     */
-    match /users/{userId}/orders/{orderId}/orderItems/{orderItemId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
-    }
 
     /**
      * @description Checks if the user is signed in.
@@ -130,6 +47,72 @@ service cloud.firestore {
       */
     function isExistingOwner(userId) {
       return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Checks if the authenticated user is the designated admin.
+     * @return {boolean} True if the user is the admin, false otherwise.
+     */
+    function isAdmin() {
+        return request.auth.uid == 'BS1kBWdHZ4cE43xsC36iglVcjL22';
+    }
+
+    /**
+     * @description Grants public read access, but restricts write access to admins only.
+     * @path /categories/{categoryId}
+     */
+    match /categories/{categoryId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+
+        // Allow subcategory access with the same rules.
+        match /subcategories/{subcategoryId} {
+            allow get, list: if true;
+            allow create, update, delete: if isAdmin();
+        }
+    }
+
+    /**
+     * @description Grants public read access, but restricts write access to admins only.
+     * @path /products/{productId}
+     */
+    match /products/{productId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Grants access to a user's profile only to the authenticated user.
+     * @path /users/{userId}
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false; // Disallow listing all users for security.
+      allow create: if request.auth.uid == userId;
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Grants access to a user's orders only to the authenticated user.
+     * @path /users/{userId}/orders/{orderId}
+     */
+    match /users/{userId}/orders/{orderId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Grants access to a user's order items only to the authenticated user.
+     * @path /users/{userId}/orders/{orderId}/orderItems/{orderItemId}
+     */
+    match /users/{userId}/orders/{orderId}/orderItems/{orderItemId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
     }
   }
 }

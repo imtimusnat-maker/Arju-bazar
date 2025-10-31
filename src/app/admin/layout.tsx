@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Home, ShoppingBag, Folder, LayoutGrid, Users } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Home, ShoppingBag, Folder, LayoutGrid, Users, LogOut } from 'lucide-react';
+import { useAuth, useUser } from '@/firebase';
+import { signOut } from 'firebase/auth';
 
 import {
   SidebarProvider,
@@ -16,8 +18,8 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/logo';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useEffect } from 'react';
 
 const menuItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutGrid },
@@ -27,13 +29,49 @@ const menuItems = [
   { href: '/admin/customers', label: 'Customers', icon: Users },
 ];
 
+const ADMIN_UID = 'BS1kBWdHZ4cE43xsC36iglVcjL22';
+
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+
+  useEffect(() => {
+    if (isUserLoading) {
+      return; // Wait until user status is determined
+    }
+
+    // If on any admin page except login
+    if (pathname !== '/admin/login') {
+      if (!user) {
+        // Not logged in, redirect to login
+        router.replace('/admin/login');
+      } else if (user.uid !== ADMIN_UID) {
+        // Logged in but not an admin, redirect to homepage
+        router.replace('/');
+      }
+    }
+  }, [user, isUserLoading, pathname, router]);
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.push('/admin/login');
+  };
   
+  // Do not render the layout for the login page itself or while loading
+  if (pathname === '/admin/login' || isUserLoading || !user || user.uid !== ADMIN_UID) {
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-background">
+            {isUserLoading ? <p>Loading...</p> : children}
+        </div>
+    );
+  }
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -64,9 +102,15 @@ export default function AdminLayout({
             <div className="flex items-center gap-4">
                 <h1 className="text-xl font-semibold">Admin Panel</h1>
             </div>
-             <Button asChild variant="outline" size="sm">
-                <Link href="/">Back to Shop</Link>
-            </Button>
+             <div className="flex items-center gap-2">
+                <Button asChild variant="outline" size="sm">
+                    <Link href="/">Back to Shop</Link>
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                </Button>
+            </div>
         </header>
         <main className="p-4 md:p-6">{children}</main>
       </SidebarInset>

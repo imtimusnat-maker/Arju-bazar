@@ -18,7 +18,7 @@ export function Footer() {
             </Link>
           </Button>
           <Button asChild variant="ghost" className="flex flex-col h-auto items-center gap-1">
-             <Link href="/">
+             <Link href="/collections">
               <LayoutGrid className="h-6 w-6" />
               <span className="text-xs">Categories</span>
             </Link>

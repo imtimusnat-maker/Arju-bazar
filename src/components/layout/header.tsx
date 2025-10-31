@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Search, ShoppingCart, Menu, Phone, User } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/cart-context';
@@ -12,13 +14,13 @@ import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase
 import { collection, doc } from 'firebase/firestore';
 import type { Category } from '@/lib/categories';
 import type { Settings } from '@/lib/settings';
-import { SearchDialog } from '@/components/search-dialog';
 
 export function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { cart } = useCart();
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState('');
 
   const firestore = useFirestore();
   const categoriesCollection = useMemoFirebase(
@@ -49,18 +51,12 @@ export function Header() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [lastScrollY]);
-  
-  // Open search dialog on cmd+k
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault()
-        setIsSearchOpen((open) => !open)
-      }
-    }
-    document.addEventListener('keydown', down)
-    return () => document.removeEventListener('keydown', down)
-  }, [])
+
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!searchTerm.trim()) return;
+    router.push(`/search?q=${searchTerm}`);
+  };
 
 
   return (
@@ -73,7 +69,6 @@ export function Header() {
         <div className="bg-primary text-primary-foreground py-2 text-xs sm:text-sm">
             <div className="container mx-auto flex max-w-screen-2xl items-center justify-center px-4">
                 <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center">
-                    <span className="font-semibold hidden sm:inline">আমাদের যে কোন পণ্য অর্ডার করতে কল বা WhatsApp করুন:</span>
                     <div className="flex items-center gap-4">
                     {settings.whatsappNumber && (
                         <div className="flex items-center gap-2">
@@ -94,7 +89,7 @@ export function Header() {
             </div>
         </div>
       )}
-      <div className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4">
+      <div className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between gap-4 px-4">
         <div className="flex items-center gap-4">
             <Sheet>
               <SheetTrigger asChild>
@@ -118,15 +113,28 @@ export function Header() {
               </SheetContent>
             </Sheet>
             <div className="hidden md:block">
-               <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(true)}>
-                  <Search className="h-6 w-6" />
-                  <span className="sr-only">Search</span>
-                </Button>
+               <Logo />
             </div>
         </div>
         
-        <div className="flex-1 flex justify-center">
-            <Logo />
+        <div className="flex-1 justify-center hidden md:flex">
+             <form onSubmit={handleSearchSubmit} className="w-full max-w-md">
+                <div className="relative">
+                    <Input 
+                        placeholder="Search for products..."
+                        className="w-full"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    <Button type="submit" size="icon" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8">
+                        <Search className="h-5 w-5 text-muted-foreground" />
+                    </Button>
+                </div>
+            </form>
+        </div>
+
+        <div className="md:hidden">
+             <Logo />
         </div>
 
         <div className="flex items-center justify-end space-x-2 md:space-x-4">
@@ -144,7 +152,6 @@ export function Header() {
         </div>
       </div>
     </header>
-    <SearchDialog open={isSearchOpen} onOpenChange={setIsSearchOpen} />
     </>
   );
 }

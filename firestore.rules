@@ -30,32 +30,29 @@ service cloud.firestore {
      * @description Grants read access to all categories, but restricts write access.
      * @path /categories/{categoryId}
      * @allow get, list: if true;
-     * @allow create: if false;
-     * @allow update: if false;
-     * @allow delete: if false;
-     * @principle Allows public read access to categories, but restricts write access.
+     * @allow create, update, delete: if isSignedIn();
+     * @principle Allows public read access to categories, but restricts write access to authenticated users.
      */
     match /categories/{categoryId} {
       allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow create, update, delete: if isSignedIn();
+    }
+    
+    match /categories/{categoryId}/subcategories/{subcategoryId} {
+      allow get, list: if true;
+      allow create, update, delete: if isSignedIn();
     }
 
     /**
      * @description Grants read access to all products, but restricts write access.
      * @path /products/{productId}
      * @allow get, list: if true;
-     * @allow create: if false;
-     * @allow update: if false;
-     * @allow delete: if false;
-     * @principle Allows public read access to products, but restricts write access.
+     * @allow create, update, delete: if isSignedIn();
+     * @principle Allows public read access to products, but restricts write access to authenticated users.
      */
     match /products/{productId} {
       allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow create, update, delete: if isSignedIn();
     }
 
     /**

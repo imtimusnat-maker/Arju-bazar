@@ -37,7 +37,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useForm, type SubmitHandler, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -71,6 +70,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { Textarea } from '@/components/ui/textarea';
 
 
 const categorySchema = z.object({
@@ -276,13 +276,13 @@ export default function AdminCategoriesPage() {
     if (!firestore) return;
 
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
-    const categoryData = {
-      ...data,
-      slug,
-      updatedAt: serverTimestamp(),
-    };
-
+    
     if (editingCategory) {
+       const categoryData = {
+        ...data,
+        slug,
+        updatedAt: serverTimestamp(),
+      };
       const categoryDoc = doc(firestore, 'categories', editingCategory.id);
       updateDocumentNonBlocking(categoryDoc, categoryData);
       toast({
@@ -291,8 +291,10 @@ export default function AdminCategoriesPage() {
       });
     } else {
       const newCategoryData = {
-        ...categoryData,
+        ...data,
+        slug,
         createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
       };
       addDocumentNonBlocking(collection(firestore, 'categories'), newCategoryData);
       toast({
@@ -680,5 +682,3 @@ export default function AdminCategoriesPage() {
     </div>
   );
 }
-
-    

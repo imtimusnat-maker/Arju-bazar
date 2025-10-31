@@ -194,14 +194,13 @@ export default function AdminProductsPage() {
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
     const category = categories?.find(c => c.id === data.categoryId);
     
-    const productData = {
-      ...data,
-      slug,
-      categorySlug: category?.slug || '',
-      updatedAt: serverTimestamp(),
-    };
-
     if (editingProduct) {
+       const productData = {
+        ...data,
+        slug,
+        categorySlug: category?.slug || '',
+        updatedAt: serverTimestamp(),
+      };
       const productDoc = doc(firestore, 'products', editingProduct.id);
       updateDocumentNonBlocking(productDoc, productData);
       toast({
@@ -209,9 +208,12 @@ export default function AdminProductsPage() {
         description: `${data.name} has been updated.`,
       });
     } else {
-      const newProductData = {
-        ...productData,
+       const newProductData = {
+        ...data,
+        slug,
+        categorySlug: category?.slug || '',
         createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
       };
       addDocumentNonBlocking(
         collection(firestore, 'products'),
@@ -494,5 +496,3 @@ export default function AdminProductsPage() {
     </div>
   );
 }
-
-    

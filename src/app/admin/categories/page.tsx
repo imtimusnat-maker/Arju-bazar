@@ -361,8 +361,9 @@ export default function AdminCategoriesPage() {
               ) : categories && categories.length > 0 ? (
                 categories.map((category) => (
                     <AccordionItem value={category.id} key={category.id}>
-                        <AccordionTrigger>
-                            <div className="flex items-center gap-4 flex-1 pr-4">
+                       <div className="flex items-center w-full">
+                        <AccordionTrigger className="flex-1">
+                            <div className="flex items-center gap-4">
                                 <Image
                                     src={category.imageCdnUrl || 'https://placehold.co/400'}
                                     alt={category.name}
@@ -374,47 +375,48 @@ export default function AdminCategoriesPage() {
                                     <p className="font-medium">{category.name}</p>
                                     <p className="text-sm text-muted-foreground">{category.description}</p>
                                 </div>
-                                <div className="ml-auto">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                        <Button variant="ghost" size="icon">
-                                            <MoreHorizontal className="h-4 w-4" />
-                                        </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                        <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleAddSubcategoryDialogOpen(category)}}>
-                                            <PlusCircle className="mr-2 h-4 w-4" />
-                                            Add Subcategory
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleCategoryDialogOpen(category)}}>
-                                            <Pencil className="mr-2 h-4 w-4" />
-                                            Edit
-                                        </DropdownMenuItem>
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-500">
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    Delete
-                                                </DropdownMenuItem>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                    This will permanently delete the category "{category.name}" and all its subcategories. This action cannot be undone.
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleCategoryDelete(category.id)}>Delete</AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
                             </div>
                         </AccordionTrigger>
+                        <div className="px-4">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                <DropdownMenuItem onClick={() => handleAddSubcategoryDialogOpen(category)}>
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    Add Subcategory
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleCategoryDialogOpen(category)}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Edit
+                                </DropdownMenuItem>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-500">
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Delete
+                                        </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                            This will permanently delete the category "{category.name}" and all its subcategories. This action cannot be undone.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleCategoryDelete(category.id)}>Delete</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </div>
                         <AccordionContent>
                            <SubcategoryList
                               categoryId={category.id}

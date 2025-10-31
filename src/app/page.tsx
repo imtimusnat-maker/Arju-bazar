@@ -4,41 +4,59 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import type { Category } from '@/lib/categories';
-import { collection } from 'firebase/firestore';
+import type { Settings } from '@/lib/settings';
+import { collection, doc } from 'firebase/firestore';
 
 export default function Home() {
-  const heroImage = PlaceHolderImages.find(i => i.id === 'hero-4');
+  const defaultHeroImage = PlaceHolderImages.find(i => i.id === 'hero-4');
 
   const firestore = useFirestore();
+
   const categoriesCollection = useMemoFirebase(
     () => (firestore ? collection(firestore, 'categories') : null),
     [firestore]
   );
-  const { data: categories, isLoading } = useCollection<Category>(categoriesCollection);
+  const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(categoriesCollection);
+
+  const settingsDocRef = useMemoFirebase(
+    () => (firestore ? doc(firestore, 'settings', 'global') : null),
+    [firestore]
+  );
+  const { data: settings, isLoading: settingsLoading } = useDoc<Settings>(settingsDocRef);
+
+  const heroImage = settings?.heroImageCdnUrl ? {
+    imageUrl: settings.heroImageCdnUrl,
+    description: 'Homepage hero banner',
+    imageHint: 'hero banner'
+  } : defaultHeroImage;
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
       <main className="flex-1 pb-20 md:pb-0">
-        {heroImage && (
+        {(settingsLoading || heroImage) && (
           <div className="container mx-auto max-w-screen-xl px-4 py-4">
-              <div className="relative w-full aspect-[2/1] md:aspect-[3/1] rounded-lg overflow-hidden">
-                  <Image
-                      src={heroImage.imageUrl}
-                      alt={heroImage.description}
-                      fill
-                      className="object-cover"
-                      data-ai-hint={heroImage.imageHint}
-                  />
+              <div className="relative w-full aspect-[2/1] md:aspect-[3/1] rounded-lg overflow-hidden bg-gray-100">
+                  {heroImage && (
+                    <Image
+                        src={heroImage.imageUrl}
+                        alt={heroImage.description}
+                        fill
+                        className="object-cover"
+                        data-ai-hint={heroImage.imageHint}
+                        priority
+                    />
+                  )}
               </div>
           </div>
         )}
         <div className="container mx-auto max-w-screen-xl px-4 py-8">
             <h2 className="text-center text-2xl font-headline font-bold mb-6">ALL CATEGORIES</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
-              {isLoading ? (
+              {categoriesLoading ? (
                 Array.from({ length: 5 }).map((_, index) => (
                   <div key={index} className="space-y-2">
                      <div className="relative aspect-square bg-gray-100 rounded-lg"></div>

@@ -205,6 +205,16 @@
         "hotlineNumber": {
           "type": "string",
           "description": "The hotline number for the shop."
+        },
+        "heroImageUrl": {
+          "type": "string",
+          "description": "The URL for the homepage hero image.",
+          "format": "uri"
+        },
+        "heroImageCdnUrl": {
+          "type": "string",
+          "description": "The CDN-optimized URL for the homepage hero image.",
+          "format": "uri"
         }
       },
       "required": [

@@ -168,8 +168,8 @@ export default function AdminSettingsPage() {
                         <FormLabel>Hero Banner Image</FormLabel>
                         <FormControl>
                         <IKContext
-                            publicKey="public_c4ZeIR2RUTeVp4nR4SoIF3R8f1w="
-                            urlEndpoint="https://ik.imagekit.io/yajy2sbsw"
+                            publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY}
+                            urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}
                             authenticator={authenticator}
                             >
                         <div className="flex flex-col items-start gap-4">

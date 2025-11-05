@@ -5,7 +5,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetClose,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import type { Product } from '@/lib/products';
-import { User, Phone, MapPin, X } from 'lucide-react';
+import { User, Phone, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useMemo, useEffect } from 'react';
 import type { useCart } from '@/context/cart-context';
@@ -81,9 +80,6 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
           <SheetTitle className="text-base font-semibold">
             ক্যাশ অন ডেলিভারিতে অর্ডার করতে আপনার তথ্য দিন
           </SheetTitle>
-          <SheetClose className="absolute right-4 top-4">
-             <X className="h-5 w-5" />
-          </SheetClose>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
             <div className="space-y-4">
@@ -178,5 +174,3 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
     </Sheet>
   );
 }
-
-    

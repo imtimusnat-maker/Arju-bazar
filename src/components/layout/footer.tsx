@@ -1,12 +1,14 @@
 "use client";
 
-import { Home, LayoutGrid, ShoppingCart, User } from 'lucide-react';
+import { Home, LayoutGrid, ShoppingCart, User, LogIn, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/cart-context';
+import { useUser } from '@/firebase';
 
 export function Footer() {
   const { cart } = useCart();
+  const { user, isUserLoading } = useUser();
 
   return (
     <>
@@ -27,7 +29,7 @@ export function Footer() {
             </Button>
             <Button asChild variant="ghost" className="flex flex-col h-auto items-center gap-1">
                <Link href="/account">
-                <User className="h-6 w-6" />
+                {(isUserLoading) ? <Loader2 className="h-6 w-6 animate-spin" /> : user && !user.isAnonymous ? <User className="h-6 w-6" /> : <LogIn className="h-6 w-6" />}
                 <span className="text-xs">Account</span>
               </Link>
             </Button>

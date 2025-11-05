@@ -13,14 +13,14 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import type { Product } from '@/lib/products';
-import { User, Phone, MapPin } from 'lucide-react';
+import { User as UserIcon, Phone, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useMemo, useEffect } from 'react';
 import type { useCart } from '@/context/cart-context';
-import { useFirestore, useDoc } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useFirestore, useDoc, useUser } from '@/firebase';
+import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import type { Settings } from '@/lib/settings';
-
+import { useToast } from '@/hooks/use-toast';
 
 type CartItem = ReturnType<typeof useCart>['cart'][0];
 
@@ -36,7 +36,10 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
         throw new Error("CheckoutSheet requires either 'product' or 'cartItems' prop.");
     }
     
+    const { user } = useUser();
     const firestore = useFirestore();
+    const { toast } = useToast();
+    
     const settingsDocRef = useMemo(
         () => (firestore ? doc(firestore, 'settings', 'global') : null),
         [firestore]
@@ -68,6 +71,56 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
     }, [product, cartItems]);
     
     const total = subtotal + shippingCost;
+    
+    const handleConfirmOrder = async () => {
+        if (!firestore || !user) {
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Cannot place order. Please try again.',
+            });
+            return;
+        }
+
+        try {
+            // 1. Create the order document
+            const ordersCollection = collection(firestore, `users/${user.uid}/orders`);
+            const newOrderRef = await addDoc(ordersCollection, {
+                userId: user.uid,
+                orderDate: serverTimestamp(),
+                totalAmount: total,
+                status: 'pending',
+                // Add form fields here e.g., shippingAddress: address
+            });
+
+            // 2. Create order items subcollection
+            const orderItemsCollection = collection(newOrderRef, 'orderItems');
+            const itemPromises = itemsToDisplay.map(item => {
+                return addDoc(orderItemsCollection, {
+                    productId: item.id,
+                    quantity: item.quantity,
+                    price: item.price,
+                    name: item.name, // Store name and image for easy display
+                    imageCdnUrl: item.imageCdnUrl,
+                });
+            });
+            await Promise.all(itemPromises);
+
+            toast({
+                title: 'Order Confirmed!',
+                description: 'Your order has been placed successfully.',
+            });
+            onOpenChange(false);
+            // Optionally, clear the cart here
+        } catch (error) {
+            console.error("Error placing order: ", error);
+            toast({
+                variant: 'destructive',
+                title: 'Order Failed',
+                description: 'There was a problem placing your order.',
+            });
+        }
+    };
 
 
   return (
@@ -86,7 +139,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
                 <div>
                     <Label htmlFor="name" className="text-sm font-medium">আপনার নাম*</Label>
                     <div className="relative mt-1">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <Input id="name" placeholder="আপনার নাম" className="pl-10" />
                     </div>
                 </div>
@@ -167,7 +220,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
 
         </div>
         <div className="p-4 border-t bg-white">
-            <Button className="w-full h-12 text-lg">আপনার অর্ডার কনফার্ম করতে ক্লিক করুন</Button>
+            <Button className="w-full h-12 text-lg" onClick={handleConfirmOrder}>আপনার অর্ডার কনফার্ম করতে ক্লিক করুন</Button>
             <p className="text-xs text-center text-gray-500 mt-2">উপরের বাটনে ক্লিক করলে আপনার অর্ডারটি সাথে সাথে কনফার্ম হয়ে যাবে !</p>
         </div>
       </SheetContent>

@@ -47,15 +47,18 @@ export default function AdminLayout({
       return; // Wait until user status is determined
     }
 
-    // If on any admin page except login
-    if (pathname !== '/admin/login') {
-      if (!user) {
-        // Not logged in, redirect to login
-        router.replace('/admin/login');
-      } else if (user.uid !== ADMIN_UID) {
-        // Logged in but not an admin, redirect to homepage
-        router.replace('/');
-      }
+    // If not logged in, redirect to the admin login page.
+    if (!user && pathname !== '/admin/login') {
+      router.replace('/admin/login');
+    }
+    // If logged in but NOT an admin, show an "Access Denied" message or similar.
+    // Avoid redirecting to '/' to prevent confusion if they followed a direct link.
+    else if (user && user.uid !== ADMIN_UID) {
+       // The content below will be shown instead of the admin panel.
+    }
+    // If on the login page but already logged in as admin, redirect to dashboard.
+    else if (user && user.uid === ADMIN_UID && pathname === '/admin/login') {
+        router.replace('/admin/dashboard');
     }
   }, [user, isUserLoading, pathname, router]);
 
@@ -66,13 +69,37 @@ export default function AdminLayout({
     router.push('/admin/login');
   };
   
-  // Do not render the layout for the login page itself or while loading
-  if (pathname === '/admin/login' || isUserLoading || !user || user.uid !== ADMIN_UID) {
-    return (
+  if (isUserLoading) {
+     return (
         <div className="flex min-h-screen items-center justify-center bg-background">
-            {isUserLoading ? <p>Loading...</p> : children}
+            <p>Loading...</p>
         </div>
     );
+  }
+
+  // If on the login page, render it standalone
+  if (pathname === '/admin/login') {
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-background">
+            {user && user.uid === ADMIN_UID ? <p>Redirecting to dashboard...</p> : children}
+        </div>
+    );
+  }
+  
+  // If the user is not an admin, show access denied instead of the layout
+  if (!user || user.uid !== ADMIN_UID) {
+     return (
+        <div className="flex min-h-screen flex-col items-center justify-center bg-background text-center">
+            <h1 className="text-2xl font-bold">Access Denied</h1>
+            <p className="text-muted-foreground">You do not have permission to view this page.</p>
+            <div className="mt-6 flex gap-4">
+                 <Button asChild variant="outline">
+                    <Link href="/">Back to Shop</Link>
+                </Button>
+                <Button onClick={handleSignOut}>Sign Out</Button>
+            </div>
+        </div>
+     );
   }
 
   return (

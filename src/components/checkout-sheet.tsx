@@ -173,7 +173,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="h-[95vh] rounded-t-lg flex flex-col p-0"
+        className="h-[90vh] rounded-t-lg flex flex-col p-0"
       >
         <SheetHeader className="p-4 border-b text-left">
           <SheetTitle className="text-base font-semibold">

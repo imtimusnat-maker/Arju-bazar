@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { onAuthStateChanged, AuthError } from 'firebase/auth';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
+import { Logo } from '@/components/logo';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -42,7 +43,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!auth) return;
-    const unsubscribe = onAuthStateChanged(auth, (user) => {}, (error: AuthError) => {
+    const unsubscribe = onAuthStateChanged(auth, () => {}, (error: AuthError) => {
         let message = 'An unknown authentication error occurred.';
         switch (error.code) {
             case 'auth/user-not-found':
@@ -82,6 +83,9 @@ export default function LoginPage() {
         <div className="container mx-auto max-w-md">
             <Card>
             <CardHeader className="text-center">
+                <div className="mx-auto mb-4">
+                  <Logo />
+                </div>
                 <CardTitle>Welcome Back!</CardTitle>
                 <CardDescription>Sign in to access your account</CardDescription>
             </CardHeader>

@@ -6,11 +6,13 @@ import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Search, Package, Folder, FolderOpen } from 'lucide-react';
+import { Search, Folder, FolderOpen } from 'lucide-react';
 import { useFirestore, useCollection } from '@/firebase';
-import { collection, query, where, limit, orderBy, startAt, endAt } from 'firebase/firestore';
+import { collection, query, limit, orderBy, startAt, endAt } from 'firebase/firestore';
 import { useDebounce } from '@/hooks/use-debounce';
 import type { Product } from '@/lib/products';
 import type { Category, Subcategory } from '@/lib/categories';
@@ -19,6 +21,23 @@ interface SearchDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+const VisuallyHidden = ({ children }: { children: React.ReactNode }) => (
+    <div style={{
+        position: 'absolute',
+        width: '1px',
+        height: '1px',
+        padding: '0',
+        margin: '-1px',
+        overflow: 'hidden',
+        clip: 'rect(0, 0, 0, 0)',
+        whiteSpace: 'nowrap',
+        border: '0',
+    }}>
+        {children}
+    </div>
+);
+
 
 export function SearchDialog({ isOpen, onOpenChange }: SearchDialogProps) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -67,7 +86,6 @@ export function SearchDialog({ isOpen, onOpenChange }: SearchDialogProps) {
   const { data: subcategories, isLoading: subcategoriesLoading } = useCollection<Subcategory>(subcategoriesQuery);
   
   useEffect(() => {
-    // Reset search term when dialog is closed
     if (!isOpen) {
       setSearchTerm('');
     }
@@ -82,6 +100,11 @@ export function SearchDialog({ isOpen, onOpenChange }: SearchDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl p-0 gap-0 overflow-hidden">
+        <DialogHeader>
+           <VisuallyHidden>
+            <DialogTitle>Search</DialogTitle>
+           </VisuallyHidden>
+        </DialogHeader>
         <div className="flex items-center border-b px-4">
           <Search className="h-5 w-5 text-muted-foreground" />
           <Input

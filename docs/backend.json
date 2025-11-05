@@ -27,6 +27,11 @@
           "description": "URL of the product image.",
           "format": "uri"
         },
+        "imageCdnUrl": {
+            "type": "string",
+            "description": "CDN-optimized URL of the product image.",
+            "format": "uri"
+        },
         "categoryId": {
           "type": "string",
           "description": "Reference to Category. (Relationship: Category 1:N Product)"
@@ -60,7 +65,8 @@
         "imageUrl",
         "categoryId",
         "stockQuantity",
-        "slug"
+        "slug",
+        "searchKeywords"
       ]
     },
     "Category": {
@@ -81,6 +87,10 @@
           "type": "string",
           "description": "Description of the category."
         },
+        "slug": {
+            "type": "string",
+            "description": "URL-friendly version of the category name."
+        },
         "searchKeywords": {
           "type": "string",
           "description": "A concatenated, lowercase string of the category name for prefix searching."
@@ -89,7 +99,9 @@
       "required": [
         "id",
         "name",
-        "description"
+        "description",
+        "slug",
+        "searchKeywords"
       ]
     },
     "Subcategory": {
@@ -100,6 +112,7 @@
         "properties": {
             "id": { "type": "string", "description": "Unique identifier for the subcategory." },
             "name": { "type": "string", "description": "Name of the subcategory." },
+            "slug": { "type": "string", "description": "URL-friendly version of the subcategory name." },
             "categoryId": { "type": "string", "description": "The ID of the parent category." },
             "categorySlug": { "type": "string", "description": "The slug of the parent category for URL generation." },
             "searchKeywords": {
@@ -107,7 +120,7 @@
               "description": "A concatenated, lowercase string of the subcategory name for prefix searching."
             }
         },
-        "required": ["id", "name", "categoryId", "categorySlug"]
+        "required": ["id", "name", "slug", "categoryId", "categorySlug", "searchKeywords"]
     },
     "User": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -119,13 +132,13 @@
           "type": "string",
           "description": "Unique identifier for the user."
         },
-        "firstName": {
+        "name": {
           "type": "string",
-          "description": "First name of the user."
+          "description": "Full name of the user."
         },
-        "lastName": {
+        "phone": {
           "type": "string",
-          "description": "Last name of the user."
+          "description": "Contact phone number of the user."
         },
         "email": {
           "type": "string",
@@ -135,12 +148,20 @@
         "address": {
           "type": "string",
           "description": "Shipping address of the user."
+        },
+        "orderCount": {
+          "type": "number",
+          "description": "The total number of orders placed by this user."
+        },
+        "totalSpent": {
+          "type": "number",
+          "description": "The total amount of money spent by this user across all orders."
         }
       },
       "required": [
         "id",
-        "firstName",
-        "lastName",
+        "name",
+        "phone",
         "email",
         "address"
       ]
@@ -174,7 +195,24 @@
         },
         "status": {
           "type": "string",
-          "description": "Status of the order (e.g., pending, shipped, delivered)."
+          "description": "Status of the order.",
+          "enum": ["pending", "shipped", "completed", "cancelled"]
+        },
+        "customerName": {
+            "type": "string",
+            "description": "Name of the customer who placed the order."
+        },
+        "customerPhone": {
+            "type": "string",
+            "description": "Phone number of the customer."
+        },
+        "shippingMethod": {
+            "type": "string",
+            "description": "The selected shipping method (e.g., 'Inside Dhaka')."
+        },
+        "shippingCost": {
+            "type": "number",
+            "description": "The cost of shipping for the order."
         }
       },
       "required": [
@@ -183,7 +221,11 @@
         "orderDate",
         "totalAmount",
         "shippingAddress",
-        "status"
+        "status",
+        "customerName",
+        "customerPhone",
+        "shippingMethod",
+        "shippingCost"
       ]
     },
     "OrderItem": {
@@ -211,6 +253,14 @@
         "price": {
           "type": "number",
           "description": "Price of the product at the time of the order."
+        },
+        "name": {
+            "type": "string",
+            "description": "Name of the product at the time of order."
+        },
+        "imageCdnUrl": {
+            "type": "string",
+            "description": "CDN URL of the product image for display in order details."
         }
       },
       "required": [
@@ -365,6 +415,7 @@
             }
           ]
         }
+
       },
       {
         "path": "/users/{userId}/orders/{orderId}/orderItems/{orderItemId}",
@@ -410,5 +461,3 @@
     "reasoning": "The Firestore data structure is designed to mirror the e-commerce functionality of \"Your Shop,\" focusing on products, categories, users, orders, and order items. The structure follows best practices for security, scalability, and maintainability, particularly emphasizing authorization independence and enabling secure list operations (QAPs). \n\n**Authorization Independence:**\n*   User-specific data (orders) are stored under the `/users/{userId}` path.  This ensures that access control is based on the currently authenticated user's ID. Orders and order items do not require hierarchical `get()` calls to determine authorization.\n\n**Structural Segregation:**\n*   Each collection (`categories`, `products`, `users`, etc.) is treated as a homogeneous security zone, simplifying security rules. For example, all documents within the `/categories` collection share the same security posture (e.g., only admins can create/update).\n\n**Access Modeling:**\n*   **Private User Data:**  User-specific data is stored under the `/users/{userId}` path. This is a standard pattern for user-owned data, ensuring only the authenticated user (or an admin) can access it.\n*   **Hierarchical Ownership:** Orders and order items are nested under the user to represent the `User 1:N Order 1:N OrderItem` relationship clearly and securely.\n\n**QAPs Support:**\n*   The structure allows for efficient and secure `list` operations. Since all products are in a single `/products` collection, listing products does not require complex security rules.\n\nThe design prioritizes clarity, security, and scalability to create a robust and maintainable Firestore database for the \"Your Shop\" e-commerce application."
   }
 }
-
-    

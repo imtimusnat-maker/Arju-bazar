@@ -42,7 +42,7 @@ export default function SignUpPage() {
 
   useEffect(() => {
     if (!auth) return;
-    const unsubscribe = onAuthStateChanged(auth, undefined, (error: AuthError) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {}, (error: AuthError) => {
         let message = 'An unknown authentication error occurred.';
         switch (error.code) {
             case 'auth/email-already-in-use':

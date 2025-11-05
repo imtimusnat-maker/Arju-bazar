@@ -180,7 +180,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
             ক্যাশ অন ডেলিভারিতে অর্ডার করতে আপনার তথ্য দিন
           </SheetTitle>
         </SheetHeader>
-        <form onSubmit={handleSubmit(onConfirmOrder)} className="flex-1 flex flex-col">
+        <form onSubmit={handleSubmit(onConfirmOrder)} className="flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto p-4 space-y-6">
                 <div className="space-y-4">
                     <div>

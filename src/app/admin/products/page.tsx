@@ -158,9 +158,7 @@ export default function AdminProductsPage() {
 
   const { data: subcategories, isLoading: subcategoriesLoading } = useCollection<Subcategory>(subcategoriesQuery);
   
-  // Effect to reset subcategory when category changes
   useEffect(() => {
-    // only reset if the category is being changed by the user, not on initial load
     if (form.formState.isDirty && form.formState.dirtyFields.categoryId) {
         form.resetField('subcategoryId', { defaultValue: '' });
     }
@@ -455,7 +453,7 @@ export default function AdminProductsPage() {
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select a subcategory" />
-                            </Trigger>
+                            </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                             {subcategoriesLoading && <SelectItem value="loading" disabled>Loading...</SelectItem>}

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingCart, Menu, Phone, User } from 'lucide-react';
+import { ShoppingCart, Menu, Phone, User, Search } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -13,12 +13,15 @@ import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase
 import { collection, doc } from 'firebase/firestore';
 import type { Category } from '@/lib/categories';
 import type { Settings } from '@/lib/settings';
+import { SearchDialog } from '@/components/search-dialog';
 
 export function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const { cart } = useCart();
   const pathname = usePathname();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
 
   const firestore = useFirestore();
   const categoriesCollection = useMemoFirebase(
@@ -114,6 +117,10 @@ export function Header() {
           </div>
 
           <div className="flex items-center justify-end space-x-2 md:space-x-4">
+             <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(true)}>
+              <Search className="h-6 w-6" />
+              <span className="sr-only">Search</span>
+            </Button>
             <Button variant="ghost" size="icon">
               <User className="h-6 w-6" />
               <span className="sr-only">Account</span>
@@ -135,6 +142,7 @@ export function Header() {
           </div>
         </div>
       </header>
+      <SearchDialog isOpen={isSearchOpen} onOpenChange={setIsSearchOpen} />
     </>
   );
 }

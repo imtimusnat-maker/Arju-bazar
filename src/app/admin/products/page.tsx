@@ -420,7 +420,7 @@ export default function AdminProductsPage() {
                             <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select a subcategory" />
-                            </SelectTrigger>
+                            </Trigger>
                             </FormControl>
                             <SelectContent>
                             {subcategoriesLoading && <SelectItem value="loading" disabled>Loading...</SelectItem>}

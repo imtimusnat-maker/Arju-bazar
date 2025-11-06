@@ -109,9 +109,22 @@ const authenticator = async () => {
     }
 };
 
-const generateSearchKeywords = (name: string, name_bn?: string): string => {
-    const keywords = [name, name_bn].filter(Boolean).join(' ');
-    return keywords.toLowerCase().replace(/\s+/g, '');
+const generateSearchKeywords = (name: string, name_bn?: string): string[] => {
+    const keywords = new Set<string>();
+    
+    // Add English keywords
+    name.toLowerCase().split(/\s+/).forEach(word => {
+        if(word) keywords.add(word);
+    });
+
+    // Add Bengali keywords
+    if (name_bn) {
+        name_bn.split(/\s+/).forEach(word => {
+            if(word) keywords.add(word.toLowerCase());
+        });
+    }
+    
+    return Array.from(keywords);
 };
 
 

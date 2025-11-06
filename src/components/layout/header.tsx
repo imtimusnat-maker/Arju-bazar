@@ -24,11 +24,16 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/cart-context';
 import { useCollection, useFirestore, useMemoFirebase, useDoc, useUser } from '@/firebase';
-import { collection, doc, query, getDocs, limit, orderBy, startAt, endAt, type Query } from 'firebase/firestore';
+import { collection, doc, query, getDocs, limit, where, type Query, or } from 'firebase/firestore';
 import type { Category, Subcategory } from '@/lib/categories';
 import type { Settings } from '@/lib/settings';
 import type { Product } from '@/lib/products';
@@ -99,11 +104,17 @@ function SearchComponent() {
     }
     setIsLoading(true);
 
-    const endMarker = searchKey + '\uf8ff';
+    const searchTerms = searchKey.toLowerCase().split(/\s+/).filter(t => t);
+    if(searchTerms.length === 0) {
+        setIsLoading(false);
+        setResults({ products: [], categories: [], subcategories: [] });
+        return;
+    }
 
-    const productsQuery = query(collection(firestore, 'products'), orderBy('searchKeywords'), startAt(searchKey), endAt(endMarker), limit(5)) as Query<Product>;
-    const categoriesQuery = query(collection(firestore, 'categories'), orderBy('searchKeywords'), startAt(searchKey), endAt(endMarker), limit(3)) as Query<Category>;
-    const subcategoriesQuery = query(collection(firestore, 'subcategories'), orderBy('searchKeywords'), startAt(searchKey), endAt(endMarker), limit(4)) as Query<Subcategory>;
+
+    const productsQuery = query(collection(firestore, 'products'), where('searchKeywords', 'array-contains-any', searchTerms), limit(5)) as Query<Product>;
+    const categoriesQuery = query(collection(firestore, 'categories'), where('searchKeywords', 'array-contains-any', searchTerms), limit(3)) as Query<Category>;
+    const subcategoriesQuery = query(collection(firestore, 'subcategories'), where('searchKeywords', 'array-contains-any', searchTerms), limit(4)) as Query<Subcategory>;
 
     try {
       const [productSnap, categorySnap, subcategorySnap] = await Promise.all([
@@ -126,8 +137,7 @@ function SearchComponent() {
   }, [firestore]);
 
   useEffect(() => {
-    const searchKey = debouncedSearchTerm.toLowerCase().replace(/\s+/g, '');
-    performSearch(searchKey);
+    performSearch(debouncedSearchTerm);
   }, [debouncedSearchTerm, performSearch]);
 
   const handleLinkClick = () => {
@@ -138,21 +148,23 @@ function SearchComponent() {
   const hasResults = results.products.length > 0 || results.categories.length > 0 || results.subcategories.length > 0;
 
   return (
-    <>
-      {/* Desktop Search Bar */}
-      <div className="relative h-10 w-full max-w-md hidden md:block" onClick={() => setIsSearchOpen(true)}>
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-        <div className="h-full w-full pl-10 pr-4 rounded-full border-2 border-primary/50 bg-primary/5 text-muted-foreground flex items-center cursor-text text-sm">
-          Search for products...
-        </div>
-      </div>
-      {/* Mobile Search Icon */}
-      <Button variant="ghost" size="icon" className="md:hidden h-10 w-10" onClick={() => setIsSearchOpen(true)}>
-        <Search className="h-6 w-6" />
-      </Button>
-
-      <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-        <DialogContent className="sm:max-w-lg p-0 top-0 sm:top-1/4 translate-y-0 sm:-translate-y-1/2 rounded-none sm:rounded-lg">
+    <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+      <DialogTrigger asChild>
+        <>
+            {/* Desktop Search Bar */}
+            <div className="relative h-10 w-full max-w-sm hidden md:block cursor-text" >
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+                <div className="h-full w-full pl-10 pr-4 rounded-full border bg-background text-muted-foreground flex items-center text-sm">
+                Search for products...
+                </div>
+            </div>
+            {/* Mobile Search Icon */}
+            <Button variant="ghost" size="icon" className="md:hidden h-10 w-10">
+                <Search className="h-6 w-6" />
+            </Button>
+        </>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-lg p-0 top-16 sm:top-24 translate-y-0 rounded-t-lg sm:rounded-lg shadow-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader className="p-4 border-b">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
@@ -195,9 +207,8 @@ function SearchComponent() {
               </div>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
-    </>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -269,11 +280,11 @@ export function Header() {
                 </div>
               </SheetContent>
             </Sheet>
-            <div className="md:hidden"><Logo /></div>
             <div className="hidden md:block"><Logo /></div>
           </div>
 
-          <div className="hidden md:flex flex-1 justify-center"><SearchComponent /></div>
+          <div className="flex-1 justify-center hidden md:flex"><SearchComponent /></div>
+          <div className="md:hidden"><Logo /></div>
 
           <div className="flex items-center justify-end space-x-1 md:space-x-2">
             <div className="md:hidden"><SearchComponent /></div>

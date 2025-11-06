@@ -108,9 +108,22 @@ const authenticator = async () => {
     }
 };
 
-const generateSearchKeywords = (name: string, name_bn?: string): string => {
-    const keywords = [name, name_bn].filter(Boolean).join(' ');
-    return keywords.toLowerCase().replace(/\s+/g, '');
+const generateSearchKeywords = (name: string, name_bn?: string): string[] => {
+    const keywords = new Set<string>();
+    
+    // Add English keywords
+    name.toLowerCase().split(/\s+/).forEach(word => {
+        if(word) keywords.add(word);
+    });
+
+    // Add Bengali keywords
+    if (name_bn) {
+        name_bn.split(/\s+/).forEach(word => {
+            if(word) keywords.add(word.toLowerCase());
+        });
+    }
+    
+    return Array.from(keywords);
 };
 
 
@@ -168,20 +181,20 @@ export default function AdminProductsPage() {
   const descriptionEn = useDebounce(form.watch('description'), 500);
 
   useEffect(() => {
-    if (nameEn) {
+    if (nameEn && isDialogOpen) {
         fetch(`/api/translate?text=${encodeURIComponent(nameEn)}&targetLang=bn`)
             .then(res => res.json())
             .then(data => form.setValue('name_bn', data.translation));
     }
-  }, [nameEn, form]);
+  }, [nameEn, form, isDialogOpen]);
 
   useEffect(() => {
-    if (descriptionEn) {
+    if (descriptionEn && isDialogOpen) {
         fetch(`/api/translate?text=${encodeURIComponent(descriptionEn)}&targetLang=bn`)
             .then(res => res.json())
             .then(data => form.setValue('description_bn', data.translation));
     }
-  }, [descriptionEn, form]);
+  }, [descriptionEn, form, isDialogOpen]);
 
 
   useEffect(() => {

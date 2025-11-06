@@ -5,8 +5,10 @@ import type { Timestamp } from 'firebase/firestore';
 export type Product = {
   id: string;
   name: string;
+  name_bn?: string;
   price: number;
   description: string;
+  description_bn?: string;
   stockQuantity: number;
   originalPrice?: number;
   imageUrl: string;
@@ -17,7 +19,7 @@ export type Product = {
   categoryId: string;
   categorySlug: string;
   subcategoryId: string;
-  searchKeywords?: string;
+  searchKeywords?: string[];
 };
 
 export const products: Product[] = [];

@@ -28,6 +28,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
@@ -150,7 +151,7 @@ function SearchComponent() {
   return (
     <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
       <DialogTrigger asChild>
-        <div>
+        <div className="contents">
             {/* Desktop Search Bar */}
             <div className="relative h-10 w-full max-w-sm hidden md:block cursor-text" >
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
@@ -166,6 +167,7 @@ function SearchComponent() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg p-0 top-16 sm:top-24 translate-y-0 rounded-t-lg sm:rounded-lg shadow-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader className="p-4 border-b">
+            <DialogTitle className="sr-only">Search for products</DialogTitle>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
               <Input

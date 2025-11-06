@@ -283,7 +283,7 @@ export default function AdminProductsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[80px]">Image</TableHead>
+                  <TableHead className="w-[60px] sm:w-[80px]">Image</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead className="hidden md:table-cell">Price</TableHead>
                   <TableHead className="hidden md:table-cell">Stock</TableHead>

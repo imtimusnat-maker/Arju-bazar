@@ -33,7 +33,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MoreHorizontal, Loader2, Trash2 } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collectionGroup, doc, updateDoc, deleteDoc, query, where, collection } from 'firebase/firestore';
+import { collectionGroup, doc, updateDoc, deleteDoc, query, collection } from 'firebase/firestore';
 import type { Order, OrderItem } from '@/lib/orders';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -184,13 +184,12 @@ export default function AdminOrdersPage() {
                             <AccordionItem value={order.id} key={order.id}>
                                <div className="flex items-center">
                                  <AccordionTrigger className="flex-1 hover:no-underline">
-                                     <div className="w-full grid grid-cols-5 md:grid-cols-6 items-center text-sm text-left px-4">
-                                          <span className="font-mono text-xs truncate">#{order.id.slice(0, 7)}</span>
-                                          <span className="hidden md:block">{format(order.orderDate.toDate(), 'PPP')}</span>
+                                     <div className="w-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 items-center text-sm text-left px-4 gap-2">
                                           <div className="truncate">
                                             <div className="font-medium truncate">{order.customerName}</div>
                                             <div className="text-xs text-muted-foreground truncate">{order.customerPhone}</div>
                                           </div>
+                                          <span className="hidden sm:block">{format(order.orderDate.toDate(), 'PPP')}</span>
                                           <span className="truncate hidden md:block">{order.shippingAddress}</span>
                                           <div><OrderStatusBadge status={order.status} /></div>
                                           <span className="text-right font-semibold">Tk {order.totalAmount.toFixed(2)}</span>

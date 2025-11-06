@@ -20,6 +20,7 @@ import type { useCart } from '@/context/cart-context';
 import { useFirestore, useDoc, useUser } from '@/firebase';
 import { doc, collection, writeBatch, increment, serverTimestamp } from 'firebase/firestore';
 import type { Settings } from '@/lib/settings';
+import type { User } from '@/lib/users';
 import { useToast } from '@/hooks/use-toast';
 import { useForm, Controller, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -56,6 +57,12 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { t } = useLanguage();
+
+    const userProfileRef = useMemo(() => {
+        if (!firestore || !user || user.isAnonymous) return null;
+        return doc(firestore, 'users', user.uid);
+    }, [firestore, user]);
+    const { data: userProfile } = useDoc<User>(userProfileRef);
     
     const settingsDocRef = useMemo(
         () => (firestore ? doc(firestore, 'settings', 'global') : null),
@@ -68,10 +75,20 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
     const [shippingCost, setShippingCost] = useState(0);
     const [shippingLabel, setShippingLabel] = useState('');
 
-    const { control, handleSubmit, formState: { errors } } = useForm<CheckoutFormData>({
+    const { control, handleSubmit, formState: { errors }, reset } = useForm<CheckoutFormData>({
         resolver: zodResolver(checkoutSchema),
         defaultValues: { name: '', phone: '', address: '', orderNote: '' }
     });
+
+    useEffect(() => {
+        if (userProfile) {
+            reset({
+                name: userProfile.name || '',
+                phone: userProfile.phone || '',
+                address: userProfile.address || '',
+            });
+        }
+    }, [userProfile, reset]);
 
     useEffect(() => {
         if (shippingOptions.length > 0) {
@@ -113,11 +130,12 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
 
             const orderRef = doc(collection(firestore, `users/${user.uid}/orders`));
             const orderData = {
+                id: orderRef.id,
                 userId: user.uid,
                 orderDate: serverTimestamp(),
                 updatedAt: serverTimestamp(),
-                totalAmount: total,
                 status: newStatus,
+                totalAmount: total,
                 customerName: data.name,
                 customerPhone: data.phone,
                 shippingAddress: data.address,
@@ -157,7 +175,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
             if (settings?.smsGreeting) {
                 sendSms({
                     number: data.phone,
-                    order: { id: orderRef.id, ...orderData },
+                    order: orderData,
                     status: newStatus,
                     greetingTemplate: settings.smsGreeting,
                 });

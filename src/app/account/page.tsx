@@ -7,7 +7,7 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AccountPage() {
@@ -46,7 +46,7 @@ export default function AccountPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>My Account</CardTitle>
-                        <CardDescription>View your account details below.</CardDescription>
+                        <CardDescription>View your account details and order history.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex flex-col space-y-1">
@@ -57,6 +57,12 @@ export default function AccountPage() {
                             <p className="text-sm font-medium text-muted-foreground">User ID</p>
                             <p className="text-xs break-all">{user.uid}</p>
                         </div>
+                        <Button asChild variant="outline" className="w-full">
+                          <Link href="/account/orders">
+                            <ShoppingBag className="mr-2 h-4 w-4" />
+                            My Orders
+                          </Link>
+                        </Button>
                     </CardContent>
                     <CardFooter>
                         <Button variant="destructive" onClick={handleSignOut}>Sign Out</Button>

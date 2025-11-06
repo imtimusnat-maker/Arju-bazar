@@ -1,6 +1,6 @@
 import type { Timestamp } from 'firebase/firestore';
 
-export type OrderStatus = 'pending' | 'shipped' | 'completed' | 'cancelled';
+export type OrderStatus = 'order placed' | 'order confirmed' | 'order delivered' | 'order complete' | 'cancelled';
 
 export interface OrderItem {
   id: string;
@@ -16,6 +16,7 @@ export interface Order {
   id: string;
   userId: string;
   orderDate: Timestamp;
+  updatedAt: Timestamp;
   status: OrderStatus;
   totalAmount: number;
   shippingAddress: string;

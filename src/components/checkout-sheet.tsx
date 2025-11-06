@@ -113,8 +113,9 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
             batch.set(orderRef, {
                 userId: user.uid,
                 orderDate: serverTimestamp(),
+                updatedAt: serverTimestamp(),
                 totalAmount: total,
-                status: 'pending',
+                status: 'order placed', // Use new initial status
                 customerName: data.name,
                 customerPhone: data.phone,
                 shippingAddress: data.address,

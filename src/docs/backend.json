@@ -14,9 +14,17 @@
           "type": "string",
           "description": "Name of the product in English."
         },
+        "name_bn": {
+            "type": "string",
+            "description": "Name of the product in Bengali."
+        },
         "description": {
           "type": "string",
           "description": "Detailed description of the product in English."
+        },
+        "description_bn": {
+            "type": "string",
+            "description": "Detailed description of the product in Bengali."
         },
         "price": {
           "type": "number",
@@ -53,14 +61,19 @@
           "description": "The slug of the parent category for URL generation."
         },
         "searchKeywords": {
-            "type": "string",
-            "description": "A concatenated, lowercase string of the product name for prefix searching."
+          "type": "array",
+          "description": "An array of lowercase words from the product name for searching.",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": [
         "id",
         "name",
+        "name_bn",
         "description",
+        "description_bn",
         "price",
         "imageUrl",
         "categoryId",
@@ -83,23 +96,36 @@
           "type": "string",
           "description": "Name of the category in English (e.g., Men, Women, Kids)."
         },
+        "name_bn": {
+          "type": "string",
+          "description": "Name of the category in Bengali."
+        },
         "description": {
           "type": "string",
           "description": "Description of the category in English."
+        },
+         "description_bn": {
+          "type": "string",
+          "description": "Description of the category in Bengali."
         },
         "slug": {
             "type": "string",
             "description": "URL-friendly version of the category name."
         },
         "searchKeywords": {
-          "type": "string",
-          "description": "A concatenated, lowercase string of the category name for prefix searching."
+          "type": "array",
+          "description": "An array of lowercase words from the category name for searching.",
+           "items": {
+            "type": "string"
+          }
         }
       },
       "required": [
         "id",
         "name",
+        "name_bn",
         "description",
+        "description_bn",
         "slug",
         "searchKeywords"
       ]
@@ -112,15 +138,19 @@
         "properties": {
             "id": { "type": "string", "description": "Unique identifier for the subcategory." },
             "name": { "type": "string", "description": "Name of the subcategory in English." },
+            "name_bn": { "type": "string", "description": "Name of the subcategory in Bengali." },
             "slug": { "type": "string", "description": "URL-friendly version of the subcategory name." },
             "categoryId": { "type": "string", "description": "The ID of the parent category." },
             "categorySlug": { "type": "string", "description": "The slug of the parent category for URL generation." },
             "searchKeywords": {
-              "type": "string",
-              "description": "A concatenated, lowercase string of the subcategory name for prefix searching."
+              "type": "array",
+              "description": "An array of lowercase words from the subcategory name for searching.",
+              "items": {
+                "type": "string"
+              }
             }
         },
-        "required": ["id", "name", "slug", "categoryId", "categorySlug", "searchKeywords"]
+        "required": ["id", "name", "name_bn", "slug", "categoryId", "categorySlug", "searchKeywords"]
     },
     "User": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -185,6 +215,11 @@
           "description": "Date the order was placed.",
           "format": "date-time"
         },
+         "updatedAt": {
+          "type": "string",
+          "description": "Timestamp of the last update to the order.",
+          "format": "date-time"
+        },
         "totalAmount": {
           "type": "number",
           "description": "Total amount of the order."
@@ -196,7 +231,7 @@
         "status": {
           "type": "string",
           "description": "Status of the order.",
-          "enum": ["pending", "shipped", "completed", "cancelled"]
+          "enum": ["order placed", "order confirmed", "order delivered", "order complete", "cancelled"]
         },
         "customerName": {
             "type": "string",
@@ -219,6 +254,7 @@
         "id",
         "userId",
         "orderDate",
+        "updatedAt",
         "totalAmount",
         "shippingAddress",
         "status",

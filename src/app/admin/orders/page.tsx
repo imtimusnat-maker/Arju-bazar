@@ -33,8 +33,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MoreHorizontal, Loader2, Trash2 } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collectionGroup, doc, updateDoc, deleteDoc, query, collection } from 'firebase/firestore';
-import type { Order, OrderItem } from '@/lib/orders';
+import { collectionGroup, doc, updateDoc, deleteDoc, query, collection, serverTimestamp } from 'firebase/firestore';
+import type { Order, OrderItem, OrderStatus } from '@/lib/orders';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import Image from 'next/image';
@@ -42,13 +42,16 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 
 const OrderStatusBadge = ({ status }: { status: string }) => {
   const variant = {
-    pending: 'secondary',
-    shipped: 'default',
-    completed: 'default',
-    cancelled: 'destructive',
+    'order placed': 'secondary',
+    'order confirmed': 'default',
+    'order delivered': 'default',
+    'order complete': 'default',
+    'cancelled': 'destructive',
   }[status] || 'outline';
 
-  return <Badge variant={variant as any}>{status}</Badge>;
+  const statusText = status.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+
+  return <Badge variant={variant as any}>{statusText}</Badge>;
 };
 
 
@@ -126,11 +129,14 @@ export default function AdminOrdersPage() {
     return [...orders].sort((a, b) => b.orderDate.toDate().getTime() - a.orderDate.toDate().getTime());
   }, [orders]);
 
-  const handleStatusChange = async (order: Order, status: string) => {
+  const handleStatusChange = async (order: Order, status: OrderStatus) => {
     if (!firestore) return;
     const orderRef = doc(firestore, `users/${order.userId}/orders`, order.id);
     try {
-        await updateDoc(orderRef, { status });
+        await updateDoc(orderRef, { 
+            status,
+            updatedAt: serverTimestamp(),
+        });
         toast({
             title: 'Order Updated',
             description: `Order status changed to ${status}.`
@@ -163,17 +169,25 @@ export default function AdminOrdersPage() {
         });
      }
   };
+  
+  const orderStatuses: OrderStatus[] = [
+    'order placed',
+    'order confirmed',
+    'order delivered',
+    'order complete',
+    'cancelled',
+  ];
 
   return (
     <>
-        <div>
+        <div className="flex-1 flex flex-col overflow-hidden">
             <h1 className="text-2xl font-bold mb-6">Orders</h1>
-            <Card>
+            <Card className="flex-1 flex flex-col">
                 <CardHeader>
                     <CardTitle>Manage Orders</CardTitle>
                     <CardDescription>View and manage all customer orders. Click on an order to see details.</CardDescription>
                 </CardHeader>
-                <CardContent className="p-0">
+                <CardContent className="p-0 flex-1 overflow-y-auto">
                     <Accordion type="single" collapsible className="w-full">
                        {isLoading ? (
                             <div className="text-center py-10">
@@ -204,11 +218,12 @@ export default function AdminOrdersPage() {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                                             <DropdownMenuRadioGroup value={order.status} onValueChange={(value) => handleStatusChange(order, value)}>
-                                                <DropdownMenuRadioItem value="pending">Pending</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="shipped">Shipped</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="completed">Completed</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="cancelled">Cancelled</DropdownMenuRadioItem>
+                                             <DropdownMenuRadioGroup value={order.status} onValueChange={(value) => handleStatusChange(order, value as OrderStatus)}>
+                                                {orderStatuses.map(status => (
+                                                     <DropdownMenuRadioItem key={status} value={status}>
+                                                        {status.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                                     </DropdownMenuRadioItem>
+                                                ))}
                                             </DropdownMenuRadioGroup>
                                             <DropdownMenuSeparator />
                                             <AlertDialog>

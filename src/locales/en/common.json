@@ -1,0 +1,18 @@
+{
+  "checkout.title": "Provide your information to order via cash on delivery",
+  "checkout.form.nameLabel": "Your Name",
+  "checkout.form.namePlaceholder": "Your Name",
+  "checkout.form.phoneLabel": "Phone Number",
+  "checkout.form.phonePlaceholder": "Phone Number",
+  "checkout.form.addressLabel": "Address",
+  "checkout.form.addressPlaceholder": "Address",
+  "checkout.form.noteLabel": "Order Note",
+  "checkout.form.notePlaceholder": "Order Note",
+  "checkout.shippingMethod": "Shipping Method",
+  "checkout.noShippingOptions": "No shipping options available. Please configure them in the admin panel.",
+  "checkout.summary.subtotal": "Subtotal",
+  "checkout.summary.shipping": "Delivery Charge",
+  "checkout.summary.total": "Total",
+  "checkout.confirmButton": "Click to confirm your order",
+  "checkout.confirmNote": "Clicking the button above will confirm your order immediately!"
+}

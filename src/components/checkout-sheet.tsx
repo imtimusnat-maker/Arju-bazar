@@ -24,6 +24,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm, Controller, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useLanguage } from '@/context/language-context';
+import { Switch } from '@/components/ui/switch';
 
 const checkoutSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -52,6 +54,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { t, language, setLanguage } = useLanguage();
     
     const settingsDocRef = useMemo(
         () => (firestore ? doc(firestore, 'settings', 'global') : null),
@@ -175,42 +178,51 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
         side="bottom"
         className="h-[90vh] rounded-t-lg flex flex-col p-0"
       >
-        <SheetHeader className="p-4 border-b text-left">
+        <SheetHeader className="p-4 border-b text-left flex-row justify-between items-center">
           <SheetTitle className="text-base font-semibold">
-            ক্যাশ অন ডেলিভারিতে অর্ডার করতে আপনার তথ্য দিন
+            {t('checkout.title')}
           </SheetTitle>
+          <div className="flex items-center space-x-2">
+            <Label htmlFor="language-toggle" className={language === 'en' ? 'font-bold' : 'text-muted-foreground'}>EN</Label>
+            <Switch
+                id="language-toggle"
+                checked={language === 'bn'}
+                onCheckedChange={(checked) => setLanguage(checked ? 'bn' : 'en')}
+            />
+            <Label htmlFor="language-toggle" className={language === 'bn' ? 'font-bold' : 'text-muted-foreground'}>BN</Label>
+          </div>
         </SheetHeader>
         <form onSubmit={handleSubmit(onConfirmOrder)} className="flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto p-4 space-y-6">
                 <div className="space-y-4">
                     <div>
-                        <Label htmlFor="name" className="text-sm font-medium">আপনার নাম*</Label>
+                        <Label htmlFor="name" className="text-sm font-medium">{t('checkout.form.nameLabel')}*</Label>
                         <div className="relative mt-1">
                             <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                            <Controller name="name" control={control} render={({ field }) => <Input {...field} id="name" placeholder="আপনার নাম" className="pl-10" />} />
+                            <Controller name="name" control={control} render={({ field }) => <Input {...field} id="name" placeholder={t('checkout.form.namePlaceholder')} className="pl-10" />} />
                         </div>
-                        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+                        {errors.name && <p className="text-red-500 text-xs mt-1">{t(errors.name.message as string, { ns: 'errors' })}</p>}
                     </div>
                     <div>
-                        <Label htmlFor="phone" className="text-sm font-medium">ফোন নাম্বার*</Label>
+                        <Label htmlFor="phone" className="text-sm font-medium">{t('checkout.form.phoneLabel')}*</Label>
                         <div className="relative mt-1">
                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                             <Controller name="phone" control={control} render={({ field }) => <Input {...field} id="phone" type="tel" placeholder="ফোন নাম্বার" className="pl-10" />} />
+                             <Controller name="phone" control={control} render={({ field }) => <Input {...field} id="phone" type="tel" placeholder={t('checkout.form.phonePlaceholder')} className="pl-10" />} />
                         </div>
-                        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
+                        {errors.phone && <p className="text-red-500 text-xs mt-1">{t(errors.phone.message as string, { ns: 'errors' })}</p>}
                     </div>
                     <div>
-                        <Label htmlFor="address" className="text-sm font-medium">এড্রেস*</Label>
+                        <Label htmlFor="address" className="text-sm font-medium">{t('checkout.form.addressLabel')}*</Label>
                         <div className="relative mt-1">
                             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                            <Controller name="address" control={control} render={({ field }) => <Input {...field} id="address" placeholder="এড্রেস" className="pl-10" />} />
+                            <Controller name="address" control={control} render={({ field }) => <Input {...field} id="address" placeholder={t('checkout.form.addressPlaceholder')} className="pl-10" />} />
                         </div>
-                        {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address.message}</p>}
+                        {errors.address && <p className="text-red-500 text-xs mt-1">{t(errors.address.message as string, { ns: 'errors' })}</p>}
                     </div>
                 </div>
 
                 <div>
-                    <Label className="text-sm font-medium">শিপিং মেথড</Label>
+                    <Label className="text-sm font-medium">{t('checkout.shippingMethod')}</Label>
                     {shippingOptions.length > 0 ? (
                         <RadioGroup 
                             defaultValue={shippingOptions[0].id} 
@@ -234,7 +246,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
                             ))}
                         </RadioGroup>
                     ) : (
-                        <p className="text-sm text-muted-foreground mt-2">No shipping options available. Please configure them in the admin panel.</p>
+                        <p className="text-sm text-muted-foreground mt-2">{t('checkout.noShippingOptions')}</p>
                     )}
                 </div>
 
@@ -251,32 +263,32 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
                     <Separator />
                     <div className="space-y-1 text-sm">
                         <div className="flex justify-between">
-                            <span>সাব টোটাল</span>
+                            <span>{t('checkout.summary.subtotal')}</span>
                             <span className="font-semibold">Tk {subtotal.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between">
-                            <span>ডেলিভারি চার্জ</span>
+                            <span>{t('checkout.summary.shipping')}</span>
                             <span className="font-semibold">Tk {shippingCost.toFixed(2)}</span>
                         </div>
                         <Separator />
                         <div className="flex justify-between font-bold text-base">
-                            <span>সর্বমোট</span>
+                            <span>{t('checkout.summary.total')}</span>
                             <span>Tk {total.toFixed(2)}</span>
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <Label htmlFor="order-note" className="text-sm font-medium">Order note</Label>
-                    <Controller name="orderNote" control={control} render={({ field }) => <Textarea {...field} id="order-note" placeholder="Order note" className="mt-1" />} />
+                    <Label htmlFor="order-note" className="text-sm font-medium">{t('checkout.form.noteLabel')}</Label>
+                    <Controller name="orderNote" control={control} render={({ field }) => <Textarea {...field} id="order-note" placeholder={t('checkout.form.notePlaceholder')} className="mt-1" />} />
                 </div>
 
             </div>
             <div className="p-4 border-t bg-white">
                 <Button type="submit" className="w-full h-12 text-lg" disabled={isSubmitting}>
-                    {isSubmitting ? <Loader2 className="animate-spin" /> : 'আপনার অর্ডার কনফার্ম করতে ক্লিক করুন'}
+                    {isSubmitting ? <Loader2 className="animate-spin" /> : t('checkout.confirmButton')}
                 </Button>
-                <p className="text-xs text-center text-gray-500 mt-2">উপরের বাটনে ক্লিক করলে আপনার অর্ডারটি সাথে সাথে কনফার্ম হয়ে যাবে !</p>
+                <p className="text-xs text-center text-gray-500 mt-2">{t('checkout.confirmNote')}</p>
             </div>
         </form>
       </SheetContent>

@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/products';
 import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from '@/context/language-context';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface ProductCardProps {
   product: Product;
@@ -16,7 +16,7 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
-  const { language } = useLanguage();
+  const displayName = useTranslation(product.name);
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -28,8 +28,6 @@ export function ProductCard({ product }: ProductCardProps) {
     });
   };
   
-  const displayName = language === 'bn' && product.name_bn ? product.name_bn : product.name;
-
   return (
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-md border border-gray-200 rounded-lg">
       <Link href={`/product/${product.slug}`} className="block">
@@ -63,5 +61,3 @@ export function ProductCard({ product }: ProductCardProps) {
     </Card>
   );
 }
-
-    

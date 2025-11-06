@@ -75,13 +75,10 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { useDebounce } from '@/hooks/use-debounce';
 
 const productSchema = z.object({
   name: z.string().min(1, 'Product name is required'),
-  name_bn: z.string().optional(),
   description: z.string().min(1, 'Description is required'),
-  description_bn: z.string().optional(),
   price: z.coerce.number().min(0, 'Price must be a positive number'),
   stockQuantity: z.coerce.number().int().min(0, 'Stock must be a whole number'),
   imageUrl: z.string().optional(),
@@ -139,9 +136,7 @@ export default function AdminProductsPage() {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: '',
-      name_bn: '',
       description: '',
-      description_bn: '',
       price: 0,
       stockQuantity: 0,
       imageUrl: '',
@@ -169,46 +164,13 @@ export default function AdminProductsPage() {
     }
   }, [selectedCategoryId, form]);
 
-  const debouncedName = useDebounce(form.watch('name'), 500);
-  const debouncedDescription = useDebounce(form.watch('description'), 500);
-
-  const translateText = async (text: string, targetLang: 'bn' | 'en') => {
-    if (!text) return '';
-    try {
-      const response = await fetch(`/api/translate?text=${encodeURIComponent(text)}&targetLang=${targetLang}`);
-      const data = await response.json();
-      return data.translation;
-    } catch (error) {
-      console.error('Translation error:', error);
-      return `Translation failed for: ${text}`;
-    }
-  };
-
-  useEffect(() => {
-    if (debouncedName && isDialogOpen && !editingProduct) {
-      translateText(debouncedName, 'bn').then(translated => {
-        form.setValue('name_bn', translated);
-      });
-    }
-  }, [debouncedName, isDialogOpen, editingProduct, form]);
-
-  useEffect(() => {
-    if (debouncedDescription && isDialogOpen && !editingProduct) {
-      translateText(debouncedDescription, 'bn').then(translated => {
-        form.setValue('description_bn', translated);
-      });
-    }
-  }, [debouncedDescription, isDialogOpen, editingProduct, form]);
-
 
   const handleDialogOpen = (product: Product | null = null) => {
     setEditingProduct(product);
     if (product) {
       form.reset({
         name: product.name,
-        name_bn: product.name_bn || '',
         description: product.description,
-        description_bn: product.description_bn || '',
         price: product.price,
         stockQuantity: product.stockQuantity,
         imageUrl: product.imageUrl,
@@ -219,9 +181,7 @@ export default function AdminProductsPage() {
     } else {
       form.reset({
         name: '',
-        name_bn: '',
         description: '',
-        description_bn: '',
         price: 0,
         stockQuantity: 0,
         imageUrl: '',
@@ -434,22 +394,9 @@ export default function AdminProductsPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Product Name (English)</FormLabel>
+                    <FormLabel>Product Name</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g. Organic Honey" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-               <FormField
-                control={form.control}
-                name="name_bn"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Name (Bengali)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -460,26 +407,10 @@ export default function AdminProductsPage() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description (English)</FormLabel>
+                    <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Describe the product..."
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description_bn"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description (Bengali)</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে"
                         {...field}
                       />
                     </FormControl>

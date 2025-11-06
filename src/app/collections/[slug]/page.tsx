@@ -8,12 +8,41 @@ import { Footer } from '@/components/layout/footer';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
 import type { Category, Subcategory } from '@/lib/categories';
-import { useLanguage } from '@/context/language-context';
+import { useTranslation } from '@/hooks/use-translation';
+
+function SubcategoryCard({ category, subcategory }: { category: Category, subcategory: Subcategory }) {
+  const displaySubcategoryName = useTranslation(subcategory.name);
+
+  return (
+    <Link 
+      key={subcategory.id} 
+      href={`/collections/${category.slug}/${subcategory.slug}`} 
+      className="group block"
+    >
+      <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-100 transition-all duration-300 group-hover:shadow-md">
+        {subcategory.imageCdnUrl ? (
+          <Image
+            src={subcategory.imageCdnUrl}
+            alt={subcategory.name}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 50vw, 20vw"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-100"></div>
+        )}
+      </div>
+      <h3 className="mt-2 text-center font-body text-sm leading-tight">
+        {displaySubcategoryName}
+      </h3>
+    </Link>
+  );
+}
+
 
 export default function CollectionPage() {
   const params = useParams<{ slug: string }>();
   const firestore = useFirestore();
-  const { language } = useLanguage();
 
   // 1. Query the main Category by its slug
   const categoryQuery = useMemoFirebase(() => {
@@ -23,6 +52,8 @@ export default function CollectionPage() {
 
   const { data: categoryData, isLoading: isCategoryLoading } = useCollection<Category>(categoryQuery);
   const category = categoryData?.[0];
+  
+  const displayCategoryName = useTranslation(category?.name);
 
   // 2. Query all Subcategories associated with this main Category
   const subcategoriesQuery = useMemoFirebase(() => {
@@ -48,8 +79,6 @@ export default function CollectionPage() {
     notFound();
   }
 
-  const displayCategoryName = language === 'bn' && category.name_bn ? category.name_bn : category.name;
-
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
@@ -69,33 +98,9 @@ export default function CollectionPage() {
               ))
             ) : (
               // Display the subcategory cards
-              subcategories?.map((subcategory) => {
-                const displaySubcategoryName = language === 'bn' && subcategory.name_bn ? subcategory.name_bn : subcategory.name;
-                return (
-                  <Link 
-                    key={subcategory.id} 
-                    href={`/collections/${category.slug}/${subcategory.slug}`} 
-                    className="group block"
-                  >
-                    <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-100 transition-all duration-300 group-hover:shadow-md">
-                      {subcategory.imageCdnUrl ? (
-                        <Image
-                          src={subcategory.imageCdnUrl}
-                          alt={subcategory.name}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 50vw, 20vw"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-100"></div>
-                      )}
-                    </div>
-                    <h3 className="mt-2 text-center font-body text-sm leading-tight">
-                      {displaySubcategoryName}
-                    </h3>
-                  </Link>
-                )
-              })
+              subcategories?.map((subcategory) => (
+                <SubcategoryCard key={subcategory.id} category={category} subcategory={subcategory} />
+              ))
             )}
           </div>
         </div>
@@ -104,5 +109,3 @@ export default function CollectionPage() {
     </div>
   );
 }
-
-    

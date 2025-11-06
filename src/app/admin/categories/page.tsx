@@ -71,14 +71,10 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Textarea } from '@/components/ui/textarea';
-import { useDebounce } from '@/hooks/use-debounce';
-
 
 const categorySchema = z.object({
   name: z.string().min(1, 'Category name is required'),
-  name_bn: z.string().optional(),
   description: z.string().min(1, 'Description is required'),
-  description_bn: z.string().optional(),
   imageUrl: z.string().optional(),
   imageCdnUrl: z.string().optional(),
 });
@@ -87,7 +83,6 @@ type CategoryFormData = z.infer<typeof categorySchema>;
 
 const subcategorySchema = z.object({
   name: z.string().min(1, 'Subcategory name is required'),
-  name_bn: z.string().optional(),
   imageUrl: z.string().optional(),
   imageCdnUrl: z.string().optional(),
 });
@@ -214,9 +209,7 @@ export default function AdminCategoriesPage() {
     resolver: zodResolver(categorySchema),
     defaultValues: {
       name: '',
-      name_bn: '',
       description: '',
-      description_bn: '',
       imageUrl: '',
       imageCdnUrl: '',
     },
@@ -226,53 +219,10 @@ export default function AdminCategoriesPage() {
     resolver: zodResolver(subcategorySchema),
     defaultValues: {
       name: '',
-      name_bn: '',
       imageUrl: '',
       imageCdnUrl: '',
     },
   });
-  
-  const debouncedCategoryName = useDebounce(categoryForm.watch('name'), 500);
-  const debouncedCategoryDesc = useDebounce(categoryForm.watch('description'), 500);
-  const debouncedSubCategoryName = useDebounce(subcategoryForm.watch('name'), 500);
-
-  const translateText = async (text: string, targetLang: 'bn' | 'en') => {
-      if (!text) return '';
-      try {
-        const response = await fetch(`/api/translate?text=${encodeURIComponent(text)}&targetLang=${targetLang}`);
-        const data = await response.json();
-        return data.translation;
-      } catch (error) {
-        console.error('Translation error:', error);
-        return `Translation failed for: ${text}`;
-      }
-    };
-    
-    useEffect(() => {
-        if (debouncedCategoryName && isCategoryDialogOpen && !editingCategory) {
-            translateText(debouncedCategoryName, 'bn').then(translated => {
-                categoryForm.setValue('name_bn', translated);
-            });
-        }
-    }, [debouncedCategoryName, isCategoryDialogOpen, editingCategory, categoryForm]);
-
-    useEffect(() => {
-        if (debouncedCategoryDesc && isCategoryDialogOpen && !editingCategory) {
-            translateText(debouncedCategoryDesc, 'bn').then(translated => {
-                categoryForm.setValue('description_bn', translated);
-            });
-        }
-    }, [debouncedCategoryDesc, isCategoryDialogOpen, editingCategory, categoryForm]);
-
-    useEffect(() => {
-        if (debouncedSubCategoryName && (isSubcategoryDialogOpen || isEditSubcategoryDialogOpen)) {
-            translateText(debouncedSubCategoryName, 'bn').then(translated => {
-                subcategoryForm.setValue('name_bn', translated);
-            });
-        }
-    }, [debouncedSubCategoryName, isSubcategoryDialogOpen, isEditSubcategoryDialogOpen, subcategoryForm]);
-
-
 
   const handleCategoryDialogOpen = (category: Category | null = null) => {
     setEditingCategory(category);
@@ -280,18 +230,14 @@ export default function AdminCategoriesPage() {
     if (category) {
       categoryForm.reset({
         name: category.name,
-        name_bn: category.name_bn,
         description: category.description,
-        description_bn: category.description_bn,
         imageUrl: category.imageUrl,
         imageCdnUrl: category.imageCdnUrl,
       });
     } else {
       categoryForm.reset({
         name: '',
-        name_bn: '',
         description: '',
-        description_bn: '',
         imageUrl: '',
         imageCdnUrl: '',
       });
@@ -302,7 +248,7 @@ export default function AdminCategoriesPage() {
   const handleAddSubcategoryDialogOpen = (category: Category) => {
     setParentCategory(category);
     setActiveForm('subcategory');
-    subcategoryForm.reset({ name: '', name_bn: '', imageUrl: '', imageCdnUrl: '' });
+    subcategoryForm.reset({ name: '', imageUrl: '', imageCdnUrl: '' });
     setIsSubcategoryDialogOpen(true);
   };
   
@@ -312,7 +258,6 @@ export default function AdminCategoriesPage() {
       setActiveForm('subcategory');
       subcategoryForm.reset({ 
           name: subcategory.name,
-          name_bn: subcategory.name_bn,
           imageUrl: subcategory.imageUrl,
           imageCdnUrl: subcategory.imageCdnUrl,
       });
@@ -559,22 +504,9 @@ export default function AdminCategoriesPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category Name (English)</FormLabel>
+                    <FormLabel>Category Name</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g. Men Collections" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-               <FormField
-                control={categoryForm.control}
-                name="name_bn"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category Name (Bengali)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -585,26 +517,10 @@ export default function AdminCategoriesPage() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description (English)</FormLabel>
+                    <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Describe the category..."
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={categoryForm.control}
-                name="description_bn"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description (Bengali)</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে"
                         {...field}
                       />
                     </FormControl>
@@ -669,22 +585,9 @@ export default function AdminCategoriesPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Subcategory Name (English)</FormLabel>
+                    <FormLabel>Subcategory Name</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g. Panjabi" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={subcategoryForm.control}
-                name="name_bn"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Subcategory Name (Bengali)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -743,22 +646,9 @@ export default function AdminCategoriesPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Subcategory Name (English)</FormLabel>
+                    <FormLabel>Subcategory Name</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g. Panjabi" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={subcategoryForm.control}
-                name="name_bn"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Subcategory Name (Bengali)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

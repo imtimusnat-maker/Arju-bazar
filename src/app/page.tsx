@@ -9,10 +9,32 @@ import type { Category } from '@/lib/categories';
 import type { Settings } from '@/lib/settings';
 import { collection, doc } from 'firebase/firestore';
 import { useLanguage } from '@/context/language-context';
+import { useTranslation } from '@/hooks/use-translation';
+
+function CategoryCard({ category }: { category: Category }) {
+  const displayName = useTranslation(category.name);
+
+  return (
+    <Link href={`/collections/${category.slug}`} className="block group">
+        <div className="relative aspect-square bg-gray-100 flex items-center justify-center border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 group-hover:shadow-md">
+           {category.imageCdnUrl && (
+             <Image
+                src={category.imageCdnUrl}
+                alt={category.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 20vw"
+            />
+           )}
+        </div>
+        <h3 className="font-body text-sm text-center leading-tight mt-2">{displayName}</h3>
+    </Link>
+  )
+}
 
 export default function Home() {
   const defaultHeroImage = PlaceHolderImages.find(i => i.id === 'hero-4');
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   const firestore = useFirestore();
 
   const categoriesCollection = useMemoFirebase(
@@ -65,25 +87,7 @@ export default function Home() {
                   </div>
                 ))
               ) : (
-                categories?.map((category) => {
-                  const displayName = language === 'bn' && category.name_bn ? category.name_bn : category.name;
-                  return (
-                    <Link key={category.id} href={`/collections/${category.slug}`} className="block group">
-                        <div className="relative aspect-square bg-gray-100 flex items-center justify-center border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 group-hover:shadow-md">
-                           {category.imageCdnUrl && (
-                             <Image
-                                src={category.imageCdnUrl}
-                                alt={category.name}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 768px) 50vw, 20vw"
-                            />
-                           )}
-                        </div>
-                        <h3 className="font-body text-sm text-center leading-tight mt-2">{displayName}</h3>
-                    </Link>
-                  )
-                })
+                categories?.map((category) => <CategoryCard key={category.id} category={category} />)
               )}
             </div>
           </div>

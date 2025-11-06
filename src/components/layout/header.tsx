@@ -41,12 +41,53 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { useLanguage } from '@/context/language-context';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 type SearchResults = {
   products: Product[];
   categories: Category[];
   subcategories: Subcategory[];
 };
+
+function SearchResultProductItem({ product }: { product: Product }) {
+    const translatedName = useTranslation(product.name);
+    return (
+        <Link href={`/product/${product.slug}`} passHref>
+            <div className="flex items-center gap-3 rounded-md p-2 hover:bg-accent cursor-pointer">
+                <Image src={product.imageCdnUrl || 'https://placehold.co/400'} alt={product.name} width={40} height={40} className="rounded-md object-contain border bg-white"/>
+                <div className="flex-1">
+                    <p className="text-sm font-medium">{translatedName}</p>
+                    <p className="text-sm text-primary">Tk {product.price.toFixed(2)}</p>
+                </div>
+            </div>
+        </Link>
+    );
+}
+
+function SearchResultCategoryItem({ category }: { category: Category }) {
+    const translatedName = useTranslation(category.name);
+    return (
+        <Link href={`/collections/${category.slug}`} passHref>
+            <div className="flex items-center gap-3 rounded-md p-2 hover:bg-accent cursor-pointer">
+                <Folder className="h-5 w-5 text-muted-foreground" />
+                <p className="text-sm font-medium flex-1">{translatedName}</p>
+            </div>
+        </Link>
+    );
+}
+
+function SearchResultSubcategoryItem({ subcategory }: { subcategory: Subcategory }) {
+    const translatedName = useTranslation(subcategory.name);
+    return (
+        <Link href={`/collections/${subcategory.categorySlug}/${subcategory.slug}`} passHref>
+            <div className="flex items-center gap-3 rounded-md p-2 hover:bg-accent cursor-pointer">
+                <FolderOpen className="h-5 w-5 text-muted-foreground" />
+                <p className="text-sm font-medium flex-1">{translatedName}</p>
+            </div>
+        </Link>
+    );
+}
+
 
 export function Header() {
   const [isVisible, setIsVisible] = useState(true);
@@ -217,7 +258,7 @@ export function Header() {
                 </Button>
             </div>
         </PopoverTrigger>
-        <PopoverContent className="w-screen max-w-md p-0" side="bottom" align="end">
+        <PopoverContent className="w-screen max-w-md p-0" side="bottom" align="end" onOpenAutoFocus={(e) => e.preventDefault()}>
             {/* Mobile search input inside popover */}
             <div className="relative md:hidden border-b p-2">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -226,12 +267,11 @@ export function Header() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search..."
                     className="h-10 w-full rounded-full border-2 border-primary/50 bg-primary/5 pl-10 pr-4 focus:bg-white focus:ring-2 focus:ring-primary/50"
-                    autoFocus
                 />
             </div>
 
             {searchTerm && (
-                 <div className="max-h-[60vh] overflow-y-auto p-2">
+                 <div className="max-h-[60vh] overflow-y-auto p-2" onClick={handleLinkClick}>
                     {isLoading && (
                         <div className="flex justify-center items-center py-4">
                             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -246,15 +286,7 @@ export function Header() {
                                 <div>
                                     <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-1 px-2">Products</h3>
                                     {results.products.map((product) => (
-                                        <Link href={`/product/${product.slug}`} key={product.id} passHref onClick={handleLinkClick}>
-                                            <div className="flex items-center gap-3 rounded-md p-2 hover:bg-accent cursor-pointer">
-                                                <Image src={product.imageCdnUrl || 'https://placehold.co/400'} alt={product.name} width={40} height={40} className="rounded-md object-contain border bg-white"/>
-                                                <div className="flex-1">
-                                                    <p className="text-sm font-medium">{product.name}</p>
-                                                    <p className="text-sm text-primary">Tk {product.price.toFixed(2)}</p>
-                                                </div>
-                                            </div>
-                                        </Link>
+                                        <SearchResultProductItem key={product.id} product={product} />
                                     ))}
                                 </div>
                             )}
@@ -262,12 +294,7 @@ export function Header() {
                                 <div>
                                     <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-1 px-2">Categories</h3>
                                     {results.categories.map((category) => (
-                                        <Link href={`/collections/${category.slug}`} key={category.id} passHref onClick={handleLinkClick}>
-                                            <div className="flex items-center gap-3 rounded-md p-2 hover:bg-accent cursor-pointer">
-                                                <Folder className="h-5 w-5 text-muted-foreground" />
-                                                <p className="text-sm font-medium flex-1">{category.name}</p>
-                                            </div>
-                                        </Link>
+                                       <SearchResultCategoryItem key={category.id} category={category} />
                                     ))}
                                 </div>
                             )}
@@ -275,12 +302,7 @@ export function Header() {
                                 <div>
                                     <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-1 px-2">Subcategories</h3>
                                     {results.subcategories.map((subcategory) => (
-                                        <Link href={`/collections/${subcategory.categorySlug}/${subcategory.slug}`} key={subcategory.id} passHref onClick={handleLinkClick}>
-                                            <div className="flex items-center gap-3 rounded-md p-2 hover:bg-accent cursor-pointer">
-                                                <FolderOpen className="h-5 w-5 text-muted-foreground" />
-                                                <p className="text-sm font-medium flex-1">{subcategory.name}</p>
-                                            </div>
-                                        </Link>
+                                        <SearchResultSubcategoryItem key={subcategory.id} subcategory={subcategory} />
                                     ))}
                                 </div>
                             )}

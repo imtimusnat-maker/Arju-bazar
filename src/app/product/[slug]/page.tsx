@@ -23,6 +23,7 @@ import { CheckoutSheet } from '@/components/checkout-sheet';
 import type { Settings } from '@/lib/settings';
 import Link from 'next/link';
 import { useLanguage } from '@/context/language-context';
+import { useTranslation } from '@/hooks/use-translation';
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
@@ -51,7 +52,6 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
 export default function ProductPage() {
   const params = useParams<{ slug: string }>();
   const firestore = useFirestore();
-  const { language } = useLanguage();
 
   const productQuery = useMemoFirebase(() => {
     if (!firestore || !params.slug) return null;
@@ -60,6 +60,9 @@ export default function ProductPage() {
 
   const { data: productData, isLoading: isProductLoading } = useCollection<Product>(productQuery);
   const product = productData?.[0];
+  
+  const displayName = useTranslation(product?.name);
+  const displayDescription = useTranslation(product?.description);
 
   const settingsDocRef = useMemo(
     () => (firestore ? doc(firestore, 'settings', 'global') : null),
@@ -90,9 +93,6 @@ export default function ProductPage() {
   if (!product) {
     notFound();
   }
-  
-  const displayName = language === 'bn' && product.name_bn ? product.name_bn : product.name;
-  const displayDescription = language === 'bn' && product.description_bn ? product.description_bn : product.description;
 
   const handleAddToCart = () => {
     addToCart(product);
@@ -193,5 +193,3 @@ export default function ProductPage() {
     </>
   );
 }
-
-    

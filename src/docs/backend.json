@@ -1,0 +1,463 @@
+{
+  "entities": {
+    "Product": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Product",
+      "type": "object",
+      "description": "Represents a product available for sale on Your Shop.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the product."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the product in English."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the product in English."
+        },
+        "price": {
+          "type": "number",
+          "description": "Price of the product."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the product image.",
+          "format": "uri"
+        },
+        "imageCdnUrl": {
+            "type": "string",
+            "description": "CDN-optimized URL of the product image.",
+            "format": "uri"
+        },
+        "categoryId": {
+          "type": "string",
+          "description": "Reference to Category. (Relationship: Category 1:N Product)"
+        },
+        "stockQuantity": {
+          "type": "number",
+          "description": "The number of items currently in stock."
+        },
+        "discountPercentage": {
+          "type": "number",
+          "description": "The discount percentage applicable to the product, if any."
+        },
+        "slug": {
+          "type": "string",
+          "description": "A URL-friendly version of the product name."
+        },
+        "categorySlug": {
+          "type": "string",
+          "description": "The slug of the parent category for URL generation."
+        },
+        "searchKeywords": {
+            "type": "string",
+            "description": "A concatenated, lowercase string of the product name for prefix searching."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "price",
+        "imageUrl",
+        "categoryId",
+        "stockQuantity",
+        "slug",
+        "searchKeywords"
+      ]
+    },
+    "Category": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Category",
+      "type": "object",
+      "description": "Represents a category of products.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the category."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the category in English (e.g., Men, Women, Kids)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the category in English."
+        },
+        "slug": {
+            "type": "string",
+            "description": "URL-friendly version of the category name."
+        },
+        "searchKeywords": {
+          "type": "string",
+          "description": "A concatenated, lowercase string of the category name for prefix searching."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "slug",
+        "searchKeywords"
+      ]
+    },
+    "Subcategory": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Subcategory",
+        "type": "object",
+        "description": "Represents a sub-category of products within a main category.",
+        "properties": {
+            "id": { "type": "string", "description": "Unique identifier for the subcategory." },
+            "name": { "type": "string", "description": "Name of the subcategory in English." },
+            "slug": { "type": "string", "description": "URL-friendly version of the subcategory name." },
+            "categoryId": { "type": "string", "description": "The ID of the parent category." },
+            "categorySlug": { "type": "string", "description": "The slug of the parent category for URL generation." },
+            "searchKeywords": {
+              "type": "string",
+              "description": "A concatenated, lowercase string of the subcategory name for prefix searching."
+            }
+        },
+        "required": ["id", "name", "slug", "categoryId", "categorySlug", "searchKeywords"]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the Your Shop application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the user."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Contact phone number of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "address": {
+          "type": "string",
+          "description": "Shipping address of the user."
+        },
+        "orderCount": {
+          "type": "number",
+          "description": "The total number of orders placed by this user."
+        },
+        "totalSpent": {
+          "type": "number",
+          "description": "The total amount of money spent by this user across all orders."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "phone",
+        "email",
+        "address"
+      ]
+    },
+    "Order": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Order",
+      "type": "object",
+      "description": "Represents an order placed by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the order."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Order)"
+        },
+        "orderDate": {
+          "type": "string",
+          "description": "Date the order was placed.",
+          "format": "date-time"
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "Total amount of the order."
+        },
+        "shippingAddress": {
+          "type": "string",
+          "description": "Shipping address for the order."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the order.",
+          "enum": ["pending", "shipped", "completed", "cancelled"]
+        },
+        "customerName": {
+            "type": "string",
+            "description": "Name of the customer who placed the order."
+        },
+        "customerPhone": {
+            "type": "string",
+            "description": "Phone number of the customer."
+        },
+        "shippingMethod": {
+            "type": "string",
+            "description": "The selected shipping method (e.g., 'Inside Dhaka')."
+        },
+        "shippingCost": {
+            "type": "number",
+            "description": "The cost of shipping for the order."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "orderDate",
+        "totalAmount",
+        "shippingAddress",
+        "status",
+        "customerName",
+        "customerPhone",
+        "shippingMethod",
+        "shippingCost"
+      ]
+    },
+    "OrderItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OrderItem",
+      "type": "object",
+      "description": "Represents an item within an order.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the order item."
+        },
+        "orderId": {
+          "type": "string",
+          "description": "Reference to Order. (Relationship: Order 1:N OrderItem)"
+        },
+        "productId": {
+          "type": "string",
+          "description": "Reference to Product. (Relationship: Product 1:N OrderItem)"
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Quantity of the product in the order item."
+        },
+        "price": {
+          "type": "number",
+          "description": "Price of the product at the time of the order."
+        },
+        "name": {
+            "type": "string",
+            "description": "Name of the product at the time of order."
+        },
+        "imageCdnUrl": {
+            "type": "string",
+            "description": "CDN URL of the product image for display in order details."
+        }
+      },
+      "required": [
+        "id",
+        "orderId",
+        "productId",
+        "quantity",
+        "price"
+      ]
+    },
+    "Setting": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Setting",
+      "type": "object",
+      "description": "Represents site-wide configuration settings.",
+      "properties": {
+        "whatsappNumber": {
+          "type": "string",
+          "description": "The contact number for WhatsApp."
+        },
+        "messengerLink": {
+          "type": "string",
+          "description": "The URL for Facebook Messenger chat.",
+          "format": "uri"
+        },
+        "hotlineNumber": {
+          "type": "string",
+          "description": "The hotline number for the shop."
+        },
+        "heroImageUrl": {
+          "type": "string",
+          "description": "The URL for the homepage hero image.",
+          "format": "uri"
+        },
+        "heroImageCdnUrl": {
+          "type": "string",
+          "description": "The CDN-optimized URL for the homepage hero image.",
+          "format": "uri"
+        },
+        "shippingOptions": {
+          "type": "array",
+          "description": "An array of available shipping options for checkout.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique identifier for the shipping option."
+              },
+              "label": {
+                "type": "string",
+                "description": "The display name for the shipping option (e.g., 'Inside Dhaka')."
+              },
+              "price": {
+                "type": "number",
+                "description": "The cost of this shipping option."
+              }
+            },
+            "required": ["id", "label", "price"]
+          }
+        }
+      },
+      "required": [
+        "whatsappNumber",
+        "messengerLink"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/categories/{categoryId}",
+        "definition": {
+          "entityName": "Category",
+          "schema": {
+            "$ref": "#/backend/entities/Category"
+          },
+          "description": "Stores product categories.  Accessible to all users for reading, but restricted to admins for creation/modification.",
+          "params": [
+            {
+              "name": "categoryId",
+              "description": "The unique identifier of the category."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/subcategories/{subcategoryId}",
+        "definition": {
+          "entityName": "Subcategory",
+          "schema": { "$ref": "#/backend/entities/Subcategory" },
+          "description": "Stores subcategories for all categories in a flat structure. Accessible to all users for reading, but restricted to admins for write access.",
+          "params": [
+            { "name": "subcategoryId", "description": "The unique identifier of the subcategory." }
+          ]
+        }
+      },
+      {
+        "path": "/products/{productId}",
+        "definition": {
+          "entityName": "Product",
+          "schema": {
+            "$ref": "#/backend/entities/Product"
+          },
+          "description": "Stores product information. Accessible to all users for reading, but restricted to admins for creation/modification.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "The unique identifier of the product."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. Only the authenticated user can read/write their own profile. Admins can manage all user profiles.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user (same as Firebase auth UID)."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/orders/{orderId}",
+        "definition": {
+          "entityName": "Order",
+          "schema": {
+            "$ref": "#/backend/entities/Order"
+          },
+          "description": "Stores orders placed by a user. Only the authenticated user can read/write their own orders. Admins can manage all orders.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who placed the order."
+            },
+            {
+              "name": "orderId",
+              "description": "The unique identifier of the order."
+            }
+          ]
+        }
+
+      },
+      {
+        "path": "/users/{userId}/orders/{orderId}/orderItems/{orderItemId}",
+        "definition": {
+          "entityName": "OrderItem",
+          "schema": {
+            "$ref": "#/backend/entities/OrderItem"
+          },
+          "description": "Stores items within an order.  Only the authenticated user can read/write their own order items. Admins can manage all order items.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who placed the order."
+            },
+            {
+              "name": "orderId",
+              "description": "The unique identifier of the order."
+            },
+            {
+              "name": "orderItemId",
+              "description": "The unique identifier of the order item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/settings/{settingId}",
+        "definition": {
+          "entityName": "Setting",
+          "schema": {
+            "$ref": "#/backend/entities/Setting"
+          },
+          "description": "Stores global site settings. Publicly readable, but only writable by admins.",
+          "params": [
+            {
+              "name": "settingId",
+              "description": "The unique identifier for the settings document (e.g., 'global')."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to mirror the e-commerce functionality of \"Your Shop,\" focusing on products, categories, users, orders, and order items. The structure follows best practices for security, scalability, and maintainability, particularly emphasizing authorization independence and enabling secure list operations (QAPs). \n\n**Authorization Independence:**\n*   User-specific data (orders) are stored under the `/users/{userId}` path.  This ensures that access control is based on the currently authenticated user's ID. Orders and order items do not require hierarchical `get()` calls to determine authorization.\n\n**Structural Segregation:**\n*   Each collection (`categories`, `products`, `users`, etc.) is treated as a homogeneous security zone, simplifying security rules. For example, all documents within the `/categories` collection share the same security posture (e.g., only admins can create/update).\n\n**Access Modeling:**\n*   **Private User Data:**  User-specific data is stored under the `/users/{userId}` path. This is a standard pattern for user-owned data, ensuring only the authenticated user (or an admin) can access it.\n*   **Hierarchical Ownership:** Orders and order items are nested under the user to represent the `User 1:N Order 1:N OrderItem` relationship clearly and securely.\n\n**QAPs Support:**\n*   The structure allows for efficient and secure `list` operations. Since all products are in a single `/products` collection, listing products does not require complex security rules.\n\nThe design prioritizes clarity, security, and scalability to create a robust and maintainable Firestore database for the \"Your Shop\" e-commerce application."
+  }
+}

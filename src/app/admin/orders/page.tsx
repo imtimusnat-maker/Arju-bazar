@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   Card,
   CardHeader,
@@ -13,10 +13,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
@@ -32,7 +32,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MoreHorizontal, Loader2, Trash2 } from 'lucide-react';
-import { useFirestore, useCollection } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collectionGroup, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import type { Order, OrderItem } from '@/lib/orders';
 import { useToast } from '@/hooks/use-toast';
@@ -51,13 +51,17 @@ const OrderStatusBadge = ({ status }: { status: string }) => {
   return <Badge variant={variant as any}>{status}</Badge>;
 };
 
-
 function OrderDetailsContent({ order }: { order: Order; }) {
     const firestore = useFirestore();
-    const orderItemsQuery = useMemo(
-        () => (firestore && order ? query(collectionGroup(firestore, 'orderItems'), where('orderId', '==', order.id)) : null),
+
+    const orderItemsQuery = useMemoFirebase(
+        () => {
+            if (!firestore || !order) return null;
+            return query(collectionGroup(firestore, 'orderItems'), where('orderId', '==', order.id));
+        },
         [firestore, order]
     );
+
     const { data: orderItems, isLoading } = useCollection<OrderItem>(orderItemsQuery);
 
     if (!order) return null;
@@ -73,13 +77,13 @@ function OrderDetailsContent({ order }: { order: Order; }) {
                         <p><span className="font-medium text-foreground">Address:</span> {order.shippingAddress}</p>
                         <p><span className="font-medium text-foreground">Shipping:</span> {order.shippingMethod} (Tk {order.shippingCost.toFixed(2)})</p>
                         {order.orderNote && (
-                           <p><span className="font-medium text-foreground">Note:</span> {order.orderNote}</p>
+                           <p className="pt-2"><span className="font-medium text-foreground">Note:</span> {order.orderNote}</p>
                         )}
                     </div>
                 </div>
                 <div>
                     <h3 className="font-semibold mb-2">Order Summary</h3>
-                    <div className="text-sm space-y-1 text-muted-foreground">
+                     <div className="text-sm space-y-1 text-muted-foreground">
                          <div className="flex items-center gap-2"><span className="font-medium text-foreground">Status:</span> <OrderStatusBadge status={order.status} /></div>
                          <p><span className="font-medium text-foreground">Total:</span> Tk {order.totalAmount.toFixed(2)}</p>
                     </div>

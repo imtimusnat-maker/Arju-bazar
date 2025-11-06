@@ -150,7 +150,7 @@ function SearchComponent() {
   return (
     <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
       <DialogTrigger asChild>
-        <>
+        <div>
             {/* Desktop Search Bar */}
             <div className="relative h-10 w-full max-w-sm hidden md:block cursor-text" >
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
@@ -162,7 +162,7 @@ function SearchComponent() {
             <Button variant="ghost" size="icon" className="md:hidden h-10 w-10">
                 <Search className="h-6 w-6" />
             </Button>
-        </>
+        </div>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg p-0 top-16 sm:top-24 translate-y-0 rounded-t-lg sm:rounded-lg shadow-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader className="p-4 border-b">
@@ -283,7 +283,11 @@ export function Header() {
             <div className="hidden md:block"><Logo /></div>
           </div>
 
-          <div className="flex-1 justify-center hidden md:flex"><SearchComponent /></div>
+          <div className="flex-1 justify-center hidden md:flex">
+             <div className="w-full max-w-sm">
+                <SearchComponent />
+             </div>
+          </div>
           <div className="md:hidden"><Logo /></div>
 
           <div className="flex items-center justify-end space-x-1 md:space-x-2">

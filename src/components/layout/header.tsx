@@ -38,6 +38,9 @@ import type { Category, Subcategory } from '@/lib/categories';
 import type { Settings } from '@/lib/settings';
 import type { Product } from '@/lib/products';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useLanguage } from '@/context/language-context';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 type SearchResults = {
   products: Product[];
@@ -50,9 +53,10 @@ export function Header() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const { cart } = useCart();
   const { user, isUserLoading } = useUser();
+  const { language, setLanguage } = useLanguage();
   const pathname = usePathname();
 
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isSearchPopoverOpen, setIsSearchPopoverOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState<SearchResults>({
     products: [],
@@ -96,7 +100,7 @@ export function Header() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchWrapperRef.current && !searchWrapperRef.current.contains(event.target as Node)) {
-        setIsSearchOpen(false);
+        setIsSearchPopoverOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -173,15 +177,17 @@ export function Header() {
    useEffect(() => {
     const searchKey = debouncedSearchTerm.toLowerCase().replace(/\s+/g, '');
     if (searchKey) {
+      setIsSearchPopoverOpen(true);
       performSearch(searchKey);
     } else {
+      setIsSearchPopoverOpen(false);
       setResults({ products: [], categories: [], subcategories: [] });
       setIsLoading(false);
     }
   }, [debouncedSearchTerm, performSearch]);
   
   const handleLinkClick = () => {
-    setIsSearchOpen(false);
+    setIsSearchPopoverOpen(false);
     setSearchTerm('');
   };
 
@@ -189,6 +195,103 @@ export function Header() {
     results.products.length > 0 ||
     results.categories.length > 0 ||
     results.subcategories.length > 0;
+  
+  const SearchPopover = () => (
+    <Popover open={isSearchPopoverOpen} onOpenChange={setIsSearchPopoverOpen}>
+        <PopoverTrigger asChild>
+            <div className="relative w-full">
+                {/* Desktop search bar */}
+                <div className="relative hidden md:block">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Search for products, categories..."
+                        className="h-10 w-full rounded-full border-2 border-primary/50 bg-primary/5 pl-10 pr-4 focus:bg-white focus:ring-2 focus:ring-primary/50"
+                    />
+                </div>
+                {/* Mobile search icon */}
+                <Button variant="ghost" size="icon" className="md:hidden">
+                    <Search />
+                    <span className="sr-only">Search</span>
+                </Button>
+            </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-screen max-w-md p-0" side="bottom" align="end">
+            {/* Mobile search input inside popover */}
+            <div className="relative md:hidden border-b p-2">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search..."
+                    className="h-10 w-full rounded-full border-2 border-primary/50 bg-primary/5 pl-10 pr-4 focus:bg-white focus:ring-2 focus:ring-primary/50"
+                    autoFocus
+                />
+            </div>
+
+            {searchTerm && (
+                 <div className="max-h-[60vh] overflow-y-auto p-2">
+                    {isLoading && (
+                        <div className="flex justify-center items-center py-4">
+                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        </div>
+                    )}
+                    {!isLoading && !hasResults && (
+                        <p className="text-center text-sm text-muted-foreground py-4">No results found for "{debouncedSearchTerm}"</p>
+                    )}
+                    {!isLoading && hasResults && (
+                        <div className="space-y-4">
+                            {results.products.length > 0 && (
+                                <div>
+                                    <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-1 px-2">Products</h3>
+                                    {results.products.map((product) => (
+                                        <Link href={`/product/${product.slug}`} key={product.id} passHref onClick={handleLinkClick}>
+                                            <div className="flex items-center gap-3 rounded-md p-2 hover:bg-accent cursor-pointer">
+                                                <Image src={product.imageCdnUrl || 'https://placehold.co/400'} alt={product.name} width={40} height={40} className="rounded-md object-contain border bg-white"/>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-medium">{product.name}</p>
+                                                    <p className="text-sm text-primary">Tk {product.price.toFixed(2)}</p>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                            {results.categories.length > 0 && (
+                                <div>
+                                    <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-1 px-2">Categories</h3>
+                                    {results.categories.map((category) => (
+                                        <Link href={`/collections/${category.slug}`} key={category.id} passHref onClick={handleLinkClick}>
+                                            <div className="flex items-center gap-3 rounded-md p-2 hover:bg-accent cursor-pointer">
+                                                <Folder className="h-5 w-5 text-muted-foreground" />
+                                                <p className="text-sm font-medium flex-1">{category.name}</p>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                            {results.subcategories.length > 0 && (
+                                <div>
+                                    <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-1 px-2">Subcategories</h3>
+                                    {results.subcategories.map((subcategory) => (
+                                        <Link href={`/collections/${subcategory.categorySlug}/${subcategory.slug}`} key={subcategory.id} passHref onClick={handleLinkClick}>
+                                            <div className="flex items-center gap-3 rounded-md p-2 hover:bg-accent cursor-pointer">
+                                                <FolderOpen className="h-5 w-5 text-muted-foreground" />
+                                                <p className="text-sm font-medium flex-1">{subcategory.name}</p>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
+        </PopoverContent>
+    </Popover>
+  );
+
 
   return (
     <>
@@ -222,8 +325,8 @@ export function Header() {
             </div>
           </div>
         )}
-        <div className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between gap-4 px-4">
-          <div className="flex items-center gap-4">
+        <div className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between gap-2 px-4">
+          <div className="flex items-center gap-2">
              <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="md:hidden">
@@ -254,85 +357,22 @@ export function Header() {
             </div>
           </div>
 
-           <div className="flex-1 max-w-md">
-                <Popover open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-                    <PopoverTrigger asChild className="w-full">
-                         <div className="relative">
-                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                            <Input
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                onFocus={() => setIsSearchOpen(true)}
-                                placeholder="Search for products, categories..."
-                                className="h-10 w-full rounded-full border-2 border-primary/50 bg-primary/5 pl-10 pr-4 focus:bg-white focus:ring-2 focus:ring-primary/50"
-                            />
-                        </div>
-                    </PopoverTrigger>
-                     {searchTerm && (
-                        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                             <div className="max-h-[60vh] overflow-y-auto p-2">
-                                {isLoading && (
-                                    <div className="flex justify-center items-center py-4">
-                                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                                    </div>
-                                )}
-                                {!isLoading && !hasResults && (
-                                    <p className="text-center text-sm text-muted-foreground py-4">No results found for "{debouncedSearchTerm}"</p>
-                                )}
-                                {!isLoading && hasResults && (
-                                    <div className="space-y-4">
-                                        {results.products.length > 0 && (
-                                            <div>
-                                                <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-1 px-2">Products</h3>
-                                                {results.products.map((product) => (
-                                                    <Link href={`/product/${product.slug}`} key={product.id} passHref onClick={handleLinkClick}>
-                                                        <div className="flex items-center gap-3 rounded-md p-2 hover:bg-accent cursor-pointer">
-                                                            <Image src={product.imageCdnUrl || 'https://placehold.co/400'} alt={product.name} width={40} height={40} className="rounded-md object-contain border bg-white"/>
-                                                            <div className="flex-1">
-                                                                <p className="text-sm font-medium">{product.name}</p>
-                                                                <p className="text-sm text-primary">Tk {product.price.toFixed(2)}</p>
-                                                            </div>
-                                                        </div>
-                                                    </Link>
-                                                ))}
-                                            </div>
-                                        )}
-                                        {results.categories.length > 0 && (
-                                            <div>
-                                                <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-1 px-2">Categories</h3>
-                                                {results.categories.map((category) => (
-                                                    <Link href={`/collections/${category.slug}`} key={category.id} passHref onClick={handleLinkClick}>
-                                                        <div className="flex items-center gap-3 rounded-md p-2 hover:bg-accent cursor-pointer">
-                                                            <Folder className="h-5 w-5 text-muted-foreground" />
-                                                            <p className="text-sm font-medium flex-1">{category.name}</p>
-                                                        </div>
-                                                    </Link>
-                                                ))}
-                                            </div>
-                                        )}
-                                        {results.subcategories.length > 0 && (
-                                            <div>
-                                                <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-1 px-2">Subcategories</h3>
-                                                {results.subcategories.map((subcategory) => (
-                                                    <Link href={`/collections/${subcategory.categorySlug}/${subcategory.slug}`} key={subcategory.id} passHref onClick={handleLinkClick}>
-                                                        <div className="flex items-center gap-3 rounded-md p-2 hover:bg-accent cursor-pointer">
-                                                            <FolderOpen className="h-5 w-5 text-muted-foreground" />
-                                                            <p className="text-sm font-medium flex-1">{subcategory.name}</p>
-                                                        </div>
-                                                    </Link>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        </PopoverContent>
-                     )}
-                </Popover>
+           <div className="flex-1 md:flex-initial md:w-full md:max-w-md" ref={searchWrapperRef}>
+                <SearchPopover />
            </div>
 
 
-          <div className="flex items-center justify-end space-x-2">
+          <div className="flex items-center justify-end space-x-1 md:space-x-2">
+            <div className="flex items-center space-x-1">
+                <Label htmlFor="language-toggle" className={cn('text-xs font-bold', language === 'en' ? 'text-primary' : 'text-muted-foreground')}>EN</Label>
+                <Switch
+                    id="language-toggle"
+                    checked={language === 'bn'}
+                    onCheckedChange={(checked) => setLanguage(checked ? 'bn' : 'en')}
+                    className="h-5 w-9 [&>span]:h-4 [&>span]:w-4 [&>span[data-state=checked]]:translate-x-4"
+                />
+                <Label htmlFor="language-toggle" className={cn('text-xs font-bold', language === 'bn' ? 'text-primary' : 'text-muted-foreground')}>BN</Label>
+            </div>
             <Button asChild variant="ghost" size="icon" className="hidden md:inline-flex">
               <Link href="/account">
                  {(isUserLoading) ? <Loader2 className="h-6 w-6 animate-spin" /> : user && !user.isAnonymous ? <User className="h-6 w-6" /> : <LogIn className="h-6 w-6" />}

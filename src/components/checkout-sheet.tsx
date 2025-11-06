@@ -25,7 +25,6 @@ import { useForm, Controller, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useLanguage } from '@/context/language-context';
-import { Switch } from '@/components/ui/switch';
 
 const checkoutSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -54,7 +53,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { t, language, setLanguage } = useLanguage();
+    const { t } = useLanguage();
     
     const settingsDocRef = useMemo(
         () => (firestore ? doc(firestore, 'settings', 'global') : null),
@@ -178,19 +177,10 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
         side="bottom"
         className="h-[90vh] rounded-t-lg flex flex-col p-0"
       >
-        <SheetHeader className="p-4 border-b text-left flex-row justify-between items-center">
-          <SheetTitle className="text-base font-semibold">
+        <SheetHeader className="p-4 border-b">
+          <SheetTitle className="text-base font-semibold text-center">
             {t('checkout.title')}
           </SheetTitle>
-          <div className="flex items-center space-x-2">
-            <Label htmlFor="language-toggle" className={language === 'en' ? 'font-bold' : 'text-muted-foreground'}>EN</Label>
-            <Switch
-                id="language-toggle"
-                checked={language === 'bn'}
-                onCheckedChange={(checked) => setLanguage(checked ? 'bn' : 'en')}
-            />
-            <Label htmlFor="language-toggle" className={language === 'bn' ? 'font-bold' : 'text-muted-foreground'}>BN</Label>
-          </div>
         </SheetHeader>
         <form onSubmit={handleSubmit(onConfirmOrder)} className="flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto p-4 space-y-6">

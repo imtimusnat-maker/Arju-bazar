@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, ShoppingBag } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
+import { Logo } from '@/components/logo';
 
 const OrderStatusBadge = ({ status }: { status: string }) => {
   const variant = {
@@ -150,8 +151,9 @@ export default function OrderInvoicePage() {
         <main className="flex-1 py-8 px-4">
             <div className="container mx-auto max-w-2xl">
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Invoice</CardTitle>
+                    <CardHeader className="items-center text-center">
+                        <Logo />
+                        <CardTitle className="pt-4">Invoice</CardTitle>
                         <CardDescription>Order ID: #{order.id.slice(0, 7).toUpperCase()}</CardDescription>
                     </CardHeader>
                     <OrderDetailsContent order={order} />

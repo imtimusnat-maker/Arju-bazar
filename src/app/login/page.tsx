@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm, type SubmitHandler } from 'react-hook-form';
@@ -24,7 +24,7 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const auth = useAuth();
@@ -81,62 +81,71 @@ export default function LoginPage() {
   }
 
   return (
+    <Card>
+      <CardHeader className="text-center">
+          <div className="mx-auto mb-4">
+            <Logo />
+          </div>
+          <CardTitle>Welcome Back!</CardTitle>
+          <CardDescription>Sign in to access your account</CardDescription>
+      </CardHeader>
+      <CardContent>
+          <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                  <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                      <Input type="email" placeholder="you@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                  </FormItem>
+              )}
+              />
+              <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                  <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                  </FormItem>
+              )}
+              />
+              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+              Sign In
+              </Button>
+          </form>
+          </Form>
+      </CardContent>
+      <CardFooter className="text-center text-sm">
+          <p>
+              Don't have an account?{' '}
+              <Link href="/signup" className="font-semibold text-primary hover:underline">
+                  Sign Up
+              </Link>
+          </p>
+      </CardFooter>
+    </Card>
+  );
+}
+
+
+export default function LoginPage() {
+  return (
     <div className="flex min-h-screen flex-col bg-gray-50">
       <Header />
       <main className="flex-1 py-8 px-4">
         <div className="container mx-auto max-w-md">
-            <Card>
-            <CardHeader className="text-center">
-                <div className="mx-auto mb-4">
-                  <Logo />
-                </div>
-                <CardTitle>Welcome Back!</CardTitle>
-                <CardDescription>Sign in to access your account</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                            <Input type="email" placeholder="you@example.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                    Sign In
-                    </Button>
-                </form>
-                </Form>
-            </CardContent>
-            <CardFooter className="text-center text-sm">
-                <p>
-                    Don't have an account?{' '}
-                    <Link href="/signup" className="font-semibold text-primary hover:underline">
-                        Sign Up
-                    </Link>
-                </p>
-            </CardFooter>
-            </Card>
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <LoginForm />
+            </React.Suspense>
         </div>
       </main>
       <Footer />

@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, doc, updateDoc, serverTimestamp, writeBatch, getDocs, collectionGroup, where } from 'firebase/firestore';
 import type { Order, OrderItem } from '@/lib/orders';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShoppingBag, FileText } from 'lucide-react';
+import { Loader2, ShoppingBag, FileText, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
 
@@ -148,6 +148,7 @@ function OrderDetailsContent({ order }: { order: Order }) {
 export default function MyOrdersPage() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
 
   const ordersQuery = useMemo(
     () => (firestore && user ? query(collection(firestore, `users/${user.uid}/orders`)) : null),
@@ -164,6 +165,40 @@ export default function MyOrdersPage() {
     });
   }, [orders]);
 
+  const handleClearHistory = async () => {
+    if (!firestore || !user || !orders || orders.length === 0) return;
+
+    const batch = writeBatch(firestore);
+
+    // Delete all orders and their associated items
+    for (const order of orders) {
+        const orderRef = doc(firestore, `users/${user.uid}/orders`, order.id);
+        batch.delete(orderRef);
+
+        // Also delete items in the subcollection
+        const itemsCollectionRef = collection(firestore, `users/${user.uid}/orders/${order.id}/orderItems`);
+        const itemsSnapshot = await getDocs(itemsCollectionRef);
+        itemsSnapshot.forEach(itemDoc => {
+            batch.delete(itemDoc.ref);
+        });
+    }
+
+    try {
+        await batch.commit();
+        toast({
+            title: 'Order History Cleared',
+            description: 'All of your past orders have been permanently deleted.',
+        });
+    } catch (error) {
+        console.error('Error clearing order history:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Could not clear your order history. Please try again.',
+        });
+    }
+  };
+
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
@@ -172,9 +207,33 @@ export default function MyOrdersPage() {
             <div className="container mx-auto max-w-4xl">
                  <h1 className="text-2xl font-bold mb-6">My Orders</h1>
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Order History</CardTitle>
-                        <CardDescription>View the status and details of your past orders.</CardDescription>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>Order History</CardTitle>
+                            <CardDescription>View the status and details of your past orders.</CardDescription>
+                        </div>
+                         <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" disabled={!sortedOrders || sortedOrders.length === 0}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Clear History
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action is permanent and cannot be undone. This will delete all of your past orders.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleClearHistory}>
+                                    Yes, Delete Everything
+                                </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </CardHeader>
                     <CardContent className="p-0">
                         <Accordion type="single" collapsible className="w-full">

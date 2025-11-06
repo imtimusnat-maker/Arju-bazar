@@ -1,10 +1,11 @@
 import type { Order, OrderStatus } from '@/lib/orders';
+import type { Settings } from '@/lib/settings';
 
 interface SendSmsParams {
     number: string;
     order: Partial<Order> & { id: string };
     status: OrderStatus;
-    greetingTemplate: string;
+    settings: Partial<Settings>;
 }
 
 const getStatusMessage = (status: OrderStatus): string => {
@@ -20,31 +21,44 @@ const getStatusMessage = (status: OrderStatus): string => {
     }
 }
 
-function formatMessage(params: SendSmsParams): string {
-    const { greetingTemplate, order } = params;
+function getGreetingTemplate(status: OrderStatus, settings: Partial<Settings>): string | undefined {
+    switch (status) {
+        case 'order placed':
+            return settings.smsGreetingPlaced;
+        case 'order confirmed':
+            return settings.smsGreetingConfirmed;
+        case 'order delivered':
+            return settings.smsGreetingDelivered;
+        default:
+            return undefined;
+    }
+}
 
-    let greeting = greetingTemplate || 'Hello [customerName],';
-    
-    if (order.customerName) {
-        greeting = greeting.replace(/\[customerName\]/g, order.customerName);
-    } else {
-        // Fallback if customer name is not available for some reason
-        greeting = greeting.replace(/\[customerName\]/g, 'Valued Customer');
+function formatMessage(params: SendSmsParams): string | null {
+    const { order, status, settings } = params;
+
+    const greetingTemplate = getGreetingTemplate(status, settings);
+    if (!greetingTemplate) {
+        // No template configured for this status, so no message should be sent.
+        return null;
     }
 
+    let greeting = greetingTemplate.replace(/\[customerName\]/g, order.customerName || 'Valued Customer');
+    
     const statusMessage = getStatusMessage(params.status);
     const orderId = order.id.slice(0, 7).toUpperCase();
     
     // For now, the invoice link points to the general orders page.
-    // In a production app, you might want a direct link to the specific order.
     const invoiceLink = `${process.env.NEXT_PUBLIC_APP_URL || ''}/account/orders`;
 
     return `${greeting} ${statusMessage} Order ID: ${orderId}. View details: ${invoiceLink}`;
 }
 
-export const sendSms = async ({ number, order, status, greetingTemplate }: SendSmsParams) => {
-    if (!number || !greetingTemplate) {
-        console.error("SMS not sent: Missing number or greeting template.");
+export const sendSms = async (params: SendSmsParams) => {
+    const { number, status, settings } = params;
+
+    if (!number) {
+        console.error("SMS not sent: Missing number.");
         return;
     }
     
@@ -52,8 +66,13 @@ export const sendSms = async ({ number, order, status, greetingTemplate }: SendS
     if (!['order placed', 'order confirmed', 'order delivered'].includes(status)) {
         return;
     }
+    
+    const message = formatMessage(params);
 
-    const message = formatMessage({ number, order, status, greetingTemplate });
+    // If formatMessage returns null (e.g., no template for the status), don't send anything.
+    if (!message) {
+        return;
+    }
 
     try {
         await fetch('/api/send-sms', {

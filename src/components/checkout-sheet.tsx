@@ -149,6 +149,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
             itemsToDisplay.forEach(item => {
                 const itemRef = doc(orderItemsCollection);
                 batch.set(itemRef, {
+                    id: itemRef.id,
                     productId: item.id,
                     orderId: orderRef.id,
                     quantity: item.quantity,
@@ -171,13 +172,13 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
 
 
             await batch.commit();
-
-            if (settings?.smsGreeting) {
+            
+            if (settings) {
                 sendSms({
                     number: data.phone,
                     order: orderData,
                     status: newStatus,
-                    greetingTemplate: settings.smsGreeting,
+                    settings
                 });
             }
 

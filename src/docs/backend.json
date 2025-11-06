@@ -361,6 +361,18 @@
             },
             "required": ["id", "label", "price"]
           }
+        },
+        "smsGreetingPlaced": {
+          "type": "string",
+          "description": "Custom greeting for SMS when an order is placed. Can include [customerName]."
+        },
+        "smsGreetingConfirmed": {
+          "type": "string",
+          "description": "Custom greeting for SMS when an order is confirmed. Can include [customerName]."
+        },
+        "smsGreetingDelivered": {
+          "type": "string",
+          "description": "Custom greeting for SMS when an order is delivered. Can include [customerName]."
         }
       },
       "required": [

@@ -11,5 +11,7 @@ export type Settings = {
   heroImageUrl?: string;
   heroImageCdnUrl?: string;
   shippingOptions?: ShippingOption[];
-  smsGreeting?: string;
+  smsGreetingPlaced?: string;
+  smsGreetingConfirmed?: string;
+  smsGreetingDelivered?: string;
 };

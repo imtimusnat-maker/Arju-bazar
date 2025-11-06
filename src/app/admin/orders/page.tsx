@@ -151,12 +151,12 @@ export default function AdminOrdersPage() {
             updatedAt: serverTimestamp(),
         });
 
-        if (settings?.smsGreeting) {
+        if (settings) {
             sendSms({
                 number: order.customerPhone,
                 order: order,
                 status: status,
-                greetingTemplate: settings.smsGreeting
+                settings: settings,
             });
         }
 

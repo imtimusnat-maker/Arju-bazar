@@ -31,7 +31,9 @@ const settingsSchema = z.object({
   heroImageUrl: z.string().optional(),
   heroImageCdnUrl: z.string().optional(),
   shippingOptions: z.array(shippingOptionSchema).optional(),
-  smsGreeting: z.string().optional(),
+  smsGreetingPlaced: z.string().optional(),
+  smsGreetingConfirmed: z.string().optional(),
+  smsGreetingDelivered: z.string().optional(),
 });
 
 type SettingsFormData = z.infer<typeof settingsSchema>;
@@ -74,7 +76,9 @@ export default function AdminSettingsPage() {
       heroImageUrl: '',
       heroImageCdnUrl: '',
       shippingOptions: [],
-      smsGreeting: '',
+      smsGreetingPlaced: '',
+      smsGreetingConfirmed: '',
+      smsGreetingDelivered: '',
     },
   });
 
@@ -126,13 +130,14 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <div>
+    <div className="flex-1 flex flex-col overflow-hidden">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Shop Settings</h1>
       </div>
        {isLoading ? <p>Loading settings...</p> : (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 overflow-y-auto pr-2 space-y-8">
               <Card>
                 <CardHeader>
                   <CardTitle>Contact Information</CardTitle>
@@ -279,18 +284,44 @@ export default function AdminSettingsPage() {
                 <CardHeader>
                   <CardTitle>SMS Notifications</CardTitle>
                   <CardDescription>
-                    Customize the greeting for SMS messages sent to customers. The system will automatically add the order status and invoice link. Use `[customerName]` as a placeholder for the customer's name.
+                    Set a custom greeting for each automated SMS. The system will automatically add the status update and invoice link. Use `[customerName]` to personalize the message.
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                     <FormField
                       control={form.control}
-                      name="smsGreeting"
+                      name="smsGreetingPlaced"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Custom SMS Greeting</FormLabel>
+                          <FormLabel>Greeting for "Order Placed"</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="e.g. Thank you [customerName]!" {...field} />
+                            <Input placeholder="e.g. Thank you [customerName]," {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="smsGreetingConfirmed"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Greeting for "Order Confirmed"</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g. Hi [customerName]," {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="smsGreetingDelivered"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Greeting for "Order Delivered"</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g. Hello [customerName]," {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -298,10 +329,12 @@ export default function AdminSettingsPage() {
                     />
                 </CardContent>
               </Card>
-
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                Save All Settings
-              </Button>
+              </div>
+              <div className="pt-8">
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                    Save All Settings
+                </Button>
+              </div>
             </form>
           </Form>
         )}

@@ -75,6 +75,7 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
+import { useDebounce } from '@/hooks/use-debounce';
 
 const productSchema = z.object({
   name: z.string().min(1, 'Product name is required'),
@@ -168,6 +169,37 @@ export default function AdminProductsPage() {
     }
   }, [selectedCategoryId, form]);
 
+  const debouncedName = useDebounce(form.watch('name'), 500);
+  const debouncedDescription = useDebounce(form.watch('description'), 500);
+
+  const translateText = async (text: string, targetLang: 'bn' | 'en') => {
+    if (!text) return '';
+    try {
+      const response = await fetch(`/api/translate?text=${encodeURIComponent(text)}&targetLang=${targetLang}`);
+      const data = await response.json();
+      return data.translation;
+    } catch (error) {
+      console.error('Translation error:', error);
+      return `Translation failed for: ${text}`;
+    }
+  };
+
+  useEffect(() => {
+    if (debouncedName && isDialogOpen && !editingProduct) {
+      translateText(debouncedName, 'bn').then(translated => {
+        form.setValue('name_bn', translated);
+      });
+    }
+  }, [debouncedName, isDialogOpen, editingProduct, form]);
+
+  useEffect(() => {
+    if (debouncedDescription && isDialogOpen && !editingProduct) {
+      translateText(debouncedDescription, 'bn').then(translated => {
+        form.setValue('description_bn', translated);
+      });
+    }
+  }, [debouncedDescription, isDialogOpen, editingProduct, form]);
+
 
   const handleDialogOpen = (product: Product | null = null) => {
     setEditingProduct(product);
@@ -217,17 +249,10 @@ export default function AdminProductsPage() {
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
     const category = categories?.find(c => c.id === data.categoryId);
     const searchKeywords = generateSearchKeywords(data.name);
-    
-    // Placeholder for translation
-    const translatedData = {
-        name_bn: data.name_bn || `${data.name} (BN)`,
-        description_bn: data.description_bn || `${data.description} (BN)`,
-    };
 
     if (editingProduct) {
        const productData = {
         ...data,
-        ...translatedData,
         slug,
         searchKeywords,
         categorySlug: category?.slug || '',
@@ -242,7 +267,6 @@ export default function AdminProductsPage() {
     } else {
        const newProductData = {
         ...data,
-        ...translatedData,
         slug,
         searchKeywords,
         categorySlug: category?.slug || '',
@@ -425,7 +449,7 @@ export default function AdminProductsPage() {
                   <FormItem>
                     <FormLabel>Product Name (Bengali)</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. অর্গানিক মধু (auto-translates)" {...field} />
+                      <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -455,7 +479,7 @@ export default function AdminProductsPage() {
                     <FormLabel>Description (Bengali)</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="পণ্যের বর্ণনা দিন (auto-translates)"
+                        placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে"
                         {...field}
                       />
                     </FormControl>
@@ -583,5 +607,3 @@ export default function AdminProductsPage() {
     </div>
   );
 }
-
-    

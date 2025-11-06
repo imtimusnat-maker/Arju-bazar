@@ -187,7 +187,7 @@ export default function AdminOrdersPage() {
                                             <div className="text-xs text-muted-foreground truncate">{order.customerPhone}</div>
                                           </div>
                                           <span className="truncate hidden md:block">{order.shippingAddress}</span>
-                                          <span><OrderStatusBadge status={order.status} /></span>
+                                          <div><OrderStatusBadge status={order.status} /></div>
                                           <span className="text-right font-semibold">Tk {order.totalAmount.toFixed(2)}</span>
                                      </div>
                                  </AccordionTrigger>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Card,
   CardHeader,
@@ -37,7 +37,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Pencil, Trash2, Search } from 'lucide-react';
 import { useForm, type SubmitHandler, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -209,7 +209,8 @@ export default function AdminCategoriesPage() {
   const [isEditSubcategoryDialogOpen, setIsEditSubcategoryDialogOpen] = useState(false);
   const [editingSubcategory, setEditingSubcategory] = useState<Subcategory | null>(null);
   const [activeForm, setActiveForm] = useState<'category' | 'subcategory' | null>(null);
-
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -221,6 +222,21 @@ export default function AdminCategoriesPage() {
   const { data: categories, isLoading } = useCollection<Category>(
     categoriesCollection
   );
+  
+  const filteredCategories = useMemo(() => {
+    if (!categories) return [];
+    if (!debouncedSearchTerm) return categories;
+
+    const searchKeywords = debouncedSearchTerm.toLowerCase().split(/\s+/).filter(Boolean);
+    if (searchKeywords.length === 0) return categories;
+
+    return categories.filter(category =>
+      searchKeywords.every(keyword =>
+        category.searchKeywords?.some(categoryKeyword => categoryKeyword.includes(keyword))
+      )
+    );
+  }, [categories, debouncedSearchTerm]);
+
 
   const categoryForm = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
@@ -449,8 +465,17 @@ export default function AdminCategoriesPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 gap-4">
         <h1 className="text-2xl font-bold">Categories</h1>
+        <div className="relative w-full max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            placeholder="Search categories..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
         <Button onClick={() => handleCategoryDialogOpen()}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Add Category
@@ -467,8 +492,8 @@ export default function AdminCategoriesPage() {
           <Accordion type="single" collapsible className="w-full">
              {isLoading ? (
                 <p className="text-center py-4">Loading...</p>
-              ) : categories && categories.length > 0 ? (
-                categories.map((category) => (
+              ) : filteredCategories && filteredCategories.length > 0 ? (
+                filteredCategories.map((category) => (
                     <AccordionItem value={category.id} key={category.id}>
                        <div className="flex items-center w-full">
                         <AccordionTrigger className="flex-1 py-2">

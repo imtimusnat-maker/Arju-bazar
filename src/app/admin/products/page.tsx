@@ -419,7 +419,7 @@ export default function AdminProductsPage() {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-2xl flex flex-col h-full sm:h-auto">
           <DialogHeader>
             <DialogTitle>
               {editingProduct ? 'Edit Product' : 'Add Product'}
@@ -431,178 +431,180 @@ export default function AdminProductsPage() {
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Product Name (EN)</FormLabel>
-                        <FormControl>
-                        <Input placeholder="e.g. Organic Honey" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="name_bn"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Product Name (BN)</FormLabel>
-                        <FormControl>
-                        <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Description (EN)</FormLabel>
-                        <FormControl>
-                        <Textarea
-                            placeholder="Describe the product in English..."
-                            {...field}
-                        />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="description_bn"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Description (BN)</FormLabel>
-                        <FormControl>
-                        <Textarea
-                            placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে"
-                            {...field}
-                        />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-              </div>
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField
-                    control={form.control}
-                    name="categoryId"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Category</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a category" />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                            {categoriesLoading ? <SelectItem value="loading" disabled>Loading...</SelectItem> :
-                                categories?.map(cat => (
-                                <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                                ))
-                            }
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                <FormField
-                    control={form.control}
-                    name="subcategoryId"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Subcategory</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value || ''} disabled={!selectedCategoryId || subcategoriesLoading}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a subcategory" />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                            {subcategoriesLoading && <SelectItem value="loading" disabled>Loading...</SelectItem>}
-                            {subcategories && subcategories.length > 0 ? subcategories.map(sub => (
-                                <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>
-                            )) : <SelectItem value="none" disabled>No subcategories</SelectItem>}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Price</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="99.99" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="stockQuantity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Stock</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="100" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormItem>
-                <FormLabel>Product Image</FormLabel>
-                <FormControl>
-                  <IKContext
-                    publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY}
-                    urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}
-                    authenticator={authenticator}
-                  >
-                    <div className="flex items-center gap-4">
-                      {form.watch('imageCdnUrl') && (
-                        <Image
-                          src={form.watch('imageCdnUrl')!}
-                          alt="Product preview"
-                          width={64}
-                          height={64}
-                          className="rounded-md object-cover"
-                        />
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-1 pr-6 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>Product Name (EN)</FormLabel>
+                          <FormControl>
+                          <Input placeholder="e.g. Organic Honey" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
                       )}
-                      <IKUpload
-                        fileName="product-image.jpg"
-                        onError={onUploadError}
-                        onSuccess={onUploadSuccess}
-                        useUniqueFileName={true}
+                  />
+                  <FormField
+                      control={form.control}
+                      name="name_bn"
+                      render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>Product Name (BN)</FormLabel>
+                          <FormControl>
+                          <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>Description (EN)</FormLabel>
+                          <FormControl>
+                          <Textarea
+                              placeholder="Describe the product in English..."
+                              {...field}
+                          />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
+                  <FormField
+                      control={form.control}
+                      name="description_bn"
+                      render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>Description (BN)</FormLabel>
+                          <FormControl>
+                          <Textarea
+                              placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে"
+                              {...field}
+                          />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                      control={form.control}
+                      name="categoryId"
+                      render={({ field }) => (
+                          <FormItem>
+                          <FormLabel>Category</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                              <FormControl>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Select a category" />
+                              </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                              {categoriesLoading ? <SelectItem value="loading" disabled>Loading...</SelectItem> :
+                                  categories?.map(cat => (
+                                  <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                                  ))
+                              }
+                              </SelectContent>
+                          </Select>
+                          <FormMessage />
+                          </FormItem>
+                      )}
                       />
-                    </div>
-                  </IKContext>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+                  <FormField
+                      control={form.control}
+                      name="subcategoryId"
+                      render={({ field }) => (
+                          <FormItem>
+                          <FormLabel>Subcategory</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value || ''} disabled={!selectedCategoryId || subcategoriesLoading}>
+                              <FormControl>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Select a subcategory" />
+                              </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                              {subcategoriesLoading && <SelectItem value="loading" disabled>Loading...</SelectItem>}
+                              {subcategories && subcategories.length > 0 ? subcategories.map(sub => (
+                                  <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>
+                              )) : <SelectItem value="none" disabled>No subcategories</SelectItem>}
+                              </SelectContent>
+                          </Select>
+                          <FormMessage />
+                          </FormItem>
+                      )}
+                      />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Price</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="99.99" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="stockQuantity"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Stock</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="100" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <DialogFooter>
+                <FormItem>
+                  <FormLabel>Product Image</FormLabel>
+                  <FormControl>
+                    <IKContext
+                      publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY}
+                      urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}
+                      authenticator={authenticator}
+                    >
+                      <div className="flex items-center gap-4">
+                        {form.watch('imageCdnUrl') && (
+                          <Image
+                            src={form.watch('imageCdnUrl')!}
+                            alt="Product preview"
+                            width={64}
+                            height={64}
+                            className="rounded-md object-cover"
+                          />
+                        )}
+                        <IKUpload
+                          fileName="product-image.jpg"
+                          onError={onUploadError}
+                          onSuccess={onUploadSuccess}
+                          useUniqueFileName={true}
+                        />
+                      </div>
+                    </IKContext>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              </div>
+
+              <DialogFooter className="mt-4 pt-4 border-t">
                 <Button type="submit">
                   {editingProduct ? 'Save Changes' : 'Add Product'}
                 </Button>

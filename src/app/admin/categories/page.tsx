@@ -543,7 +543,7 @@ export default function AdminCategoriesPage() {
 
       {/* Category Dialog (Add/Edit) */}
       <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-2xl flex flex-col h-full sm:h-auto">
           <DialogHeader>
             <DialogTitle>
               {editingCategory ? 'Edit Category' : 'Add Category'}
@@ -555,102 +555,103 @@ export default function AdminCategoriesPage() {
             </DialogDescription>
           </DialogHeader>
           <Form {...categoryForm}>
-            <form onSubmit={categoryForm.handleSubmit(onCategorySubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                    control={categoryForm.control}
-                    name="name"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Category Name (EN)</FormLabel>
-                        <FormControl>
-                        <Input placeholder="e.g. Men Collections" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <FormField
-                    control={categoryForm.control}
-                    name="name_bn"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Category Name (BN)</FormLabel>
-                        <FormControl>
-                        <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-              </div>
-
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <FormField
-                    control={categoryForm.control}
-                    name="description"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Description (EN)</FormLabel>
-                        <FormControl>
-                        <Textarea
-                            placeholder="Describe the category..."
-                            {...field}
-                        />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={categoryForm.control}
-                    name="description_bn"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Description (BN)</FormLabel>
-                        <FormControl>
-                        <Textarea
-                            placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে"
-                            {...field}
-                        />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-               </div>
-              
-              <FormItem>
-                <FormLabel>Category Image</FormLabel>
-                <FormControl>
-                  <IKContext
-                      publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY}
-                      urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}
-                      authenticator={authenticator}
-                    >
-                  <div className="flex items-center gap-4">
-                    {categoryForm.watch('imageCdnUrl') && (
-                      <Image
-                        src={categoryForm.watch('imageCdnUrl')!}
-                        alt="Category preview"
-                        width={64}
-                        height={64}
-                        className="rounded-md object-cover"
-                      />
-                    )}
-                    <IKUpload
-                      fileName="category-image.jpg"
-                      onError={onUploadError}
-                      onSuccess={onUploadSuccess}
-                      useUniqueFileName={true}
+            <form onSubmit={categoryForm.handleSubmit(onCategorySubmit)} className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 overflow-y-auto p-1 pr-6 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                        control={categoryForm.control}
+                        name="name"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Category Name (EN)</FormLabel>
+                            <FormControl>
+                            <Input placeholder="e.g. Men Collections" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={categoryForm.control}
+                        name="name_bn"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Category Name (BN)</FormLabel>
+                            <FormControl>
+                            <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
                     />
                   </div>
-                  </IKContext>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
 
-              <DialogFooter>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                        control={categoryForm.control}
+                        name="description"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Description (EN)</FormLabel>
+                            <FormControl>
+                            <Textarea
+                                placeholder="Describe the category..."
+                                {...field}
+                            />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={categoryForm.control}
+                        name="description_bn"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Description (BN)</FormLabel>
+                            <FormControl>
+                            <Textarea
+                                placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে"
+                                {...field}
+                            />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                  </div>
+                  
+                  <FormItem>
+                    <FormLabel>Category Image</FormLabel>
+                    <FormControl>
+                      <IKContext
+                          publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY}
+                          urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}
+                          authenticator={authenticator}
+                        >
+                      <div className="flex items-center gap-4">
+                        {categoryForm.watch('imageCdnUrl') && (
+                          <Image
+                            src={categoryForm.watch('imageCdnUrl')!}
+                            alt="Category preview"
+                            width={64}
+                            height={64}
+                            className="rounded-md object-cover"
+                          />
+                        )}
+                        <IKUpload
+                          fileName="category-image.jpg"
+                          onError={onUploadError}
+                          onSuccess={onUploadSuccess}
+                          useUniqueFileName={true}
+                        />
+                      </div>
+                      </IKContext>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+              </div>
+              <DialogFooter className="mt-4 pt-4 border-t">
                 <Button type="submit">
                   {editingCategory ? 'Save Changes' : 'Add Category'}
                 </Button>
@@ -662,7 +663,7 @@ export default function AdminCategoriesPage() {
 
     {/* Add Subcategory Dialog */}
      <Dialog open={isSubcategoryDialogOpen} onOpenChange={setIsSubcategoryDialogOpen}>
-        <DialogContent className="sm:max-w-xl">
+        <DialogContent className="sm:max-w-xl flex flex-col h-full sm:h-auto">
           <DialogHeader>
             <DialogTitle>Add Subcategory</DialogTitle>
             <DialogDescription>
@@ -670,65 +671,67 @@ export default function AdminCategoriesPage() {
             </DialogDescription>
           </DialogHeader>
           <Form {...subcategoryForm}>
-            <form onSubmit={subcategoryForm.handleSubmit(onAddSubcategorySubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                    control={subcategoryForm.control}
-                    name="name"
-                    render={({ field }) => (
+            <form onSubmit={subcategoryForm.handleSubmit(onAddSubcategorySubmit)} className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 overflow-y-auto p-1 pr-6 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                            control={subcategoryForm.control}
+                            name="name"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Subcategory Name (EN)</FormLabel>
+                                <FormControl>
+                                <Input placeholder="e.g. Panjabi" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={subcategoryForm.control}
+                            name="name_bn"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Subcategory Name (BN)</FormLabel>
+                                <FormControl>
+                                <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                    </div>
                     <FormItem>
-                        <FormLabel>Subcategory Name (EN)</FormLabel>
+                        <FormLabel>Subcategory Image</FormLabel>
                         <FormControl>
-                        <Input placeholder="e.g. Panjabi" {...field} />
+                        <IKContext
+                            publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY}
+                            urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}
+                            authenticator={authenticator}
+                            >
+                        <div className="flex items-center gap-4">
+                            {subcategoryForm.watch('imageCdnUrl') && (
+                            <Image
+                                src={subcategoryForm.watch('imageCdnUrl')!}
+                                alt="Subcategory preview"
+                                width={64}
+                                height={64}
+                                className="rounded-md object-cover"
+                            />
+                            )}
+                            <IKUpload
+                            fileName="subcategory-image.jpg"
+                            onError={onUploadError}
+                            onSuccess={onUploadSuccess}
+                            useUniqueFileName={true}
+                            />
+                        </div>
+                        </IKContext>
                         </FormControl>
                         <FormMessage />
                     </FormItem>
-                    )}
-                />
-                <FormField
-                    control={subcategoryForm.control}
-                    name="name_bn"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Subcategory Name (BN)</FormLabel>
-                        <FormControl>
-                        <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-              </div>
-               <FormItem>
-                <FormLabel>Subcategory Image</FormLabel>
-                <FormControl>
-                  <IKContext
-                      publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY}
-                      urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}
-                      authenticator={authenticator}
-                    >
-                  <div className="flex items-center gap-4">
-                    {subcategoryForm.watch('imageCdnUrl') && (
-                      <Image
-                        src={subcategoryForm.watch('imageCdnUrl')!}
-                        alt="Subcategory preview"
-                        width={64}
-                        height={64}
-                        className="rounded-md object-cover"
-                      />
-                    )}
-                    <IKUpload
-                      fileName="subcategory-image.jpg"
-                      onError={onUploadError}
-                      onSuccess={onUploadSuccess}
-                      useUniqueFileName={true}
-                    />
-                  </div>
-                  </IKContext>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-              <DialogFooter>
+                </div>
+              <DialogFooter className="mt-4 pt-4 border-t">
                 <Button type="submit">Add Subcategory</Button>
               </DialogFooter>
             </form>
@@ -738,7 +741,7 @@ export default function AdminCategoriesPage() {
       
     {/* Edit Subcategory Dialog */}
      <Dialog open={isEditSubcategoryDialogOpen} onOpenChange={setIsEditSubcategoryDialogOpen}>
-        <DialogContent className="sm:max-w-xl">
+        <DialogContent className="sm:max-w-xl flex flex-col h-full sm:h-auto">
           <DialogHeader>
             <DialogTitle>Edit Subcategory</DialogTitle>
             <DialogDescription>
@@ -746,65 +749,67 @@ export default function AdminCategoriesPage() {
             </DialogDescription>
           </DialogHeader>
           <Form {...subcategoryForm}>
-            <form onSubmit={subcategoryForm.handleSubmit(onEditSubcategorySubmit)} className="space-y-4">
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                        control={subcategoryForm.control}
-                        name="name"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Subcategory Name (EN)</FormLabel>
-                            <FormControl>
-                            <Input placeholder="e.g. Panjabi" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={subcategoryForm.control}
-                        name="name_bn"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Subcategory Name (BN)</FormLabel>
-                            <FormControl>
-                            <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
+            <form onSubmit={subcategoryForm.handleSubmit(onEditSubcategorySubmit)} className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 overflow-y-auto p-1 pr-6 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                                control={subcategoryForm.control}
+                                name="name"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Subcategory Name (EN)</FormLabel>
+                                    <FormControl>
+                                    <Input placeholder="e.g. Panjabi" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={subcategoryForm.control}
+                                name="name_bn"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Subcategory Name (BN)</FormLabel>
+                                    <FormControl>
+                                    <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </div>
+                    <FormItem>
+                        <FormLabel>Subcategory Image</FormLabel>
+                        <FormControl>
+                        <IKContext
+                            publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY}
+                            urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}
+                            authenticator={authenticator}
+                            >
+                        <div className="flex items-center gap-4">
+                            {subcategoryForm.watch('imageCdnUrl') && (
+                            <Image
+                                src={subcategoryForm.watch('imageCdnUrl')!}
+                                alt="Subcategory preview"
+                                width={64}
+                                height={64}
+                                className="rounded-md object-cover"
+                            />
+                            )}
+                            <IKUpload
+                            fileName="subcategory-image.jpg"
+                            onError={onUploadError}
+                            onSuccess={onUploadSuccess}
+                            useUniqueFileName={true}
+                            />
+                        </div>
+                        </IKContext>
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
                 </div>
-              <FormItem>
-                <FormLabel>Subcategory Image</FormLabel>
-                <FormControl>
-                  <IKContext
-                      publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY}
-                      urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT}
-                      authenticator={authenticator}
-                    >
-                  <div className="flex items-center gap-4">
-                    {subcategoryForm.watch('imageCdnUrl') && (
-                      <Image
-                        src={subcategoryForm.watch('imageCdnUrl')!}
-                        alt="Subcategory preview"
-                        width={64}
-                        height={64}
-                        className="rounded-md object-cover"
-                      />
-                    )}
-                    <IKUpload
-                      fileName="subcategory-image.jpg"
-                      onError={onUploadError}
-                      onSuccess={onUploadSuccess}
-                      useUniqueFileName={true}
-                    />
-                  </div>
-                  </IKContext>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-              <DialogFooter>
+              <DialogFooter className="mt-4 pt-4 border-t">
                 <Button type="submit">Save Changes</Button>
               </DialogFooter>
             </form>

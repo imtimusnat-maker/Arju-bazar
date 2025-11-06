@@ -70,7 +70,9 @@ export default function SignUpPage() {
   }, [auth, toast]);
 
   const onSubmit: SubmitHandler<SignUpFormData> = (data) => {
-    initiateEmailSignUp(auth, data.email, data.password);
+    if (auth) {
+        initiateEmailSignUp(auth, data.email, data.password);
+    }
   };
   
   if (isUserLoading) {

@@ -69,7 +69,9 @@ export default function LoginPage() {
   }, [auth, toast]);
 
   const onSubmit: SubmitHandler<LoginFormData> = (data) => {
-    initiateEmailSignIn(auth, data.email, data.password);
+    if(auth) {
+        initiateEmailSignIn(auth, data.email, data.password);
+    }
   };
   
   if (isUserLoading) {

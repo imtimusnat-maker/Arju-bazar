@@ -27,13 +27,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MoreHorizontal, Loader2, Trash2 } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collectionGroup, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
+import { collectionGroup, doc, updateDoc, deleteDoc, query, where, collection } from 'firebase/firestore';
 import type { Order, OrderItem } from '@/lib/orders';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -51,13 +50,15 @@ const OrderStatusBadge = ({ status }: { status: string }) => {
   return <Badge variant={variant as any}>{status}</Badge>;
 };
 
+
 function OrderDetailsContent({ order }: { order: Order }) {
     const firestore = useFirestore();
 
     const orderItemsQuery = useMemoFirebase(
         () => {
             if (!firestore || !order) return null;
-            return query(collectionGroup(firestore, 'orderItems'), where('orderId', '==', order.id));
+            // Query the subcollection directly, as we have the full path.
+            return query(collection(firestore, `users/${order.userId}/orders/${order.id}/orderItems`));
         },
         [firestore, order]
     );

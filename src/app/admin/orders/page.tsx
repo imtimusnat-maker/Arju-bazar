@@ -94,6 +94,9 @@ function OrderDetailsDialog({ order, isOpen, onOpenChange }: { order: Order | nu
                         <div className="text-sm space-y-1 text-muted-foreground">
                              <p><span className="font-medium text-foreground">Status:</span> <OrderStatusBadge status={order.status} /></p>
                              <p><span className="font-medium text-foreground">Total:</span> Tk {order.totalAmount.toFixed(2)}</p>
+                             {order.orderNote && (
+                                <p><span className="font-medium text-foreground">Note:</span> {order.orderNote}</p>
+                             )}
                         </div>
                     </div>
                 </div>

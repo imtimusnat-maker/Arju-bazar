@@ -151,7 +151,7 @@ export default function MyOrdersPage() {
   const { toast } = useToast();
 
   const ordersQuery = useMemo(
-    () => (firestore && user ? query(collection(firestore, `users/${user.uid}/orders`)) : null),
+    () => (firestore && user ? query(collection(firestore, `users/${user.uid}/orders`), where('hiddenFromUser', '!=', true)) : null),
     [firestore, user]
   );
   const { data: orders, isLoading } = useCollection<Order>(ordersQuery);
@@ -170,24 +170,17 @@ export default function MyOrdersPage() {
 
     const batch = writeBatch(firestore);
 
-    // Delete all orders and their associated items
+    // Instead of deleting, we update a flag
     for (const order of orders) {
         const orderRef = doc(firestore, `users/${user.uid}/orders`, order.id);
-        batch.delete(orderRef);
-
-        // Also delete items in the subcollection
-        const itemsCollectionRef = collection(firestore, `users/${user.uid}/orders/${order.id}/orderItems`);
-        const itemsSnapshot = await getDocs(itemsCollectionRef);
-        itemsSnapshot.forEach(itemDoc => {
-            batch.delete(itemDoc.ref);
-        });
+        batch.update(orderRef, { hiddenFromUser: true });
     }
 
     try {
         await batch.commit();
         toast({
             title: 'Order History Cleared',
-            description: 'All of your past orders have been permanently deleted.',
+            description: 'Your past orders have been hidden from this view.',
         });
     } catch (error) {
         console.error('Error clearing order history:', error);
@@ -223,13 +216,13 @@ export default function MyOrdersPage() {
                                 <AlertDialogHeader>
                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    This action is permanent and cannot be undone. This will delete all of your past orders.
+                                    This action cannot be undone. This will permanently hide all of your past orders from your view.
                                 </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction onClick={handleClearHistory}>
-                                    Yes, Delete Everything
+                                    Yes, Hide Everything
                                 </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
@@ -288,3 +281,5 @@ export default function MyOrdersPage() {
     </div>
   );
 }
+
+    

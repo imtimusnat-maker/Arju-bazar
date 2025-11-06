@@ -25,5 +25,8 @@ export interface Order {
   shippingMethod: string;
   shippingCost: number;
   orderNote?: string;
+  hiddenFromUser?: boolean; // New field
   items?: OrderItem[]; // Optional: for client-side convenience
 }
+
+    

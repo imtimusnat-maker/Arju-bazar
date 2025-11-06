@@ -6,7 +6,7 @@ import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { LanguageProvider } from '@/context/language-context';
 
 export const metadata: Metadata = {
-  title: 'Your Shop',
+  title: 'Arju Bazar',
   description: 'The best products, curated for you.',
 };
 

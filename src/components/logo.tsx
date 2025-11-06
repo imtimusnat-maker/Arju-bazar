@@ -15,8 +15,10 @@ export function Logo() {
   return (
     <Link href="/" className="flex items-center space-x-2">
        <YourShopIcon />
-       <div className="font-headline text-2xl font-bold tracking-tight text-foreground">
-        {language === 'bn' ? 'আরজু বাজার' : 'Arju Bazar'}
+       <div className="font-headline text-2xl font-bold tracking-tight">
+        <span className="bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent">
+          {language === 'bn' ? 'আরজু বাজার' : 'Arju Bazar'}
+        </span>
       </div>
     </Link>
   );

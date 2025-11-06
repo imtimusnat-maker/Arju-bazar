@@ -27,6 +27,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -57,7 +58,6 @@ function OrderDetailsContent({ order }: { order: Order }) {
     const orderItemsQuery = useMemoFirebase(
         () => {
             if (!firestore || !order) return null;
-            // Query the subcollection directly, as we have the full path.
             return query(collection(firestore, `users/${order.userId}/orders/${order.id}/orderItems`));
         },
         [firestore, order]

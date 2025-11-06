@@ -77,7 +77,7 @@ function OrderDetailsContent({ order }: { order: Order }) {
                         <p><span className="font-medium text-foreground">Address:</span> {order.shippingAddress}</p>
                         <p><span className="font-medium text-foreground">Shipping:</span> {order.shippingMethod} (Tk {order.shippingCost.toFixed(2)})</p>
                         {order.orderNote && (
-                           <p className="pt-2"><span className="font-medium text-foreground">Note:</span> {order.orderNote}</p>
+                           <div className="pt-2"><span className="font-medium text-foreground">Note:</span> {order.orderNote}</div>
                         )}
                     </div>
                 </div>

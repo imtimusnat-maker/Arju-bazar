@@ -379,12 +379,20 @@ export function Header() {
             </div>
           </div>
 
-           <div className="flex-1 md:flex-initial md:w-full md:max-w-md" ref={searchWrapperRef}>
-                <SearchPopover />
+           <div className="flex-1 flex justify-center md:flex-initial md:w-full md:max-w-md" ref={searchWrapperRef}>
+                <div className="md:hidden">
+                    <Logo />
+                </div>
+                <div className="hidden md:block w-full">
+                    <SearchPopover />
+                </div>
            </div>
 
 
           <div className="flex items-center justify-end space-x-1 md:space-x-2">
+            <div className="md:hidden">
+                <SearchPopover />
+            </div>
             <div className="flex items-center space-x-1">
                 <Label htmlFor="language-toggle" className={cn('text-xs font-bold', language === 'en' ? 'text-primary' : 'text-muted-foreground')}>EN</Label>
                 <Switch

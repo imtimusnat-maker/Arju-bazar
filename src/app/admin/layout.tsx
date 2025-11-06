@@ -126,8 +126,8 @@ export default function AdminLayout({
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
-      <SidebarInset>
-        <header className="flex h-14 items-center justify-between border-b bg-background px-4">
+      <SidebarInset className="flex flex-col">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4">
             <div className="flex items-center gap-2">
                 <SidebarTrigger className="md:hidden" />
                 <h1 className="text-lg font-semibold hidden md:block">Admin Panel</h1>
@@ -142,7 +142,7 @@ export default function AdminLayout({
                 </Button>
             </div>
         </header>
-        <main className="p-4 md:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

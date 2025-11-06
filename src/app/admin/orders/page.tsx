@@ -9,14 +9,6 @@ import {
   CardContent,
 } from '@/components/ui/card';
 import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from '@/components/ui/table';
-import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
@@ -39,9 +31,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, Loader2, PackageSearch, Trash2, ChevronDown } from 'lucide-react';
+import { MoreHorizontal, Loader2, Trash2 } from 'lucide-react';
 import { useFirestore, useCollection } from '@/firebase';
-import { collectionGroup, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collectionGroup, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import type { Order, OrderItem } from '@/lib/orders';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -63,7 +55,7 @@ const OrderStatusBadge = ({ status }: { status: string }) => {
 function OrderDetailsContent({ order }: { order: Order; }) {
     const firestore = useFirestore();
     const orderItemsQuery = useMemo(
-        () => (firestore && order ? collectionGroup(firestore, 'orderItems').where('orderId', '==', order.id) : null),
+        () => (firestore && order ? query(collectionGroup(firestore, 'orderItems'), where('orderId', '==', order.id)) : null),
         [firestore, order]
     );
     const { data: orderItems, isLoading } = useCollection<OrderItem>(orderItemsQuery);

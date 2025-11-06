@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShoppingBag } from 'lucide-react';
+import { Loader2, ShoppingBag, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
 
@@ -186,8 +186,8 @@ export default function MyOrdersPage() {
                                sortedOrders.map((order) => (
                                 <AccordionItem value={order.id} key={order.id}>
                                    <div className="flex items-center">
-                                     <AccordionTrigger className="flex-1 hover:no-underline">
-                                         <div className="w-full grid grid-cols-2 sm:grid-cols-4 items-center text-sm text-left px-4 gap-2">
+                                     <AccordionTrigger className="flex-1 hover:no-underline px-4 py-2">
+                                         <div className="w-full grid grid-cols-2 sm:grid-cols-4 items-center text-sm text-left gap-2">
                                               <div className="truncate">
                                                 <div className="font-medium truncate">Order #{order.id.slice(0,7).toUpperCase()}</div>
                                               </div>
@@ -198,6 +198,12 @@ export default function MyOrdersPage() {
                                               <span className="text-right font-semibold">Tk {order.totalAmount.toFixed(2)}</span>
                                          </div>
                                      </AccordionTrigger>
+                                     <Button asChild variant="outline" size="sm" className="mr-4">
+                                        <Link href={`/account/orders/${order.id}`}>
+                                            <FileText className="mr-2 h-4 w-4" />
+                                            View Invoice
+                                        </Link>
+                                     </Button>
                                    </div>
                                    <AccordionContent>
                                      <OrderDetailsContent order={order} />

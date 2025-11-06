@@ -14,5 +14,8 @@
   "checkout.summary.shipping": "ডেলিভারি চার্জ",
   "checkout.summary.total": "সর্বমোট",
   "checkout.confirmButton": "আপনার অর্ডার কনফার্ম করতে ক্লিক করুন",
-  "checkout.confirmNote": "উপরের বাটনে ক্লিক করলে আপনার অর্ডারটি সাথে সাথে কনফার্ম হয়ে যাবে!"
+  "checkout.confirmNote": "উপরের বাটনে ক্লিক করলে আপনার অর্ডারটি সাথে সাথে কনফার্ম হয়ে যাবে!",
+  "home.allCategories": "সমস্ত বিভাগ",
+  "collections.allCategories": "সমস্ত বিভাগ",
+  "collections.allProducts": "সমস্ত পণ্য"
 }

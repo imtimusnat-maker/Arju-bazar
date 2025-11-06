@@ -24,7 +24,7 @@ export default function AllProductsPage() {
       <Header />
       <main className="flex-1 pb-20 md:pb-0">
         <div className="container mx-auto max-w-screen-xl px-4 py-8">
-          <h1 className="mb-6 text-center font-headline text-2xl font-bold">All Products</h1>
+          <h1 className="mb-6 text-center font-headline text-2xl font-bold">{t('collections.allProducts')}</h1>
           {isLoading ? (
              <div className="text-center">Loading products...</div>
           ) : (
@@ -40,5 +40,3 @@ export default function AllProductsPage() {
     </div>
   );
 }
-
-    

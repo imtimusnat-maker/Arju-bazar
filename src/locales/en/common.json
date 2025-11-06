@@ -14,5 +14,8 @@
   "checkout.summary.shipping": "Delivery Charge",
   "checkout.summary.total": "Total",
   "checkout.confirmButton": "Click to confirm your order",
-  "checkout.confirmNote": "Clicking the button above will confirm your order immediately!"
+  "checkout.confirmNote": "Clicking the button above will confirm your order immediately!",
+  "home.allCategories": "ALL CATEGORIES",
+  "collections.allCategories": "All Categories",
+  "collections.allProducts": "All Products"
 }

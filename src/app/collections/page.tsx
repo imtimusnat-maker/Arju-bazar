@@ -10,7 +10,7 @@ import { useLanguage } from '@/context/language-context';
 
 export default function CollectionsPage() {
   const firestore = useFirestore();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const categoriesCollection = useMemoFirebase(
     () => (firestore ? collection(firestore, 'categories') : null),
@@ -23,7 +23,7 @@ export default function CollectionsPage() {
       <Header />
       <main className="flex-1 pb-20 md:pb-0">
         <div className="container mx-auto max-w-screen-xl px-4 py-8">
-          <h1 className="text-center text-2xl font-headline font-bold mb-6">All Categories</h1>
+          <h1 className="text-center text-2xl font-headline font-bold mb-6">{t('collections.allCategories')}</h1>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
             {isLoading ? (
                 Array.from({ length: 10 }).map((_, index) => (
@@ -58,5 +58,3 @@ export default function CollectionsPage() {
     </div>
   );
 }
-
-    

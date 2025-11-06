@@ -80,7 +80,7 @@ function OrderDetailsContent({ order }: { order: Order; }) {
                 <div>
                     <h3 className="font-semibold mb-2">Order Summary</h3>
                     <div className="text-sm space-y-1 text-muted-foreground">
-                         <p><span className="font-medium text-foreground">Status:</span> <OrderStatusBadge status={order.status} /></p>
+                         <div className="flex items-center gap-2"><span className="font-medium text-foreground">Status:</span> <OrderStatusBadge status={order.status} /></div>
                          <p><span className="font-medium text-foreground">Total:</span> Tk {order.totalAmount.toFixed(2)}</p>
                     </div>
                 </div>

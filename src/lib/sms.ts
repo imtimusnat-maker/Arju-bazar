@@ -43,6 +43,7 @@ function formatMessage(params: SendSmsParams): string | null {
         return null;
     }
 
+    // Use a global regular expression to replace all instances of the placeholder.
     let greeting = greetingTemplate.replace(/\[customerName\]/g, order.customerName || 'Valued Customer');
     
     const statusMessage = getStatusMessage(params.status);

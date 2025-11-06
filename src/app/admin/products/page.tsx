@@ -75,10 +75,13 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
+import { useDebounce } from '@/hooks/use-debounce';
 
 const productSchema = z.object({
   name: z.string().min(1, 'Product name is required'),
+  name_bn: z.string().optional(),
   description: z.string().min(1, 'Description is required'),
+  description_bn: z.string().optional(),
   price: z.coerce.number().min(0, 'Price must be a positive number'),
   stockQuantity: z.coerce.number().int().min(0, 'Stock must be a whole number'),
   imageUrl: z.string().optional(),
@@ -105,9 +108,9 @@ const authenticator = async () => {
     }
 };
 
-const generateSearchKeywords = (name: string): string => {
-    if (!name) return '';
-    return name.toLowerCase().replace(/\s+/g, '');
+const generateSearchKeywords = (name: string, name_bn?: string): string => {
+    const keywords = [name, name_bn].filter(Boolean).join(' ');
+    return keywords.toLowerCase().replace(/\s+/g, '');
 };
 
 
@@ -136,7 +139,9 @@ export default function AdminProductsPage() {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: '',
+      name_bn: '',
       description: '',
+      description_bn: '',
       price: 0,
       stockQuantity: 0,
       imageUrl: '',
@@ -158,6 +163,27 @@ export default function AdminProductsPage() {
 
   const { data: subcategories, isLoading: subcategoriesLoading } = useCollection<Subcategory>(subcategoriesQuery);
   
+  // Auto-translation logic
+  const nameEn = useDebounce(form.watch('name'), 500);
+  const descriptionEn = useDebounce(form.watch('description'), 500);
+
+  useEffect(() => {
+    if (nameEn) {
+        fetch(`/api/translate?text=${encodeURIComponent(nameEn)}&targetLang=bn`)
+            .then(res => res.json())
+            .then(data => form.setValue('name_bn', data.translation));
+    }
+  }, [nameEn, form]);
+
+  useEffect(() => {
+    if (descriptionEn) {
+        fetch(`/api/translate?text=${encodeURIComponent(descriptionEn)}&targetLang=bn`)
+            .then(res => res.json())
+            .then(data => form.setValue('description_bn', data.translation));
+    }
+  }, [descriptionEn, form]);
+
+
   useEffect(() => {
     if (form.formState.isDirty && form.formState.dirtyFields.categoryId) {
         form.resetField('subcategoryId', { defaultValue: '' });
@@ -170,7 +196,9 @@ export default function AdminProductsPage() {
     if (product) {
       form.reset({
         name: product.name,
+        name_bn: product.name_bn || '',
         description: product.description,
+        description_bn: product.description_bn || '',
         price: product.price,
         stockQuantity: product.stockQuantity,
         imageUrl: product.imageUrl,
@@ -181,7 +209,9 @@ export default function AdminProductsPage() {
     } else {
       form.reset({
         name: '',
+        name_bn: '',
         description: '',
+        description_bn: '',
         price: 0,
         stockQuantity: 0,
         imageUrl: '',
@@ -208,7 +238,7 @@ export default function AdminProductsPage() {
 
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
     const category = categories?.find(c => c.id === data.categoryId);
-    const searchKeywords = generateSearchKeywords(data.name);
+    const searchKeywords = generateSearchKeywords(data.name, data.name_bn);
 
     if (editingProduct) {
        const productData = {
@@ -376,7 +406,7 @@ export default function AdminProductsPage() {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>
               {editingProduct ? 'Edit Product' : 'Add Product'}
@@ -389,35 +419,68 @@ export default function AdminProductsPage() {
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. Organic Honey" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Describe the product..."
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Product Name (EN)</FormLabel>
+                        <FormControl>
+                        <Input placeholder="e.g. Organic Honey" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="name_bn"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Product Name (BN)</FormLabel>
+                        <FormControl>
+                        <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Description (EN)</FormLabel>
+                        <FormControl>
+                        <Textarea
+                            placeholder="Describe the product in English..."
+                            {...field}
+                        />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="description_bn"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Description (BN)</FormLabel>
+                        <FormControl>
+                        <Textarea
+                            placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে"
+                            {...field}
+                        />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+              </div>
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                     control={form.control}

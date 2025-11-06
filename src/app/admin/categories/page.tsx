@@ -71,10 +71,13 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Textarea } from '@/components/ui/textarea';
+import { useDebounce } from '@/hooks/use-debounce';
 
 const categorySchema = z.object({
   name: z.string().min(1, 'Category name is required'),
+  name_bn: z.string().optional(),
   description: z.string().min(1, 'Description is required'),
+  description_bn: z.string().optional(),
   imageUrl: z.string().optional(),
   imageCdnUrl: z.string().optional(),
 });
@@ -83,6 +86,7 @@ type CategoryFormData = z.infer<typeof categorySchema>;
 
 const subcategorySchema = z.object({
   name: z.string().min(1, 'Subcategory name is required'),
+  name_bn: z.string().optional(),
   imageUrl: z.string().optional(),
   imageCdnUrl: z.string().optional(),
 });
@@ -105,9 +109,9 @@ const authenticator = async () => {
     }
 };
 
-const generateSearchKeywords = (name: string): string => {
-    if (!name) return '';
-    return name.toLowerCase().replace(/\s+/g, '');
+const generateSearchKeywords = (name: string, name_bn?: string): string => {
+    const keywords = [name, name_bn].filter(Boolean).join(' ');
+    return keywords.toLowerCase().replace(/\s+/g, '');
 };
 
 
@@ -209,7 +213,9 @@ export default function AdminCategoriesPage() {
     resolver: zodResolver(categorySchema),
     defaultValues: {
       name: '',
+      name_bn: '',
       description: '',
+      description_bn: '',
       imageUrl: '',
       imageCdnUrl: '',
     },
@@ -219,10 +225,43 @@ export default function AdminCategoriesPage() {
     resolver: zodResolver(subcategorySchema),
     defaultValues: {
       name: '',
+      name_bn: '',
       imageUrl: '',
       imageCdnUrl: '',
     },
   });
+
+  // Auto-translation logic for Category form
+  const catNameEn = useDebounce(categoryForm.watch('name'), 500);
+  const catDescEn = useDebounce(categoryForm.watch('description'), 500);
+
+  useEffect(() => {
+    if (catNameEn && isCategoryDialogOpen) {
+        fetch(`/api/translate?text=${encodeURIComponent(catNameEn)}&targetLang=bn`)
+            .then(res => res.json())
+            .then(data => categoryForm.setValue('name_bn', data.translation));
+    }
+  }, [catNameEn, isCategoryDialogOpen, categoryForm]);
+
+  useEffect(() => {
+    if (catDescEn && isCategoryDialogOpen) {
+        fetch(`/api/translate?text=${encodeURIComponent(catDescEn)}&targetLang=bn`)
+            .then(res => res.json())
+            .then(data => categoryForm.setValue('description_bn', data.translation));
+    }
+  }, [catDescEn, isCategoryDialogOpen, categoryForm]);
+
+  // Auto-translation logic for Subcategory form
+  const subcatNameEn = useDebounce(subcategoryForm.watch('name'), 500);
+
+  useEffect(() => {
+    if (subcatNameEn && (isSubcategoryDialogOpen || isEditSubcategoryDialogOpen)) {
+        fetch(`/api/translate?text=${encodeURIComponent(subcatNameEn)}&targetLang=bn`)
+            .then(res => res.json())
+            .then(data => subcategoryForm.setValue('name_bn', data.translation));
+    }
+  }, [subcatNameEn, isSubcategoryDialogOpen, isEditSubcategoryDialogOpen, subcategoryForm]);
+
 
   const handleCategoryDialogOpen = (category: Category | null = null) => {
     setEditingCategory(category);
@@ -230,14 +269,18 @@ export default function AdminCategoriesPage() {
     if (category) {
       categoryForm.reset({
         name: category.name,
+        name_bn: category.name_bn || '',
         description: category.description,
+        description_bn: category.description_bn || '',
         imageUrl: category.imageUrl,
         imageCdnUrl: category.imageCdnUrl,
       });
     } else {
       categoryForm.reset({
         name: '',
+        name_bn: '',
         description: '',
+        description_bn: '',
         imageUrl: '',
         imageCdnUrl: '',
       });
@@ -248,7 +291,7 @@ export default function AdminCategoriesPage() {
   const handleAddSubcategoryDialogOpen = (category: Category) => {
     setParentCategory(category);
     setActiveForm('subcategory');
-    subcategoryForm.reset({ name: '', imageUrl: '', imageCdnUrl: '' });
+    subcategoryForm.reset({ name: '', name_bn: '', imageUrl: '', imageCdnUrl: '' });
     setIsSubcategoryDialogOpen(true);
   };
   
@@ -258,6 +301,7 @@ export default function AdminCategoriesPage() {
       setActiveForm('subcategory');
       subcategoryForm.reset({ 
           name: subcategory.name,
+          name_bn: subcategory.name_bn || '',
           imageUrl: subcategory.imageUrl,
           imageCdnUrl: subcategory.imageCdnUrl,
       });
@@ -280,7 +324,7 @@ export default function AdminCategoriesPage() {
     if (!firestore) return;
 
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
-    const searchKeywords = generateSearchKeywords(data.name);
+    const searchKeywords = generateSearchKeywords(data.name, data.name_bn);
     
     if (editingCategory) {
        const categoryData = {
@@ -319,7 +363,7 @@ export default function AdminCategoriesPage() {
     if (!firestore || !parentCategory) return;
     
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
-    const searchKeywords = generateSearchKeywords(data.name);
+    const searchKeywords = generateSearchKeywords(data.name, data.name_bn);
     const subcategoryData = {
         ...data,
         slug,
@@ -345,7 +389,7 @@ export default function AdminCategoriesPage() {
     if (!firestore || !parentCategory || !editingSubcategory) return;
     
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
-    const searchKeywords = generateSearchKeywords(data.name);
+    const searchKeywords = generateSearchKeywords(data.name, data.name_bn);
     const subcategoryData = {
         ...data,
         slug,
@@ -486,7 +530,7 @@ export default function AdminCategoriesPage() {
 
       {/* Category Dialog (Add/Edit) */}
       <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>
               {editingCategory ? 'Edit Category' : 'Add Category'}
@@ -499,35 +543,69 @@ export default function AdminCategoriesPage() {
           </DialogHeader>
           <Form {...categoryForm}>
             <form onSubmit={categoryForm.handleSubmit(onCategorySubmit)} className="space-y-4">
-              <FormField
-                control={categoryForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. Men Collections" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={categoryForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Describe the category..."
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                    control={categoryForm.control}
+                    name="name"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Category Name (EN)</FormLabel>
+                        <FormControl>
+                        <Input placeholder="e.g. Men Collections" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                    control={categoryForm.control}
+                    name="name_bn"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Category Name (BN)</FormLabel>
+                        <FormControl>
+                        <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+              </div>
+
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <FormField
+                    control={categoryForm.control}
+                    name="description"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Description (EN)</FormLabel>
+                        <FormControl>
+                        <Textarea
+                            placeholder="Describe the category..."
+                            {...field}
+                        />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={categoryForm.control}
+                    name="description_bn"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Description (BN)</FormLabel>
+                        <FormControl>
+                        <Textarea
+                            placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে"
+                            {...field}
+                        />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+               </div>
               
               <FormItem>
                 <FormLabel>Category Image</FormLabel>
@@ -571,7 +649,7 @@ export default function AdminCategoriesPage() {
 
     {/* Add Subcategory Dialog */}
      <Dialog open={isSubcategoryDialogOpen} onOpenChange={setIsSubcategoryDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Add Subcategory</DialogTitle>
             <DialogDescription>
@@ -580,19 +658,34 @@ export default function AdminCategoriesPage() {
           </DialogHeader>
           <Form {...subcategoryForm}>
             <form onSubmit={subcategoryForm.handleSubmit(onAddSubcategorySubmit)} className="space-y-4">
-              <FormField
-                control={subcategoryForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Subcategory Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. Panjabi" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                    control={subcategoryForm.control}
+                    name="name"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Subcategory Name (EN)</FormLabel>
+                        <FormControl>
+                        <Input placeholder="e.g. Panjabi" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                    control={subcategoryForm.control}
+                    name="name_bn"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Subcategory Name (BN)</FormLabel>
+                        <FormControl>
+                        <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+              </div>
                <FormItem>
                 <FormLabel>Subcategory Image</FormLabel>
                 <FormControl>
@@ -632,7 +725,7 @@ export default function AdminCategoriesPage() {
       
     {/* Edit Subcategory Dialog */}
      <Dialog open={isEditSubcategoryDialogOpen} onOpenChange={setIsEditSubcategoryDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Edit Subcategory</DialogTitle>
             <DialogDescription>
@@ -641,19 +734,34 @@ export default function AdminCategoriesPage() {
           </DialogHeader>
           <Form {...subcategoryForm}>
             <form onSubmit={subcategoryForm.handleSubmit(onEditSubcategorySubmit)} className="space-y-4">
-              <FormField
-                control={subcategoryForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Subcategory Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. Panjabi" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                        control={subcategoryForm.control}
+                        name="name"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Subcategory Name (EN)</FormLabel>
+                            <FormControl>
+                            <Input placeholder="e.g. Panjabi" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={subcategoryForm.control}
+                        name="name_bn"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Subcategory Name (BN)</FormLabel>
+                            <FormControl>
+                            <Input placeholder="স্বয়ংক্রিয়ভাবে অনুবাদ হবে" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                </div>
               <FormItem>
                 <FormLabel>Subcategory Image</FormLabel>
                 <FormControl>

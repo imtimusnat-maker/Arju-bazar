@@ -151,18 +151,12 @@ export default function AdminOrdersPage() {
             updatedAt: serverTimestamp(),
         });
 
-        // Send SMS based on new status
-        if (status === 'order confirmed' && settings?.smsOnOrderConfirmed) {
+        if (settings?.smsGreeting) {
             sendSms({
                 number: order.customerPhone,
                 order: order,
-                template: settings.smsOnOrderConfirmed
-            });
-        } else if (status === 'order delivered' && settings?.smsOnOrderDelivered) {
-             sendSms({
-                number: order.customerPhone,
-                order: order,
-                template: settings.smsOnOrderDelivered
+                status: status,
+                greetingTemplate: settings.smsGreeting
             });
         }
 

@@ -42,6 +42,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT: 'https://ik.imagekit.io/yajy2sbsw',
     SMS_API_KEY: 'Y8PBw4FT3qsThMnazaiA',
     SMS_SENDER_ID: '8809617626745',
+    NEXT_PUBLIC_APP_URL: process.env.NODE_ENV === 'production' ? 'https://your-production-url.com' : 'http://localhost:9002'
   }
 };
 

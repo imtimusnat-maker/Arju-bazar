@@ -26,6 +26,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useLanguage } from '@/context/language-context';
 import { sendSms } from '@/lib/sms';
+import type { OrderStatus } from '@/lib/orders';
 
 const checkoutSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -108,15 +109,15 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
 
         try {
             const batch = writeBatch(firestore);
+            const newStatus: OrderStatus = 'order placed';
 
-            // 1. Create the order document
             const orderRef = doc(collection(firestore, `users/${user.uid}/orders`));
             const orderData = {
                 userId: user.uid,
                 orderDate: serverTimestamp(),
                 updatedAt: serverTimestamp(),
                 totalAmount: total,
-                status: 'order placed', // Use new initial status
+                status: newStatus,
                 customerName: data.name,
                 customerPhone: data.phone,
                 shippingAddress: data.address,
@@ -126,8 +127,6 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
             };
             batch.set(orderRef, orderData);
 
-
-            // 2. Create order items in a subcollection
             const orderItemsCollection = collection(orderRef, 'orderItems');
             itemsToDisplay.forEach(item => {
                 const itemRef = doc(orderItemsCollection);
@@ -141,7 +140,6 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
                 });
             });
 
-            // 3. Update user profile with order info
             const userRef = doc(firestore, 'users', user.uid);
             batch.set(userRef, {
                 id: user.uid,
@@ -156,12 +154,12 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
 
             await batch.commit();
 
-            // 4. Send SMS notification
-            if (settings?.smsOnOrderPlaced) {
+            if (settings?.smsGreeting) {
                 sendSms({
                     number: data.phone,
                     order: { id: orderRef.id, ...orderData },
-                    template: settings.smsOnOrderPlaced
+                    status: newStatus,
+                    greetingTemplate: settings.smsGreeting,
                 });
             }
 
@@ -170,7 +168,6 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
                 description: 'Your order has been placed successfully.',
             });
             onOpenChange(false);
-            // Optionally, clear the cart here
         } catch (error) {
             console.error("Error placing order: ", error);
             toast({

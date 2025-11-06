@@ -31,9 +31,7 @@ const settingsSchema = z.object({
   heroImageUrl: z.string().optional(),
   heroImageCdnUrl: z.string().optional(),
   shippingOptions: z.array(shippingOptionSchema).optional(),
-  smsOnOrderPlaced: z.string().optional(),
-  smsOnOrderConfirmed: z.string().optional(),
-  smsOnOrderDelivered: z.string().optional(),
+  smsGreeting: z.string().optional(),
 });
 
 type SettingsFormData = z.infer<typeof settingsSchema>;
@@ -76,9 +74,7 @@ export default function AdminSettingsPage() {
       heroImageUrl: '',
       heroImageCdnUrl: '',
       shippingOptions: [],
-      smsOnOrderPlaced: '',
-      smsOnOrderConfirmed: '',
-      smsOnOrderDelivered: '',
+      smsGreeting: '',
     },
   });
 
@@ -113,7 +109,6 @@ export default function AdminSettingsPage() {
   const onSubmit: SubmitHandler<SettingsFormData> = (data) => {
     if (!settingsDocRef) return;
     
-    // Ensure each shipping option has a unique ID
     const processedData = {
         ...data,
         shippingOptions: data.shippingOptions?.map(option => ({
@@ -282,46 +277,20 @@ export default function AdminSettingsPage() {
               
                <Card>
                 <CardHeader>
-                  <CardTitle>SMS Templates</CardTitle>
+                  <CardTitle>SMS Notifications</CardTitle>
                   <CardDescription>
-                    Customize the SMS messages sent to customers. Use `[customerName]` and `[orderId]` as placeholders.
+                    Customize the greeting for SMS messages sent to customers. The system will automatically add the order status and invoice link. Use `[customerName]` as a placeholder for the customer's name.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent>
                     <FormField
                       control={form.control}
-                      name="smsOnOrderPlaced"
+                      name="smsGreeting"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>On Order Placed</FormLabel>
+                          <FormLabel>Custom SMS Greeting</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="e.g. Thanks [customerName]! Your order #[orderId] has been placed." {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="smsOnOrderConfirmed"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>On Order Confirmed</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="e.g. Your order #[orderId] has been confirmed and is being processed." {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="smsOnOrderDelivered"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>On Order Delivered</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="e.g. Your order #[orderId] is out for delivery!" {...field} />
+                            <Textarea placeholder="e.g. Thank you [customerName]!" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

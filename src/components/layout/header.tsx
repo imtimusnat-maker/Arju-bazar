@@ -221,10 +221,10 @@ export function Header() {
       if (!isSearchPopoverOpen) setIsSearchPopoverOpen(true);
       performSearch(searchKey);
     } else {
-      if (isSearchPopoverOpen) {
-          setResults({ products: [], categories: [], subcategories: [] });
-          setIsLoading(false);
-      }
+        if (isSearchPopoverOpen) {
+            setResults({ products: [], categories: [], subcategories: [] });
+            setIsLoading(false);
+        }
     }
   }, [debouncedSearchTerm, performSearch, isSearchPopoverOpen]);
   
@@ -241,19 +241,25 @@ export function Header() {
   const SearchPopover = () => (
     <Popover open={isSearchPopoverOpen} onOpenChange={setIsSearchPopoverOpen}>
         <PopoverTrigger asChild>
-             {/* This input acts as the trigger now */}
-             <div className="relative h-10 w-10 md:w-full md:max-w-md">
+            <div className="relative h-10 w-full max-w-md hidden md:block">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
                 <Input
                     onClick={() => setIsSearchPopoverOpen(true)}
+                    onFocus={() => setIsSearchPopoverOpen(true)}
                     placeholder="Search for products, categories..."
                     className="
                         h-full w-full pl-10 pr-4
                         rounded-full border-2 border-primary/50 bg-primary/5
                         text-muted-foreground focus:bg-white focus:text-foreground focus:ring-2 focus:ring-primary/50"
                 />
-             </div>
+            </div>
         </PopoverTrigger>
+        <PopoverTrigger asChild>
+             <Button variant="ghost" size="icon" className="md:hidden h-10 w-10">
+                <Search className="h-6 w-6" />
+            </Button>
+        </PopoverTrigger>
+
         <PopoverContent className="w-screen max-w-md p-0" side="bottom" align="end" onOpenAutoFocus={(e) => e.preventDefault()}>
             <div className="relative border-b p-2">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -370,23 +376,21 @@ export function Header() {
                  </div>
               </SheetContent>
             </Sheet>
+            <div className="md:hidden">
+                <Logo />
+            </div>
             <div className="hidden md:block">
               <Logo />
             </div>
           </div>
 
-           <div className="flex-1 flex justify-center md:flex-initial md:w-auto" ref={searchWrapperRef}>
-                <div className="md:hidden">
-                    <Logo />
-                </div>
-                <div className="hidden md:block w-full">
-                    <SearchPopover />
-                </div>
+           <div className="hidden md:flex flex-1 justify-center" ref={searchWrapperRef}>
+             <SearchPopover />
            </div>
 
 
           <div className="flex items-center justify-end space-x-1 md:space-x-2">
-            <div className="md:hidden">
+            <div className="md:hidden" ref={searchWrapperRef}>
                 <SearchPopover />
             </div>
             <div className="flex items-center space-x-1">

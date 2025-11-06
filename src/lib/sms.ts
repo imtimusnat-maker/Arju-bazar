@@ -3,7 +3,7 @@ import type { Settings } from '@/lib/settings';
 
 interface SendSmsParams {
     number: string;
-    order: Partial<Order> & { id: string };
+    order: { id: string; customerName?: string; };
     status: OrderStatus;
     settings: Partial<Settings>;
 }

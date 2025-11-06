@@ -176,7 +176,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
             if (settings) {
                 sendSms({
                     number: data.phone,
-                    order: orderData,
+                    order: { id: orderRef.id, customerName: data.name },
                     status: newStatus,
                     settings
                 });

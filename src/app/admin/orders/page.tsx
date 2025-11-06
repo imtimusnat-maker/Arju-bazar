@@ -154,7 +154,7 @@ export default function AdminOrdersPage() {
         if (settings) {
             sendSms({
                 number: order.customerPhone,
-                order: order,
+                order: { id: order.id, customerName: order.customerName },
                 status: status,
                 settings: settings,
             });

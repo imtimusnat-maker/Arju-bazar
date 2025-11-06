@@ -16,6 +16,7 @@ import type { Settings } from '@/lib/settings';
 import { IKContext, IKUpload } from 'imagekitio-react';
 import Image from 'next/image';
 import { Trash2, PlusCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 
 const shippingOptionSchema = z.object({
   id: z.string().optional(), // ID is generated, so optional at first
@@ -30,6 +31,9 @@ const settingsSchema = z.object({
   heroImageUrl: z.string().optional(),
   heroImageCdnUrl: z.string().optional(),
   shippingOptions: z.array(shippingOptionSchema).optional(),
+  smsOnOrderPlaced: z.string().optional(),
+  smsOnOrderConfirmed: z.string().optional(),
+  smsOnOrderDelivered: z.string().optional(),
 });
 
 type SettingsFormData = z.infer<typeof settingsSchema>;
@@ -72,6 +76,9 @@ export default function AdminSettingsPage() {
       heroImageUrl: '',
       heroImageCdnUrl: '',
       shippingOptions: [],
+      smsOnOrderPlaced: '',
+      smsOnOrderConfirmed: '',
+      smsOnOrderDelivered: '',
     },
   });
 
@@ -272,6 +279,56 @@ export default function AdminSettingsPage() {
                     </Button>
                 </CardContent>
               </Card>
+              
+               <Card>
+                <CardHeader>
+                  <CardTitle>SMS Templates</CardTitle>
+                  <CardDescription>
+                    Customize the SMS messages sent to customers. Use `[customerName]` and `[orderId]` as placeholders.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="smsOnOrderPlaced"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>On Order Placed</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="e.g. Thanks [customerName]! Your order #[orderId] has been placed." {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="smsOnOrderConfirmed"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>On Order Confirmed</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="e.g. Your order #[orderId] has been confirmed and is being processed." {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="smsOnOrderDelivered"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>On Order Delivered</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="e.g. Your order #[orderId] is out for delivery!" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                </CardContent>
+              </Card>
 
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 Save All Settings
@@ -282,5 +339,3 @@ export default function AdminSettingsPage() {
     </div>
   );
 }
-
-    

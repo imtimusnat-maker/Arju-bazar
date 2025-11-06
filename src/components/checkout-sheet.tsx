@@ -18,13 +18,14 @@ import Image from 'next/image';
 import { useState, useMemo, useEffect } from 'react';
 import type { useCart } from '@/context/cart-context';
 import { useFirestore, useDoc, useUser } from '@/firebase';
-import { doc, collection, addDoc, serverTimestamp, writeBatch, increment } from 'firebase/firestore';
+import { doc, collection, writeBatch, increment } from 'firebase/firestore';
 import type { Settings } from '@/lib/settings';
 import { useToast } from '@/hooks/use-toast';
 import { useForm, Controller, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useLanguage } from '@/context/language-context';
+import { sendSms } from '@/lib/sms';
 
 const checkoutSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -110,10 +111,8 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
 
             // 1. Create the order document
             const orderRef = doc(collection(firestore, `users/${user.uid}/orders`));
-            batch.set(orderRef, {
+            const orderData = {
                 userId: user.uid,
-                orderDate: serverTimestamp(),
-                updatedAt: serverTimestamp(),
                 totalAmount: total,
                 status: 'order placed', // Use new initial status
                 customerName: data.name,
@@ -122,7 +121,9 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
                 shippingMethod: shippingLabel,
                 shippingCost: shippingCost,
                 orderNote: data.orderNote || '',
-            });
+            };
+            batch.set(orderRef, orderData);
+
 
             // 2. Create order items in a subcollection
             const orderItemsCollection = collection(orderRef, 'orderItems');
@@ -152,6 +153,15 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
 
 
             await batch.commit();
+
+            // 4. Send SMS notification
+            if (settings?.smsOnOrderPlaced) {
+                sendSms({
+                    number: data.phone,
+                    order: { id: orderRef.id, ...orderData },
+                    template: settings.smsOnOrderPlaced
+                });
+            }
 
             toast({
                 title: 'Order Confirmed!',

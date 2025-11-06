@@ -51,7 +51,7 @@ const OrderStatusBadge = ({ status }: { status: string }) => {
   return <Badge variant={variant as any}>{status}</Badge>;
 };
 
-function OrderDetailsContent({ order }: { order: Order; }) {
+function OrderDetailsContent({ order }: { order: Order }) {
     const firestore = useFirestore();
 
     const orderItemsQuery = useMemoFirebase(

@@ -218,14 +218,14 @@ export function Header() {
    useEffect(() => {
     const searchKey = debouncedSearchTerm.toLowerCase().replace(/\s+/g, '');
     if (searchKey) {
-      setIsSearchPopoverOpen(true);
+      if (!isSearchPopoverOpen) setIsSearchPopoverOpen(true);
       performSearch(searchKey);
     } else {
-      setIsSearchPopoverOpen(false);
+      // Don't close popover, just clear results
       setResults({ products: [], categories: [], subcategories: [] });
       setIsLoading(false);
     }
-  }, [debouncedSearchTerm, performSearch]);
+  }, [debouncedSearchTerm, performSearch, isSearchPopoverOpen]);
   
   const handleLinkClick = () => {
     setIsSearchPopoverOpen(false);
@@ -240,33 +240,28 @@ export function Header() {
   const SearchPopover = () => (
     <Popover open={isSearchPopoverOpen} onOpenChange={setIsSearchPopoverOpen}>
         <PopoverTrigger asChild>
-            <div className="relative w-full">
-                {/* Desktop search bar */}
-                <div className="relative hidden md:block">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Search for products, categories..."
-                        className="h-10 w-full rounded-full border-2 border-primary/50 bg-primary/5 pl-10 pr-4 focus:bg-white focus:ring-2 focus:ring-primary/50"
-                    />
-                </div>
-                {/* Mobile search icon */}
-                <Button variant="ghost" size="icon" className="md:hidden">
-                    <Search />
-                    <span className="sr-only">Search</span>
-                </Button>
-            </div>
+            {/* Unified Search Trigger */}
+            <Button
+                variant="outline"
+                className="
+                    h-10 w-10 md:w-full md:max-w-md md:justify-start md:px-4
+                    rounded-full border-2 border-primary/50 bg-primary/5
+                    text-muted-foreground hover:bg-white hover:text-foreground"
+            >
+                <Search className="h-5 w-5" />
+                <span className="hidden md:inline ml-2">Search for products, categories...</span>
+            </Button>
         </PopoverTrigger>
         <PopoverContent className="w-screen max-w-md p-0" side="bottom" align="end" onOpenAutoFocus={(e) => e.preventDefault()}>
-            {/* Mobile search input inside popover */}
-            <div className="relative md:hidden border-b p-2">
+            {/* Search input inside popover */}
+            <div className="relative border-b p-2">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search..."
                     className="h-10 w-full rounded-full border-2 border-primary/50 bg-primary/5 pl-10 pr-4 focus:bg-white focus:ring-2 focus:ring-primary/50"
+                    autoFocus
                 />
             </div>
 
@@ -277,7 +272,7 @@ export function Header() {
                             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                         </div>
                     )}
-                    {!isLoading && !hasResults && (
+                    {!isLoading && !hasResults && debouncedSearchTerm && (
                         <p className="text-center text-sm text-muted-foreground py-4">No results found for "{debouncedSearchTerm}"</p>
                     )}
                     {!isLoading && hasResults && (

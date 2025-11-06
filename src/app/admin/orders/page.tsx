@@ -135,7 +135,11 @@ export default function AdminOrdersPage() {
 
   const sortedOrders = useMemo(() => {
     if (!orders) return [];
-    return [...orders].sort((a, b) => b.orderDate.toDate().getTime() - a.orderDate.toDate().getTime());
+    return [...orders].sort((a, b) => {
+        const aDate = a.orderDate ? a.orderDate.toDate().getTime() : 0;
+        const bDate = b.orderDate ? b.orderDate.toDate().getTime() : 0;
+        return bDate - aDate;
+    });
   }, [orders]);
 
   const handleStatusChange = async (order: Order, status: OrderStatus) => {
@@ -235,7 +239,7 @@ export default function AdminOrdersPage() {
                             </div>
                           </div>
                           <span className="hidden sm:block">
-                            {format(order.orderDate.toDate(), 'PPP')}
+                            {order.orderDate ? format(order.orderDate.toDate(), 'PPP') : 'Date N/A'}
                           </span>
                           <span className="truncate hidden md:block">
                             {order.shippingAddress}

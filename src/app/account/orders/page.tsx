@@ -157,7 +157,11 @@ export default function MyOrdersPage() {
 
   const sortedOrders = useMemo(() => {
     if (!orders) return [];
-    return [...orders].sort((a, b) => b.orderDate.toDate().getTime() - a.orderDate.toDate().getTime());
+    return [...orders].sort((a, b) => {
+        const aDate = a.orderDate ? a.orderDate.toDate().getTime() : 0;
+        const bDate = b.orderDate ? b.orderDate.toDate().getTime() : 0;
+        return bDate - aDate;
+    });
   }, [orders]);
 
 
@@ -187,7 +191,9 @@ export default function MyOrdersPage() {
                                               <div className="truncate">
                                                 <div className="font-medium truncate">Order #{order.id.slice(0,7).toUpperCase()}</div>
                                               </div>
-                                              <span className="hidden sm:block">{format(order.orderDate.toDate(), 'PPP')}</span>
+                                              <span className="hidden sm:block">
+                                                {order.orderDate ? format(order.orderDate.toDate(), 'PPP') : 'Date N/A'}
+                                              </span>
                                               <div><OrderStatusBadge status={order.status} /></div>
                                               <span className="text-right font-semibold">Tk {order.totalAmount.toFixed(2)}</span>
                                          </div>

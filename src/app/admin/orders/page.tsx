@@ -37,16 +37,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, Loader2, PackageSearch, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Loader2, PackageSearch, Trash2, ChevronDown } from 'lucide-react';
 import { useFirestore, useCollection } from '@/firebase';
 import { collectionGroup, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { Order, OrderItem } from '@/lib/orders';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import Image from 'next/image';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const OrderStatusBadge = ({ status }: { status: string }) => {
   const variant = {
@@ -60,7 +60,7 @@ const OrderStatusBadge = ({ status }: { status: string }) => {
 };
 
 
-function OrderDetailsDialog({ order, isOpen, onOpenChange }: { order: Order | null; isOpen: boolean; onOpenChange: (open: boolean) => void; }) {
+function OrderDetailsContent({ order }: { order: Order; }) {
     const firestore = useFirestore();
     const orderItemsQuery = useMemo(
         () => (firestore && order ? collectionGroup(firestore, 'orderItems').where('orderId', '==', order.id) : null),
@@ -71,60 +71,50 @@ function OrderDetailsDialog({ order, isOpen, onOpenChange }: { order: Order | nu
     if (!order) return null;
 
     return (
-        <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle>Order #{order.id.slice(0, 7)}</DialogTitle>
-                    <DialogDescription>
-                        Details for the order placed by {order.customerName} on {format(order.orderDate.toDate(), 'PPP')}.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-                    <div>
-                        <h3 className="font-semibold mb-2">Customer & Shipping</h3>
-                        <div className="text-sm space-y-1 text-muted-foreground">
-                            <p><span className="font-medium text-foreground">Name:</span> {order.customerName}</p>
-                            <p><span className="font-medium text-foreground">Phone:</span> {order.customerPhone}</p>
-                            <p><span className="font-medium text-foreground">Address:</span> {order.shippingAddress}</p>
-                            <p><span className="font-medium text-foreground">Shipping:</span> {order.shippingMethod} (Tk {order.shippingCost.toFixed(2)})</p>
-                            {order.orderNote && (
-                               <p><span className="font-medium text-foreground">Note:</span> {order.orderNote}</p>
-                            )}
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="font-semibold mb-2">Order Summary</h3>
-                        <div className="text-sm space-y-1 text-muted-foreground">
-                             <p><span className="font-medium text-foreground">Status:</span> <OrderStatusBadge status={order.status} /></p>
-                             <p><span className="font-medium text-foreground">Total:</span> Tk {order.totalAmount.toFixed(2)}</p>
-                        </div>
+        <div className="bg-gray-50 p-4">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4">
+                <div>
+                    <h3 className="font-semibold mb-2">Customer & Shipping</h3>
+                    <div className="text-sm space-y-1 text-muted-foreground">
+                        <p><span className="font-medium text-foreground">Name:</span> {order.customerName}</p>
+                        <p><span className="font-medium text-foreground">Phone:</span> {order.customerPhone}</p>
+                        <p><span className="font-medium text-foreground">Address:</span> {order.shippingAddress}</p>
+                        <p><span className="font-medium text-foreground">Shipping:</span> {order.shippingMethod} (Tk {order.shippingCost.toFixed(2)})</p>
+                        {order.orderNote && (
+                           <p><span className="font-medium text-foreground">Note:</span> {order.orderNote}</p>
+                        )}
                     </div>
                 </div>
-                 <div>
-                    <h3 className="font-semibold mb-2">Items Ordered</h3>
-                    {isLoading ? <Loader2 className="animate-spin" /> : (
-                         <div className="space-y-2">
-                            {orderItems?.map(item => (
-                                <div key={item.id} className="flex items-center gap-4 p-2 border rounded-md">
-                                    <Image src={item.imageCdnUrl || 'https://placehold.co/100'} alt={item.name} width={48} height={48} className="rounded-md object-contain" />
-                                    <div className="flex-1">
-                                        <p className="font-medium text-sm">{item.name}</p>
-                                        <p className="text-xs text-muted-foreground">Qty: {item.quantity} @ Tk {item.price.toFixed(2)}</p>
-                                    </div>
-                                    <p className="font-semibold text-sm">Tk {(item.price * item.quantity).toFixed(2)}</p>
+                <div>
+                    <h3 className="font-semibold mb-2">Order Summary</h3>
+                    <div className="text-sm space-y-1 text-muted-foreground">
+                         <p><span className="font-medium text-foreground">Status:</span> <OrderStatusBadge status={order.status} /></p>
+                         <p><span className="font-medium text-foreground">Total:</span> Tk {order.totalAmount.toFixed(2)}</p>
+                    </div>
+                </div>
+            </div>
+             <div>
+                <h3 className="font-semibold mb-2">Items Ordered</h3>
+                {isLoading ? <Loader2 className="animate-spin" /> : (
+                     <div className="space-y-2">
+                        {orderItems?.map(item => (
+                            <div key={item.id} className="flex items-center gap-4 p-2 border rounded-md bg-white">
+                                <Image src={item.imageCdnUrl || 'https://placehold.co/100'} alt={item.name} width={48} height={48} className="rounded-md object-contain" />
+                                <div className="flex-1">
+                                    <p className="font-medium text-sm">{item.name}</p>
+                                    <p className="text-xs text-muted-foreground">Qty: {item.quantity} @ Tk {item.price.toFixed(2)}</p>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </DialogContent>
-        </Dialog>
+                                <p className="font-semibold text-sm">Tk {(item.price * item.quantity).toFixed(2)}</p>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
     );
 }
 
 export default function AdminOrdersPage() {
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const { toast } = useToast();
   const firestore = useFirestore();
 
@@ -161,7 +151,6 @@ export default function AdminOrdersPage() {
   const handleDeleteOrder = async (order: Order) => {
      if (!firestore) return;
      const orderRef = doc(firestore, `users/${order.userId}/orders`, order.id);
-     // Note: This doesn't delete subcollections. A cloud function would be needed for that.
      try {
         await deleteDoc(orderRef);
         toast({
@@ -178,11 +167,6 @@ export default function AdminOrdersPage() {
      }
   };
 
-  const handleViewDetails = (order: Order) => {
-    setSelectedOrder(order);
-    setIsDetailsOpen(true);
-  };
-
   return (
     <>
         <div>
@@ -190,105 +174,83 @@ export default function AdminOrdersPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Manage Orders</CardTitle>
-                    <CardDescription>View and manage all customer orders.</CardDescription>
+                    <CardDescription>View and manage all customer orders. Click on an order to see details.</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <div className="relative w-full overflow-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Order ID</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Customer</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Total</TableHead>
-                                    <TableHead className="w-[50px]"></TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {isLoading ? (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="text-center h-24">
-                                            <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                                        </TableCell>
-                                    </TableRow>
-                                ) : sortedOrders.length > 0 ? (
-                                    sortedOrders.map((order) => (
-                                        <TableRow key={order.id}>
-                                            <TableCell className="font-mono text-xs">#{order.id.slice(0, 7)}</TableCell>
-                                            <TableCell>{format(order.orderDate.toDate(), 'PPP')}</TableCell>
-                                            <TableCell>
-                                                <div className="font-medium">{order.customerName}</div>
-                                                <div className="text-sm text-muted-foreground">{order.customerPhone}</div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <OrderStatusBadge status={order.status} />
-                                            </TableCell>
-                                            <TableCell className="text-right">Tk {order.totalAmount.toFixed(2)}</TableCell>
-                                            <TableCell>
-                                                 <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon">
-                                                            <MoreHorizontal className="h-4 w-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem onClick={() => handleViewDetails(order)}>
-                                                            <PackageSearch className="mr-2 h-4 w-4" />
-                                                            View Details
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuSeparator />
-                                                         <DropdownMenuRadioGroup value={order.status} onValueChange={(value) => handleStatusChange(order, value)}>
-                                                            <DropdownMenuRadioItem value="pending">Pending</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="shipped">Shipped</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="completed">Completed</DropdownMenuRadioItem>
-                                                            <DropdownMenuRadioItem value="cancelled">Cancelled</DropdownMenuRadioItem>
-                                                        </DropdownMenuRadioGroup>
-                                                        <DropdownMenuSeparator />
-                                                        <AlertDialog>
-                                                            <AlertDialogTrigger asChild>
-                                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
-                                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                                    Delete Order
-                                                                </DropdownMenuItem>
-                                                            </AlertDialogTrigger>
-                                                            <AlertDialogContent>
-                                                                <AlertDialogHeader>
-                                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                                                    <AlertDialogDescription>
-                                                                        This action cannot be undone. This will permanently delete the order.
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter>
-                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                    <AlertDialogAction onClick={() => handleDeleteOrder(order)}>Delete</AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="text-center h-24">
-                                            No orders found.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
+                <CardContent className="p-0">
+                    <Accordion type="single" collapsible className="w-full">
+                       {isLoading ? (
+                            <div className="text-center py-10">
+                                <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                            </div>
+                        ) : sortedOrders.length > 0 ? (
+                           sortedOrders.map((order) => (
+                            <AccordionItem value={order.id} key={order.id}>
+                               <div className="flex items-center">
+                                 <AccordionTrigger className="flex-1 hover:no-underline">
+                                     <div className="w-full grid grid-cols-5 md:grid-cols-6 items-center text-sm text-left px-4">
+                                          <span className="font-mono text-xs truncate">#{order.id.slice(0, 7)}</span>
+                                          <span className="hidden md:block">{format(order.orderDate.toDate(), 'PPP')}</span>
+                                          <div className="truncate">
+                                            <div className="font-medium truncate">{order.customerName}</div>
+                                            <div className="text-xs text-muted-foreground truncate">{order.customerPhone}</div>
+                                          </div>
+                                          <span className="truncate hidden md:block">{order.shippingAddress}</span>
+                                          <span><OrderStatusBadge status={order.status} /></span>
+                                          <span className="text-right font-semibold">Tk {order.totalAmount.toFixed(2)}</span>
+                                     </div>
+                                 </AccordionTrigger>
+                                 <div className="px-4">
+                                     <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon">
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                                             <DropdownMenuRadioGroup value={order.status} onValueChange={(value) => handleStatusChange(order, value)}>
+                                                <DropdownMenuRadioItem value="pending">Pending</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="shipped">Shipped</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="completed">Completed</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="cancelled">Cancelled</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                            <DropdownMenuSeparator />
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                        Delete Order
+                                                    </DropdownMenuItem>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            This action cannot be undone. This will permanently delete the order.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDeleteOrder(order)}>Delete</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                 </div>
+                               </div>
+                               <AccordionContent>
+                                 <OrderDetailsContent order={order} />
+                               </AccordionContent>
+                            </AccordionItem>
+                           ))
+                        ) : (
+                           <div className="text-center text-muted-foreground py-10">No orders found.</div>
+                        )}
+                    </Accordion>
                 </CardContent>
             </Card>
         </div>
-        <OrderDetailsDialog 
-            order={selectedOrder}
-            isOpen={isDetailsOpen}
-            onOpenChange={setIsDetailsOpen}
-        />
     </>
   );
 }

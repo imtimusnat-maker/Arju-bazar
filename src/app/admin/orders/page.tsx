@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Card,
   CardHeader,
@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, Loader2, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Loader2, Trash2, Search } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
 import { collectionGroup, doc, updateDoc, deleteDoc, query, collection, serverTimestamp } from 'firebase/firestore';
 import type { Order, OrderItem, OrderStatus } from '@/lib/orders';
@@ -41,6 +41,7 @@ import { format } from 'date-fns';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { sendSms } from '@/lib/sms';
+import { Input } from '@/components/ui/input';
 
 const OrderStatusBadge = ({ status }: { status: string }) => {
   const variant = {
@@ -119,6 +120,7 @@ function OrderDetailsContent({ order }: { order: Order }) {
 export default function AdminOrdersPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
+  const [searchTerm, setSearchTerm] = useState('');
 
   const ordersQuery = useMemo(
     () => (firestore ? collectionGroup(firestore, 'orders') : null),
@@ -135,12 +137,22 @@ export default function AdminOrdersPage() {
 
   const sortedOrders = useMemo(() => {
     if (!orders) return [];
-    return [...orders].sort((a, b) => {
+    
+    const filtered = orders.filter(order => {
+        const lowercasedTerm = searchTerm.toLowerCase();
+        return (
+            order.id.toLowerCase().includes(lowercasedTerm) ||
+            order.customerName.toLowerCase().includes(lowercasedTerm) ||
+            order.customerPhone.toLowerCase().includes(lowercasedTerm)
+        );
+    });
+
+    return [...filtered].sort((a, b) => {
         const aDate = a.orderDate ? a.orderDate.toDate().getTime() : 0;
         const bDate = b.orderDate ? b.orderDate.toDate().getTime() : 0;
         return bDate - aDate;
     });
-  }, [orders]);
+  }, [orders, searchTerm]);
 
   const handleStatusChange = async (order: Order, status: OrderStatus) => {
     if (!firestore) return;
@@ -204,7 +216,18 @@ export default function AdminOrdersPage() {
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex-1 flex flex-col overflow-hidden">
-        <h1 className="text-2xl font-bold mb-6">Orders</h1>
+        <div className="flex items-center justify-between mb-6 gap-4">
+            <h1 className="text-2xl font-bold">Orders</h1>
+            <div className="relative w-full max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                    placeholder="Search by Order ID, Name, or Phone..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                />
+            </div>
+        </div>
         <Card className="flex-1 flex flex-col overflow-hidden">
           <CardHeader>
             <CardTitle>Manage Orders</CardTitle>
@@ -232,7 +255,7 @@ export default function AdminOrdersPage() {
                               {order.customerPhone}
                             </div>
                           </div>
-                          <span className="hidden sm:block">
+                           <span className="hidden sm:block">
                             {order.orderDate ? format(order.orderDate.toDate(), 'PPP') : 'Date N/A'}
                           </span>
                           <span className="truncate hidden md:block">

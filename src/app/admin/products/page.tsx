@@ -53,7 +53,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Pencil, Trash2, Search } from 'lucide-react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -131,6 +131,8 @@ export default function AdminProductsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const firestore = useFirestore();
 
@@ -140,6 +142,20 @@ export default function AdminProductsPage() {
   );
   const { data: products, isLoading: productsLoading } =
     useCollection<Product>(productsCollection);
+    
+  const filteredProducts = useMemo(() => {
+    if (!products) return [];
+    if (!debouncedSearchTerm) return products;
+    
+    const searchKeywords = debouncedSearchTerm.toLowerCase().split(/\s+/).filter(Boolean);
+
+    return products.filter(product =>
+      searchKeywords.every(keyword =>
+        product.searchKeywords?.some(productKeyword => productKeyword.includes(keyword))
+      )
+    );
+  }, [products, debouncedSearchTerm]);
+
 
   const categoriesCollection = useMemoFirebase(
     () => (firestore ? collection(firestore, 'categories') : null),
@@ -307,8 +323,17 @@ export default function AdminProductsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 gap-4">
         <h1 className="text-2xl font-bold">Products</h1>
+        <div className="relative w-full max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
         <Button onClick={() => handleDialogOpen()}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Add Product
@@ -340,8 +365,8 @@ export default function AdminProductsPage() {
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : products && products.length > 0 ? (
-                  products.map((product) => (
+                ) : filteredProducts && filteredProducts.length > 0 ? (
+                  filteredProducts.map((product) => (
                     <TableRow key={product.id}>
                       <TableCell>
                         <Image

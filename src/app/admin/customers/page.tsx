@@ -1,16 +1,18 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useFirestore, useCollection } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import type { User } from '@/lib/users';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
 
 export default function AdminCustomersPage() {
     const firestore = useFirestore();
+    const [searchTerm, setSearchTerm] = useState('');
 
     const customersQuery = useMemo(
         () => (firestore ? query(collection(firestore, 'users'), where('orderCount', '>', 0)) : null),
@@ -19,9 +21,30 @@ export default function AdminCustomersPage() {
 
     const { data: customers, isLoading } = useCollection<User>(customersQuery);
 
+    const filteredCustomers = useMemo(() => {
+        if (!customers) return [];
+        const lowercasedTerm = searchTerm.toLowerCase();
+        return customers.filter(customer =>
+            customer.name.toLowerCase().includes(lowercasedTerm) ||
+            (customer.email && customer.email.toLowerCase().includes(lowercasedTerm)) ||
+            customer.phone.toLowerCase().includes(lowercasedTerm)
+        );
+    }, [customers, searchTerm]);
+
     return (
         <div>
-            <h1 className="text-2xl font-bold mb-6">Customers</h1>
+            <div className="flex items-center justify-between mb-6 gap-4">
+                <h1 className="text-2xl font-bold">Customers</h1>
+                <div className="relative w-full max-w-sm">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                        placeholder="Search by name, email, or phone..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                    />
+                </div>
+            </div>
             <Card>
                 <CardHeader>
                     <CardTitle>Manage Customers</CardTitle>
@@ -44,8 +67,8 @@ export default function AdminCustomersPage() {
                                         <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                                     </TableCell>
                                 </TableRow>
-                            ) : customers && customers.length > 0 ? (
-                                customers.map((customer) => (
+                            ) : filteredCustomers && filteredCustomers.length > 0 ? (
+                                filteredCustomers.map((customer) => (
                                     <TableRow key={customer.id}>
                                         <TableCell>
                                             <div className="flex items-center gap-3">

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,6 +26,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
@@ -37,9 +38,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isUserLoading && user && !user.isAnonymous) {
-      router.replace('/account');
+      const redirectUrl = searchParams.get('redirect') || '/account';
+      router.replace(redirectUrl);
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, router, searchParams]);
 
   useEffect(() => {
     if (!auth) return;

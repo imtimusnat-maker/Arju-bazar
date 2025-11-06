@@ -49,8 +49,7 @@ function formatMessage(params: SendSmsParams): string | null {
     const statusMessage = getStatusMessage(params.status);
     const orderId = order.id.slice(0, 7).toUpperCase();
     
-    // For now, the invoice link points to the general orders page.
-    const invoiceLink = `${process.env.NEXT_PUBLIC_APP_URL || ''}/account/orders`;
+    const invoiceLink = `${process.env.NEXT_PUBLIC_APP_URL || ''}/account/orders/${order.id}`;
 
     return `${greeting} ${statusMessage} Order ID: ${orderId}. View details: ${invoiceLink}`;
 }

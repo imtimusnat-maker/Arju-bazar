@@ -12,11 +12,19 @@
         },
         "name": {
           "type": "string",
-          "description": "Name of the product."
+          "description": "Name of the product in English."
+        },
+        "name_bn": {
+            "type": "string",
+            "description": "Name of the product in Bengali."
         },
         "description": {
           "type": "string",
-          "description": "Detailed description of the product."
+          "description": "Detailed description of the product in English."
+        },
+        "description_bn": {
+            "type": "string",
+            "description": "Detailed description of the product in Bengali."
         },
         "price": {
           "type": "number",
@@ -60,7 +68,9 @@
       "required": [
         "id",
         "name",
+        "name_bn",
         "description",
+        "description_bn",
         "price",
         "imageUrl",
         "categoryId",
@@ -81,11 +91,19 @@
         },
         "name": {
           "type": "string",
-          "description": "Name of the category (e.g., Men, Women, Kids)."
+          "description": "Name of the category in English (e.g., Men, Women, Kids)."
+        },
+        "name_bn": {
+          "type": "string",
+          "description": "Name of the category in Bengali."
         },
         "description": {
           "type": "string",
-          "description": "Description of the category."
+          "description": "Description of the category in English."
+        },
+         "description_bn": {
+          "type": "string",
+          "description": "Description of the category in Bengali."
         },
         "slug": {
             "type": "string",
@@ -99,7 +117,9 @@
       "required": [
         "id",
         "name",
+        "name_bn",
         "description",
+        "description_bn",
         "slug",
         "searchKeywords"
       ]
@@ -111,7 +131,8 @@
         "description": "Represents a sub-category of products within a main category.",
         "properties": {
             "id": { "type": "string", "description": "Unique identifier for the subcategory." },
-            "name": { "type": "string", "description": "Name of the subcategory." },
+            "name": { "type": "string", "description": "Name of the subcategory in English." },
+            "name_bn": { "type": "string", "description": "Name of the subcategory in Bengali." },
             "slug": { "type": "string", "description": "URL-friendly version of the subcategory name." },
             "categoryId": { "type": "string", "description": "The ID of the parent category." },
             "categorySlug": { "type": "string", "description": "The slug of the parent category for URL generation." },
@@ -120,7 +141,7 @@
               "description": "A concatenated, lowercase string of the subcategory name for prefix searching."
             }
         },
-        "required": ["id", "name", "slug", "categoryId", "categorySlug", "searchKeywords"]
+        "required": ["id", "name", "name_bn", "slug", "categoryId", "categorySlug", "searchKeywords"]
     },
     "User": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -461,3 +482,5 @@
     "reasoning": "The Firestore data structure is designed to mirror the e-commerce functionality of \"Your Shop,\" focusing on products, categories, users, orders, and order items. The structure follows best practices for security, scalability, and maintainability, particularly emphasizing authorization independence and enabling secure list operations (QAPs). \n\n**Authorization Independence:**\n*   User-specific data (orders) are stored under the `/users/{userId}` path.  This ensures that access control is based on the currently authenticated user's ID. Orders and order items do not require hierarchical `get()` calls to determine authorization.\n\n**Structural Segregation:**\n*   Each collection (`categories`, `products`, `users`, etc.) is treated as a homogeneous security zone, simplifying security rules. For example, all documents within the `/categories` collection share the same security posture (e.g., only admins can create/update).\n\n**Access Modeling:**\n*   **Private User Data:**  User-specific data is stored under the `/users/{userId}` path. This is a standard pattern for user-owned data, ensuring only the authenticated user (or an admin) can access it.\n*   **Hierarchical Ownership:** Orders and order items are nested under the user to represent the `User 1:N Order 1:N OrderItem` relationship clearly and securely.\n\n**QAPs Support:**\n*   The structure allows for efficient and secure `list` operations. Since all products are in a single `/products` collection, listing products does not require complex security rules.\n\nThe design prioritizes clarity, security, and scalability to create a robust and maintainable Firestore database for the \"Your Shop\" e-commerce application."
   }
 }
+
+    

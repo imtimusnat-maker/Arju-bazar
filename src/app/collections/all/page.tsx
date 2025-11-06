@@ -7,9 +7,12 @@ import { ProductCard } from '@/components/product-card';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Product } from '@/lib/products';
+import { useLanguage } from '@/context/language-context';
 
 export default function AllProductsPage() {
   const firestore = useFirestore();
+  const { t } = useLanguage();
+
   const productsCollection = useMemo(
     () => (firestore ? collection(firestore, 'products') : null),
     [firestore]
@@ -37,3 +40,5 @@ export default function AllProductsPage() {
     </div>
   );
 }
+
+    

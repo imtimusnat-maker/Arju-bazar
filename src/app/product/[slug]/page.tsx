@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { CheckoutSheet } from '@/components/checkout-sheet';
 import type { Settings } from '@/lib/settings';
 import Link from 'next/link';
+import { useLanguage } from '@/context/language-context';
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
@@ -50,6 +51,7 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
 export default function ProductPage() {
   const params = useParams<{ slug: string }>();
   const firestore = useFirestore();
+  const { language } = useLanguage();
 
   const productQuery = useMemoFirebase(() => {
     if (!firestore || !params.slug) return null;
@@ -88,6 +90,9 @@ export default function ProductPage() {
   if (!product) {
     notFound();
   }
+  
+  const displayName = language === 'bn' && product.name_bn ? product.name_bn : product.name;
+  const displayDescription = language === 'bn' && product.description_bn ? product.description_bn : product.description;
 
   const handleAddToCart = () => {
     addToCart(product);
@@ -120,7 +125,7 @@ export default function ProductPage() {
                   />
               </div>
               <div className="p-4">
-                <h1 className="text-xl font-bold mb-2">{product.name}</h1>
+                <h1 className="text-xl font-bold mb-2">{displayName}</h1>
                 <p className="text-lg font-bold text-primary mb-6">Tk {product.price.toFixed(2)}</p>
 
                 <div className="space-y-3">
@@ -160,7 +165,7 @@ export default function ProductPage() {
                     <AccordionTrigger className="text-lg font-semibold">Description</AccordionTrigger>
                     <AccordionContent className="text-base text-muted-foreground pt-2">
                       <div className="prose max-w-none">
-                        <p>{product.description}</p>
+                        <p>{displayDescription}</p>
                       </div>
                     </AccordionContent>
                   </AccordionItem>
@@ -188,3 +193,5 @@ export default function ProductPage() {
     </>
   );
 }
+
+    

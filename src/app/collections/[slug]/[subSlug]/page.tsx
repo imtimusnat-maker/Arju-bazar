@@ -8,10 +8,12 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, and } from 'firebase/firestore';
 import type { Subcategory } from '@/lib/categories';
 import type { Product } from '@/lib/products';
+import { useLanguage } from '@/context/language-context';
 
 export default function SubCategoryPage() {
   const params = useParams<{ slug: string; subSlug: string }>();
   const firestore = useFirestore();
+  const { language } = useLanguage();
 
   // 1. Fetch Subcategory by slug and categorySlug
   const subcategoryQuery = useMemoFirebase(() => {
@@ -50,12 +52,14 @@ export default function SubCategoryPage() {
     notFound();
   }
 
+  const displaySubcategoryName = language === 'bn' && subcategory.name_bn ? subcategory.name_bn : subcategory.name;
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
       <main className="flex-1 pb-20 md:pb-0">
         <div className="container mx-auto max-w-screen-xl px-4 py-8">
-          <h1 className="mb-6 text-center font-headline text-2xl font-bold">{subcategory.name}</h1>
+          <h1 className="mb-6 text-center font-headline text-2xl font-bold">{displaySubcategoryName}</h1>
           {productsLoading ? (
             <div className="text-center">Loading products...</div>
           ) : (
@@ -71,3 +75,5 @@ export default function SubCategoryPage() {
     </div>
   );
 }
+
+    

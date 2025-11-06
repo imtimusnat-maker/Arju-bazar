@@ -78,7 +78,9 @@ import { useToast } from '@/hooks/use-toast';
 
 const productSchema = z.object({
   name: z.string().min(1, 'Product name is required'),
+  name_bn: z.string().optional(),
   description: z.string().min(1, 'Description is required'),
+  description_bn: z.string().optional(),
   price: z.coerce.number().min(0, 'Price must be a positive number'),
   stockQuantity: z.coerce.number().int().min(0, 'Stock must be a whole number'),
   imageUrl: z.string().optional(),
@@ -136,7 +138,9 @@ export default function AdminProductsPage() {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: '',
+      name_bn: '',
       description: '',
+      description_bn: '',
       price: 0,
       stockQuantity: 0,
       imageUrl: '',
@@ -170,7 +174,9 @@ export default function AdminProductsPage() {
     if (product) {
       form.reset({
         name: product.name,
+        name_bn: product.name_bn || '',
         description: product.description,
+        description_bn: product.description_bn || '',
         price: product.price,
         stockQuantity: product.stockQuantity,
         imageUrl: product.imageUrl,
@@ -181,7 +187,9 @@ export default function AdminProductsPage() {
     } else {
       form.reset({
         name: '',
+        name_bn: '',
         description: '',
+        description_bn: '',
         price: 0,
         stockQuantity: 0,
         imageUrl: '',
@@ -210,9 +218,16 @@ export default function AdminProductsPage() {
     const category = categories?.find(c => c.id === data.categoryId);
     const searchKeywords = generateSearchKeywords(data.name);
     
+    // Placeholder for translation
+    const translatedData = {
+        name_bn: data.name_bn || `${data.name} (BN)`,
+        description_bn: data.description_bn || `${data.description} (BN)`,
+    };
+
     if (editingProduct) {
        const productData = {
         ...data,
+        ...translatedData,
         slug,
         searchKeywords,
         categorySlug: category?.slug || '',
@@ -227,6 +242,7 @@ export default function AdminProductsPage() {
     } else {
        const newProductData = {
         ...data,
+        ...translatedData,
         slug,
         searchKeywords,
         categorySlug: category?.slug || '',
@@ -394,9 +410,22 @@ export default function AdminProductsPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Product Name</FormLabel>
+                    <FormLabel>Product Name (English)</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g. Organic Honey" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="name_bn"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Product Name (Bengali)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. অর্গানিক মধু (auto-translates)" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -407,10 +436,26 @@ export default function AdminProductsPage() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>Description (English)</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Describe the product..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description_bn"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description (Bengali)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="পণ্যের বর্ণনা দিন (auto-translates)"
                         {...field}
                       />
                     </FormControl>
@@ -538,3 +583,5 @@ export default function AdminProductsPage() {
     </div>
   );
 }
+
+    

@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/products';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/context/language-context';
 
 interface ProductCardProps {
   product: Product;
@@ -15,6 +16,7 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
+  const { language } = useLanguage();
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -25,6 +27,8 @@ export function ProductCard({ product }: ProductCardProps) {
         description: `${product.name} has been added to your cart.`,
     });
   };
+  
+  const displayName = language === 'bn' && product.name_bn ? product.name_bn : product.name;
 
   return (
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-md border border-gray-200 rounded-lg">
@@ -41,7 +45,7 @@ export function ProductCard({ product }: ProductCardProps) {
             />
           </div>
           <div className="p-4 text-center space-y-2">
-            <h3 className="font-body text-sm leading-tight truncate h-10">{product.name}</h3>
+            <h3 className="font-body text-sm leading-tight truncate h-10">{displayName}</h3>
             <div className="flex items-baseline justify-center gap-2">
               <p className="text-base font-bold text-foreground">Tk {product.price.toFixed(2)}</p>
               {product.originalPrice && (
@@ -59,3 +63,5 @@ export function ProductCard({ product }: ProductCardProps) {
     </Card>
   );
 }
+
+    

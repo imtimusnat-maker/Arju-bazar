@@ -8,10 +8,12 @@ import { Footer } from '@/components/layout/footer';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
 import type { Category, Subcategory } from '@/lib/categories';
+import { useLanguage } from '@/context/language-context';
 
 export default function CollectionPage() {
   const params = useParams<{ slug: string }>();
   const firestore = useFirestore();
+  const { language } = useLanguage();
 
   // 1. Query the main Category by its slug
   const categoryQuery = useMemoFirebase(() => {
@@ -46,13 +48,15 @@ export default function CollectionPage() {
     notFound();
   }
 
+  const displayCategoryName = language === 'bn' && category.name_bn ? category.name_bn : category.name;
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
       <main className="flex-1 pb-20 md:pb-0">
         <div className="container mx-auto max-w-screen-xl px-4 py-8">
           <h1 className="mb-6 text-center font-headline text-2xl font-bold">
-            {category.name}
+            {displayCategoryName}
           </h1>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 md:gap-6">
             {areSubcategoriesLoading ? (
@@ -65,30 +69,33 @@ export default function CollectionPage() {
               ))
             ) : (
               // Display the subcategory cards
-              subcategories?.map((subcategory) => (
-                <Link 
-                  key={subcategory.id} 
-                  href={`/collections/${category.slug}/${subcategory.slug}`} 
-                  className="group block"
-                >
-                  <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-100 transition-all duration-300 group-hover:shadow-md">
-                    {subcategory.imageCdnUrl ? (
-                      <Image
-                        src={subcategory.imageCdnUrl}
-                        alt={subcategory.name}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 50vw, 20vw"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-100"></div>
-                    )}
-                  </div>
-                  <h3 className="mt-2 text-center font-body text-sm leading-tight">
-                    {subcategory.name}
-                  </h3>
-                </Link>
-              ))
+              subcategories?.map((subcategory) => {
+                const displaySubcategoryName = language === 'bn' && subcategory.name_bn ? subcategory.name_bn : subcategory.name;
+                return (
+                  <Link 
+                    key={subcategory.id} 
+                    href={`/collections/${category.slug}/${subcategory.slug}`} 
+                    className="group block"
+                  >
+                    <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-100 transition-all duration-300 group-hover:shadow-md">
+                      {subcategory.imageCdnUrl ? (
+                        <Image
+                          src={subcategory.imageCdnUrl}
+                          alt={subcategory.name}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 50vw, 20vw"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-100"></div>
+                      )}
+                    </div>
+                    <h3 className="mt-2 text-center font-body text-sm leading-tight">
+                      {displaySubcategoryName}
+                    </h3>
+                  </Link>
+                )
+              })
             )}
           </div>
         </div>
@@ -97,3 +104,5 @@ export default function CollectionPage() {
     </div>
   );
 }
+
+    

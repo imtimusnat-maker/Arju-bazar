@@ -6,9 +6,12 @@ import { Footer } from '@/components/layout/footer';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { Category } from '@/lib/categories';
+import { useLanguage } from '@/context/language-context';
 
 export default function CollectionsPage() {
   const firestore = useFirestore();
+  const { language } = useLanguage();
+
   const categoriesCollection = useMemoFirebase(
     () => (firestore ? collection(firestore, 'categories') : null),
     [firestore]
@@ -29,22 +32,25 @@ export default function CollectionsPage() {
                      <div className="h-4 bg-gray-200 rounded-md w-3/4 mx-auto"></div>
                   </div>
                 ))
-              ) : (categories?.map((category) => (
-              <Link key={category.id} href={`/collections/${category.slug}`} className="block group">
-                <div className="relative aspect-square bg-gray-100 flex items-center justify-center border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 group-hover:shadow-md">
-                  {category.imageCdnUrl && (
-                    <Image
-                      src={category.imageCdnUrl}
-                      alt={category.name}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 50vw, 20vw"
-                    />
-                  )}
-                </div>
-                <h3 className="font-body text-sm text-center leading-tight mt-2">{category.name}</h3>
-              </Link>
-            )))}
+              ) : (categories?.map((category) => {
+                  const displayName = language === 'bn' && category.name_bn ? category.name_bn : category.name;
+                  return (
+                    <Link key={category.id} href={`/collections/${category.slug}`} className="block group">
+                      <div className="relative aspect-square bg-gray-100 flex items-center justify-center border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 group-hover:shadow-md">
+                        {category.imageCdnUrl && (
+                          <Image
+                            src={category.imageCdnUrl}
+                            alt={category.name}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 50vw, 20vw"
+                          />
+                        )}
+                      </div>
+                      <h3 className="font-body text-sm text-center leading-tight mt-2">{displayName}</h3>
+                    </Link>
+                  )
+              }))}
           </div>
         </div>
       </main>
@@ -52,3 +58,5 @@ export default function CollectionsPage() {
     </div>
   );
 }
+
+    

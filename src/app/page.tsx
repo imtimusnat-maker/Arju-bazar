@@ -8,10 +8,11 @@ import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase
 import type { Category } from '@/lib/categories';
 import type { Settings } from '@/lib/settings';
 import { collection, doc } from 'firebase/firestore';
+import { useLanguage } from '@/context/language-context';
 
 export default function Home() {
   const defaultHeroImage = PlaceHolderImages.find(i => i.id === 'hero-4');
-
+  const { language } = useLanguage();
   const firestore = useFirestore();
 
   const categoriesCollection = useMemoFirebase(
@@ -64,7 +65,9 @@ export default function Home() {
                   </div>
                 ))
               ) : (
-                categories?.map((category) => (
+                categories?.map((category) => {
+                  const displayName = language === 'bn' && category.name_bn ? category.name_bn : category.name;
+                  return (
                     <Link key={category.id} href={`/collections/${category.slug}`} className="block group">
                         <div className="relative aspect-square bg-gray-100 flex items-center justify-center border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 group-hover:shadow-md">
                            {category.imageCdnUrl && (
@@ -77,9 +80,10 @@ export default function Home() {
                             />
                            )}
                         </div>
-                        <h3 className="font-body text-sm text-center leading-tight mt-2">{category.name}</h3>
+                        <h3 className="font-body text-sm text-center leading-tight mt-2">{displayName}</h3>
                     </Link>
-                ))
+                  )
+                })
               )}
             </div>
           </div>
@@ -88,3 +92,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

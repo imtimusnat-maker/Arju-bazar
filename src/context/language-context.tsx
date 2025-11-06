@@ -22,7 +22,7 @@ i18n
         errors: bnErrors,
       },
     },
-    lng: 'en', // default language
+    lng: 'bn', // default language
     fallbackLng: 'en',
     defaultNS: 'common',
     interpolation: {
@@ -41,7 +41,7 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguageState] = useState<Language>('en');
+  const [language, setLanguageState] = useState<Language>('bn');
   const { t, i18n: i18nInstance } = useTranslation(['common', 'errors']);
 
   useEffect(() => {

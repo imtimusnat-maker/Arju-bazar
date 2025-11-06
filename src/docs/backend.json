@@ -248,6 +248,10 @@
         "shippingCost": {
             "type": "number",
             "description": "The cost of shipping for the order."
+        },
+        "orderNote": {
+            "type": "string",
+            "description": "Optional note provided by the customer during checkout."
         }
       },
       "required": [

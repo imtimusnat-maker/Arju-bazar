@@ -18,7 +18,7 @@ import Image from 'next/image';
 import { useState, useMemo, useEffect } from 'react';
 import type { useCart } from '@/context/cart-context';
 import { useFirestore, useDoc, useUser } from '@/firebase';
-import { doc, collection, writeBatch, increment } from 'firebase/firestore';
+import { doc, collection, writeBatch, increment, serverTimestamp } from 'firebase/firestore';
 import type { Settings } from '@/lib/settings';
 import { useToast } from '@/hooks/use-toast';
 import { useForm, Controller, type SubmitHandler } from 'react-hook-form';
@@ -113,6 +113,8 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
             const orderRef = doc(collection(firestore, `users/${user.uid}/orders`));
             const orderData = {
                 userId: user.uid,
+                orderDate: serverTimestamp(),
+                updatedAt: serverTimestamp(),
                 totalAmount: total,
                 status: 'order placed', // Use new initial status
                 customerName: data.name,

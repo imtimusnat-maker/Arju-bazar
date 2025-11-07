@@ -43,6 +43,7 @@ import { useLanguage } from '@/context/language-context';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useTranslation } from '@/hooks/use-translation';
+import { CartSheet } from '@/components/cart-sheet';
 
 type SearchResults = {
   products: Product[];
@@ -218,6 +219,7 @@ function SearchComponent() {
 export function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const { cart } = useCart();
   const { user, isUserLoading } = useUser();
   const { language, setLanguage } = useLanguage();
@@ -252,7 +254,7 @@ export function Header() {
               <div className="flex flex-col sm:flex-row items-center sm:gap-x-4 gap-y-1 text-center">
                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
                   {settings.whatsappNumber && (
-                    <a href={`tel:${settings.whatsappNumber.replace(/\s/g, '')}`} className="flex items-center gap-2 hover:underline">
+                    <a href={`tel:${settings.whatsappNumber.replace(/\D/g, '')}`} className="flex items-center gap-2 hover:underline">
                       <Phone className="h-4 w-4" />
                       <span>{settings.whatsappNumber}</span>
                     </a>
@@ -260,7 +262,7 @@ export function Header() {
                   {settings.hotlineNumber && (
                     <>
                       <span className="hidden sm:inline">|</span>
-                       <a href={`tel:${settings.hotlineNumber.replace(/\s/g, '')}`} className="flex items-center gap-2 hover:underline">
+                       <a href={`tel:${settings.hotlineNumber.replace(/\D/g, '')}`} className="flex items-center gap-2 hover:underline">
                         <span>হট লাইন: {settings.hotlineNumber}</span>
                       </a>
                     </>
@@ -310,16 +312,15 @@ export function Header() {
                 <span className="sr-only">Account</span>
               </Link>
             </Button>
-            <Button asChild variant="ghost" size="icon" className="relative">
-              <Link href="/cart">
+             <Button variant="ghost" size="icon" className="relative" onClick={() => setIsCartOpen(true)}>
                 <ShoppingCart className="h-6 w-6" />
                 <span className="sr-only">Cart</span>
                 <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">{cart.length}</div>
-              </Link>
-            </Button>
+              </Button>
           </div>
         </div>
       </header>
+       <CartSheet isOpen={isCartOpen} onOpenChange={setIsCartOpen} />
     </>
   );
 }

@@ -23,7 +23,7 @@ export default function CartPage() {
         <Header />
         <main className="flex-1 py-8 px-4">
           <div className="container mx-auto max-w-4xl">
-            <h1 className="text-2xl font-bold mb-6">Shopping Cart</h1>
+            <h1 className="text-2xl font-bold mb-6">Your Shopping Cart</h1>
             {cart.length === 0 ? (
               <div className="text-center py-20 bg-white rounded-lg shadow">
                 <ShoppingCart className="mx-auto h-16 w-16 text-gray-400" />
@@ -58,6 +58,7 @@ export default function CartPage() {
                           value={item.quantity}
                           onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 1)}
                           className="w-14 h-8 text-center"
+                          readOnly
                         />
                         <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
                           <Plus className="h-4 w-4" />
@@ -85,7 +86,7 @@ export default function CartPage() {
                       </div>
                       <div className="flex justify-between">
                         <span>Shipping</span>
-                        <span>Free</span>
+                        <span>Calculated at checkout</span>
                       </div>
                       <div className="border-t my-2"></div>
                       <div className="flex justify-between font-bold text-lg">

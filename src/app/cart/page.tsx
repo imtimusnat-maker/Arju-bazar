@@ -94,7 +94,7 @@ export default function CartPage() {
                       </div>
                     </div>
                     <Button className="w-full mt-6 text-lg h-12" onClick={() => setCheckoutOpen(true)}>
-                      Proceed to Checkout
+                      ক্যাশ অন ডেলিভারিতে অর্ডার করুন
                     </Button>
                   </div>
                 </div>

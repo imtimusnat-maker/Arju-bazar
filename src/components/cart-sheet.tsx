@@ -42,11 +42,6 @@ export function CartSheet({ isOpen, onOpenChange }: CartSheetProps) {
         <SheetHeader className="p-4 border-b">
           <SheetTitle className="flex items-center justify-between">
             Shopping Cart ({cart.length})
-            <SheetClose asChild>
-                <Button variant="ghost" size="icon">
-                    <X className="h-5 w-5" />
-                </Button>
-            </SheetClose>
           </SheetTitle>
         </SheetHeader>
 

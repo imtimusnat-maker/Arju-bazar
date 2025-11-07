@@ -49,7 +49,8 @@ function formatMessage(params: SendSmsParams): string | null {
     const statusMessage = getStatusMessage(params.status);
     const orderId = order.id.slice(0, 7).toUpperCase();
     
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+    // Ensure the base URL is clean and doesn't have a trailing slash.
+    const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || '').replace(/\/$/, '');
     const invoiceLink = `${baseUrl}/account/orders/${order.id}`;
 
     return `${greeting} ${statusMessage} Order ID: ${orderId}. View details: ${invoiceLink}`;

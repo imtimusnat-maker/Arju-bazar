@@ -321,7 +321,7 @@ export function Header() {
               <Label htmlFor="language-toggle" className={cn('text-xs font-bold', language === 'bn' ? 'text-primary' : 'text-muted-foreground')}>BN</Label>
             </div>
             {settings?.whatsappNumber && (
-              <Button asChild variant="ghost" size="icon" className="hidden md:inline-flex text-green-500 hover:text-green-600">
+              <Button asChild variant="ghost" size="icon" className="text-green-500 hover:text-green-600">
                 <Link href={whatsAppUrl} target="_blank">
                   <WhatsAppIcon className="h-6 w-6" />
                   <span className="sr-only">WhatsApp</span>

@@ -220,7 +220,7 @@ export function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const { cart } = useCart();
+  const { cart, isCartReady } = useCart();
   const { user, isUserLoading } = useUser();
   const { language, setLanguage } = useLanguage();
 
@@ -315,7 +315,9 @@ export function Header() {
              <Button variant="ghost" size="icon" className="relative" onClick={() => setIsCartOpen(true)}>
                 <ShoppingCart className="h-6 w-6" />
                 <span className="sr-only">Cart</span>
-                <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">{cart.length}</div>
+                {isCartReady && cart.length > 0 && (
+                  <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">{cart.length}</div>
+                )}
               </Button>
           </div>
         </div>

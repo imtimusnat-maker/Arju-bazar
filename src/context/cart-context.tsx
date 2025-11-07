@@ -9,6 +9,7 @@ interface CartItem extends Product {
 
 interface CartContextType {
   cart: CartItem[];
+  isCartReady: boolean;
   addToCart: (product: Product) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
@@ -18,28 +19,35 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    // Initialize state from localStorage on the client side
-    if (typeof window !== 'undefined') {
-      try {
-        const savedCart = window.localStorage.getItem('cart');
-        return savedCart ? JSON.parse(savedCart) : [];
-      } catch (error) {
-        console.error('Failed to parse cart from localStorage', error);
-        return [];
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isCartReady, setIsCartReady] = useState(false);
+
+  useEffect(() => {
+    // This effect runs only on the client after hydration
+    try {
+      const savedCart = window.localStorage.getItem('cart');
+      if (savedCart) {
+        setCart(JSON.parse(savedCart));
       }
+    } catch (error) {
+      console.error('Failed to parse cart from localStorage', error);
+    } finally {
+      // Mark the cart as ready to be displayed on the client
+      setIsCartReady(true);
     }
-    return [];
-  });
+  }, []);
 
   // Persist cart to localStorage whenever it changes
   useEffect(() => {
-    try {
-      window.localStorage.setItem('cart', JSON.stringify(cart));
-    } catch (error) {
-      console.error('Failed to save cart to localStorage', error);
+    // Only save to localStorage if the cart is ready, to avoid overwriting on initial load
+    if (isCartReady) {
+      try {
+        window.localStorage.setItem('cart', JSON.stringify(cart));
+      } catch (error) {
+        console.error('Failed to save cart to localStorage', error);
+      }
     }
-  }, [cart]);
+  }, [cart, isCartReady]);
 
 
   const addToCart = (product: Product) => {
@@ -76,7 +84,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}
+      value={{ cart, isCartReady, addToCart, removeFromCart, updateQuantity, clearCart }}
     >
       {children}
     </CartContext.Provider>

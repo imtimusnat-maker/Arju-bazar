@@ -51,6 +51,18 @@ type SearchResults = {
   subcategories: Subcategory[];
 };
 
+const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      {...props}
+    >
+      <path d="M20.52 3.48A11.92 11.92 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.56 4.18 1.63 5.99L0 24l6.21-1.61A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-1.98-.45-3.85-1.48-5.52zM12 21.5c-1.5 0-2.97-.39-4.26-1.14l-.31-.17-3.68.95.98-3.59-.2-.33A9.5 9.5 0 1 1 21.5 12 9.51 9.51 0 0 1 12 21.5z" />
+      <path fillRule="evenodd" clipRule="evenodd" d="M17.03 14.18c-.28-.14-1.66-.82-1.92-.91-.26-.09-.45-.14-.64.14-.2.28-.75.91-.92 1.1-.17.19-.34.21-.62.07-.28-.14-1.16-.43-2.21-1.36-.82-.72-1.37-1.61-1.53-1.89-.16-.29-.02-.45.12-.59.12-.12.28-.31.42-.47.14-.16.19-.28.29-.47.1-.19.05-.36-.02-.5-.07-.14-.64-1.54-.88-2.11-.23-.56-.47-.48-.64-.49-.17-.01-.37-.01-.57-.01-.19 0-.5.07-.77.36-.28.29-1.06 1.03-1.06 2.51 0 1.47 1.09 2.9 1.24 3.1.14.2 2.14 3.35 5.19 4.69 3.06 1.34 3.06.89 3.62.84.56-.06 1.83-.74 2.09-1.46.26-.72.26-1.34.18-1.46-.08-.12-.29-.19-.57-.33z" />
+    </svg>
+  );
+
 function SearchResultProductItem({ product, onLinkClick }: { product: Product, onLinkClick: () => void }) {
     const translatedName = useTranslation(product.name);
     return (
@@ -245,6 +257,8 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
+  const whatsAppUrl = settings?.whatsappNumber ? `https://wa.me/${settings.whatsappNumber.replace(/\D/g, '')}` : '#';
+
   return (
     <>
       <header className={cn('sticky top-0 z-50 w-full border-b bg-background transition-transform duration-300', isVisible ? 'transform-none' : '-translate-y-full')}>
@@ -306,6 +320,14 @@ export function Header() {
               <Switch id="language-toggle" checked={language === 'bn'} onCheckedChange={(checked) => setLanguage(checked ? 'bn' : 'en')} className="h-5 w-9 [&>span]:h-4 [&>span]:w-4 [&>span[data-state=checked]]:translate-x-4" />
               <Label htmlFor="language-toggle" className={cn('text-xs font-bold', language === 'bn' ? 'text-primary' : 'text-muted-foreground')}>BN</Label>
             </div>
+            {settings?.whatsappNumber && (
+              <Button asChild variant="ghost" size="icon" className="hidden md:inline-flex text-green-500 hover:text-green-600">
+                <Link href={whatsAppUrl} target="_blank">
+                  <WhatsAppIcon className="h-6 w-6" />
+                  <span className="sr-only">WhatsApp</span>
+                </Link>
+              </Button>
+            )}
             <Button asChild variant="ghost" size="icon" className="hidden md:inline-flex">
               <Link href="/account">
                 {(isUserLoading) ? <Loader2 className="h-6 w-6 animate-spin" /> : user && !user.isAnonymous ? <User className="h-6 w-6" /> : <LogIn className="h-6 w-6" />}

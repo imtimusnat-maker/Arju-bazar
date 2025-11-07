@@ -94,7 +94,7 @@ export default function CartPage() {
                         <span>Tk {subtotal.toFixed(2)}</span>
                       </div>
                     </div>
-                    <Button className="w-full mt-6 text-base h-auto py-3 px-2 bg-primary hover:bg-primary/90" onClick={() => setCheckoutOpen(true)}>
+                    <Button className="w-full mt-6 text-lg h-auto py-3 px-2 bg-primary hover:bg-primary/90" onClick={() => setCheckoutOpen(true)}>
                       ক্যাশ অন ডেলিভারিতে অর্ডার করুন
                     </Button>
                   </div>

@@ -106,7 +106,7 @@ export function CartSheet({ isOpen, onOpenChange }: CartSheetProps) {
                     <span>Tk {subtotal.toFixed(2)}</span>
                 </div>
                 <div className="space-y-2">
-                  <Button onClick={handleCheckout} className="w-full h-auto py-3 px-2 text-base bg-primary hover:bg-primary/90">
+                  <Button onClick={handleCheckout} className="w-full h-auto py-3 px-2 text-lg bg-primary hover:bg-primary/90">
                     ক্যাশ অন ডেলিভারিতে অর্ডার করুন
                   </Button>
                    <SheetClose asChild>

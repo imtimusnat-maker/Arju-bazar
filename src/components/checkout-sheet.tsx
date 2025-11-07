@@ -142,6 +142,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
                 shippingMethod: shippingLabel,
                 shippingCost: shippingCost,
                 orderNote: data.orderNote || '',
+                hiddenFromUser: false, // Explicitly set to false for new orders
             };
             batch.set(orderRef, orderData);
 

@@ -273,7 +273,6 @@ export default function AdminProductsPage() {
     const category = categories?.find(c => c.id === data.categoryId);
     const searchKeywords = generateSearchKeywords(data.name, data.name_bn);
 
-    // Ensure optional fields are not undefined
     const productPayload = {
       ...data,
       name_bn: data.name_bn || '',
@@ -571,11 +570,12 @@ export default function AdminProductsPage() {
                               </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                               <SelectItem value="">None</SelectItem>
                               {subcategoriesLoading && <SelectItem value="loading" disabled>Loading...</SelectItem>}
                               {subcategories && subcategories.length > 0 ? subcategories.map(sub => (
                                   <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>
-                              )) : <SelectItem value="none" disabled>No subcategories found</SelectItem>}
+                              )) : (
+                                !subcategoriesLoading && <SelectItem value="none" disabled>No subcategories found</SelectItem>
+                              )}
                               </SelectContent>
                           </Select>
                           <FormMessage />

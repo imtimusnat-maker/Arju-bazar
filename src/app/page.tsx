@@ -10,6 +10,18 @@ import type { Settings } from '@/lib/settings';
 import { collection, doc } from 'firebase/firestore';
 import { useLanguage } from '@/context/language-context';
 import { useTranslation } from '@/hooks/use-translation';
+import { Skeleton } from '@/components/ui/skeleton';
+
+
+function CategoryCardSkeleton() {
+  return (
+    <div className="space-y-2">
+      <Skeleton className="relative aspect-square bg-gray-100 rounded-lg" />
+      <Skeleton className="h-4 bg-gray-200 rounded-md w-3/4 mx-auto" />
+    </div>
+  );
+}
+
 
 function CategoryCard({ category }: { category: Category }) {
   const displayName = useTranslation(category.name);
@@ -63,7 +75,7 @@ export default function Home() {
         {(settingsLoading || heroImage) && (
           <div className="container mx-auto max-w-screen-xl px-4 py-4">
               <div className="relative w-full aspect-[2/1] md:aspect-[3/1] rounded-lg overflow-hidden bg-gray-100">
-                  {heroImage && (
+                  {heroImage ? (
                     <Image
                         src={heroImage.imageUrl}
                         alt={heroImage.description}
@@ -72,7 +84,7 @@ export default function Home() {
                         data-ai-hint={heroImage.imageHint}
                         priority
                     />
-                  )}
+                  ) : <Skeleton className="w-full h-full" />}
               </div>
           </div>
         )}
@@ -80,11 +92,8 @@ export default function Home() {
             <h2 className="text-center text-2xl font-headline font-bold mb-6">{t('home.allCategories')}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
               {categoriesLoading ? (
-                Array.from({ length: 5 }).map((_, index) => (
-                  <div key={index} className="space-y-2">
-                     <div className="relative aspect-square bg-gray-100 rounded-lg"></div>
-                     <div className="h-4 bg-gray-200 rounded-md w-3/4 mx-auto"></div>
-                  </div>
+                Array.from({ length: 10 }).map((_, index) => (
+                  <CategoryCardSkeleton key={index} />
                 ))
               ) : (
                 categories?.map((category) => <CategoryCard key={category.id} category={category} />)

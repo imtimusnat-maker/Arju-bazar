@@ -9,6 +9,19 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
 import type { Category, Subcategory } from '@/lib/categories';
 import { useTranslation } from '@/hooks/use-translation';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function SubcategoryCardSkeleton() {
+  return (
+    <div className="space-y-2">
+      <Skeleton className="relative aspect-square bg-gray-100 rounded-lg" />
+      <div className="space-y-2">
+        <Skeleton className="h-4 bg-gray-200 rounded-md w-3/4 mx-auto" />
+      </div>
+    </div>
+  );
+}
+
 
 function SubcategoryCard({ category, subcategory }: { category: Category, subcategory: Subcategory }) {
   const displaySubcategoryName = useTranslation(subcategory.name);
@@ -91,10 +104,7 @@ export default function CollectionPage() {
             {areSubcategoriesLoading ? (
               // Loading/Skeleton state for subcategories
               Array.from({ length: 5 }).map((_, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="relative aspect-square bg-gray-100 rounded-lg animate-pulse"></div>
-                  <div className="h-4 bg-gray-200 rounded-md w-3/4 mx-auto animate-pulse"></div>
-                </div>
+                <SubcategoryCardSkeleton key={index} />
               ))
             ) : (
               // Display the subcategory cards

@@ -40,6 +40,8 @@ export function ProductCard({ product }: ProductCardProps) {
               height={200}
               className="object-contain h-full w-full p-4"
               sizes="(max-width: 768px) 50vw, 25vw"
+              placeholder="blur"
+              blurDataURL="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
             />
           </div>
           <div className="p-4 text-center space-y-2">

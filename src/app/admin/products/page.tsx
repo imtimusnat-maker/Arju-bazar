@@ -83,6 +83,7 @@ const productSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   description_bn: z.string().optional(),
   price: z.coerce.number().min(0, 'Price must be a positive number'),
+  originalPrice: z.coerce.number().optional(),
   stockQuantity: z.coerce.number().int().min(0, 'Stock must be a whole number'),
   imageUrl: z.string().optional(),
   imageCdnUrl: z.string().optional(),
@@ -172,6 +173,7 @@ export default function AdminProductsPage() {
       description: '',
       description_bn: '',
       price: 0,
+      originalPrice: 0,
       stockQuantity: 0,
       imageUrl: '',
       imageCdnUrl: '',
@@ -229,6 +231,7 @@ export default function AdminProductsPage() {
         description: product.description,
         description_bn: product.description_bn || '',
         price: product.price,
+        originalPrice: product.originalPrice || undefined,
         stockQuantity: product.stockQuantity,
         imageUrl: product.imageUrl,
         imageCdnUrl: product.imageCdnUrl,
@@ -242,6 +245,7 @@ export default function AdminProductsPage() {
         description: '',
         description_bn: '',
         price: 0,
+        originalPrice: 0,
         stockQuantity: 0,
         imageUrl: '',
         imageCdnUrl: '',
@@ -269,12 +273,18 @@ export default function AdminProductsPage() {
     const category = categories?.find(c => c.id === data.categoryId);
     const searchKeywords = generateSearchKeywords(data.name, data.name_bn);
 
+    const productPayload = {
+      ...data,
+      slug,
+      searchKeywords,
+      categorySlug: category?.slug || '',
+      originalPrice: data.originalPrice || data.price,
+    };
+
+
     if (editingProduct) {
        const productData = {
-        ...data,
-        slug,
-        searchKeywords,
-        categorySlug: category?.slug || '',
+        ...productPayload,
         updatedAt: serverTimestamp(),
       };
       const productDoc = doc(firestore, 'products', editingProduct.id);
@@ -285,10 +295,7 @@ export default function AdminProductsPage() {
       });
     } else {
        const newProductData = {
-        ...data,
-        slug,
-        searchKeywords,
-        categorySlug: category?.slug || '',
+        ...productPayload,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
@@ -569,7 +576,7 @@ export default function AdminProductsPage() {
                       )}
                       />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
                     name="price"
@@ -578,6 +585,19 @@ export default function AdminProductsPage() {
                         <FormLabel>Price</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder="99.99" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="originalPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Original Price</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="120.00" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

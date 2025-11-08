@@ -18,7 +18,7 @@ export type Product = {
   slug: string;
   categoryId: string;
   categorySlug: string;
-  subcategoryId: string;
+  subcategoryId?: string;
   searchKeywords?: string[];
 };
 

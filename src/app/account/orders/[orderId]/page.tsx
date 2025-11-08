@@ -91,6 +91,18 @@ function OrderDetailsContent({ order }: { order: Order }) {
     );
 }
 
+function LoadingSkeleton() {
+    return (
+        <div className="flex min-h-screen flex-col bg-gray-50">
+            <Header />
+            <main className="flex-1 flex items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin" />
+            </main>
+            <Footer />
+        </div>
+    );
+}
+
 export default function OrderInvoicePage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
@@ -104,19 +116,12 @@ export default function OrderInvoicePage() {
   const { data: order, isLoading: isOrderLoading } = useDoc<Order>(orderDocRef);
 
   // 1. Primary loading state: wait for user authentication to resolve.
+  // This is the most important gate to prevent premature 404s.
   if (isUserLoading) {
-    return (
-      <div className="flex min-h-screen flex-col bg-gray-50">
-          <Header />
-          <main className="flex-1 flex items-center justify-center">
-              <Loader2 className="h-12 w-12 animate-spin" />
-          </main>
-          <Footer />
-      </div>
-    );
+    return <LoadingSkeleton />;
   }
 
-  // 2. After user auth is resolved, if there is no user, show login prompt.
+  // 2. After user auth is resolved, if there is no user, show a login prompt.
   if (!user) {
      return (
         <div className="flex min-h-screen flex-col bg-gray-50">
@@ -141,26 +146,20 @@ export default function OrderInvoicePage() {
      );
   }
   
-  // 3. User is logged in, now check order status.
-  // While order is loading, show loader.
+  // 3. User is logged in. Now, we handle the order fetching state.
+  // If the order is still loading, show the skeleton.
   if (isOrderLoading) {
-    return (
-        <div className="flex min-h-screen flex-col bg-gray-50">
-            <Header />
-            <main className="flex-1 flex items-center justify-center">
-                <Loader2 className="h-12 w-12 animate-spin" />
-            </main>
-            <Footer />
-        </div>
-    );
+    return <LoadingSkeleton />;
   }
   
-  // 4. Order has finished loading. If there's still no order, it's a 404.
+  // 4. Order has finished loading. If there's still no order, it's a genuine 404.
+  // This condition is now only met after we are certain the user is logged in
+  // and the data fetch from Firestore has completed.
   if (!order) {
       notFound();
   }
 
-  // 5. If we reach here, user and order are both loaded successfully.
+  // 5. If we reach here, user and order are both loaded successfully. Render the page.
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
         <Header />

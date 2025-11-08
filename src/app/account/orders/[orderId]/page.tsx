@@ -103,7 +103,7 @@ export default function OrderInvoicePage() {
   );
   const { data: order, isLoading: isOrderLoading } = useDoc<Order>(orderDocRef);
 
-  if (isUserLoading || isOrderLoading) {
+  if (isUserLoading || (user && isOrderLoading)) {
     return (
       <div className="flex min-h-screen flex-col bg-gray-50">
           <Header />
@@ -141,6 +141,7 @@ export default function OrderInvoicePage() {
      )
   }
   
+  // After loading and confirming there is a user, if no order is found, then it's a 404.
   if (!order) {
       notFound();
   }

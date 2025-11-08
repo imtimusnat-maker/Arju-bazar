@@ -61,6 +61,7 @@ export default function SubCategoryPage() {
       );
   }
 
+  // Only show 404 if the subcategory itself is not found after loading.
   if (!subcategory) {
     notFound();
   }
@@ -76,10 +77,14 @@ export default function SubCategoryPage() {
               Array.from({ length: 10 }).map((_, index) => (
                 <ProductCardSkeleton key={index} />
               ))
-            ) : (
-              products?.map((p) => (
+            ) : products && products.length > 0 ? (
+              products.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))
+            ) : (
+                <div className="col-span-full text-center py-10">
+                    <p className="text-muted-foreground">No products found in this subcategory.</p>
+                </div>
             )}
           </div>
         </div>

@@ -276,6 +276,7 @@ export default function AdminProductsPage() {
     const productPayload = {
       ...data,
       name_bn: data.name_bn || '',
+      description: data.description || '',
       description_bn: data.description_bn || '',
       originalPrice: data.originalPrice || data.price,
       imageUrl: data.imageUrl || '',

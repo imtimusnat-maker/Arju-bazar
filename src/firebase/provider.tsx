@@ -5,7 +5,6 @@ import { FirebaseApp } from 'firebase/app';
 import { Firestore } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
-import { Loader2 } from 'lucide-react';
 
 interface FirebaseProviderProps {
   children: ReactNode;
@@ -103,17 +102,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       userError: userAuthState.userError,
     };
   }, [firebaseApp, firestore, auth, userAuthState]);
-
-  // The Auth Gate: Render a loader while auth state is being determined.
-  // This prevents child components from rendering prematurely with an incorrect auth state.
-  if (userAuthState.isUserLoading) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-background">
-        <Loader2 className="h-12 w-12 animate-spin" />
-      </div>
-    );
-  }
-
+  
   return (
     <FirebaseContext.Provider value={contextValue}>
       <FirebaseErrorListener />
@@ -181,7 +170,14 @@ export function useMemoFirebase<T>(factory: () => T, deps: DependencyList): T | 
  * This provides the User object, loading status, and any auth errors.
  * @returns {UserHookResult} Object with user, isUserLoading, userError.
  */
-export const useUser = (): UserHookResult => { // Renamed from useAuthUser
-  const { user, isUserLoading, userError } = useFirebase(); // Leverages the main hook
+export const useUser = (): UserHookResult => { 
+  const context = useContext(FirebaseContext);
+  if (context === undefined) {
+    // This is a special case. During the skeleton load, the context might not be ready.
+    // Instead of throwing, we return a loading state. The AuthGate will prevent
+    // the main app from rendering until the real context is available.
+    return { user: null, isUserLoading: true, userError: null };
+  }
+  const { user, isUserLoading, userError } = context;
   return { user, isUserLoading, userError };
 };

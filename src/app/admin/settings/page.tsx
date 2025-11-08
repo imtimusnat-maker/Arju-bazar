@@ -34,6 +34,7 @@ const settingsSchema = z.object({
   smsGreetingPlaced: z.string().optional(),
   smsGreetingConfirmed: z.string().optional(),
   smsGreetingDelivered: z.string().optional(),
+  welcomeMessage: z.string().optional(),
 });
 
 type SettingsFormData = z.infer<typeof settingsSchema>;
@@ -79,6 +80,7 @@ export default function AdminSettingsPage() {
       smsGreetingPlaced: '',
       smsGreetingConfirmed: '',
       smsGreetingDelivered: '',
+      welcomeMessage: '',
     },
   });
 
@@ -91,7 +93,8 @@ export default function AdminSettingsPage() {
     if (settingsData) {
       form.reset({
         ...settingsData,
-        shippingOptions: settingsData.shippingOptions || []
+        shippingOptions: settingsData.shippingOptions || [],
+        welcomeMessage: settingsData.welcomeMessage || '',
       });
     }
   }, [settingsData, form]);
@@ -138,6 +141,31 @@ export default function AdminSettingsPage() {
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 flex-1 flex flex-col overflow-hidden">
                 <div className="flex-1 overflow-y-auto pr-2 space-y-8">
+                
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Welcome Banner</CardTitle>
+                        <CardDescription>
+                            Set a welcome message for new visitors. It will appear in a dismissible banner on the homepage. Leave it blank to disable the banner.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <FormField
+                          control={form.control}
+                          name="welcomeMessage"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Banner Message</FormLabel>
+                              <FormControl>
+                                <Textarea placeholder="e.g. Welcome to our store! Get 10% off your first order." {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                    </CardContent>
+                </Card>
+
               <Card>
                 <CardHeader>
                   <CardTitle>Contact Information</CardTitle>

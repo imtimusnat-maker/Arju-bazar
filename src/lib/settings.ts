@@ -14,4 +14,5 @@ export type Settings = {
   smsGreetingPlaced?: string;
   smsGreetingConfirmed?: string;
   smsGreetingDelivered?: string;
+  welcomeMessage?: string;
 };

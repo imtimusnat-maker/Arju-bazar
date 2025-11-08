@@ -1,4 +1,5 @@
 'use client';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Header } from '@/components/layout/header';
@@ -11,7 +12,48 @@ import { collection, doc } from 'firebase/firestore';
 import { useLanguage } from '@/context/language-context';
 import { useTranslation } from '@/hooks/use-translation';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { X, Megaphone } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
+
+function WelcomeBanner({ message }: { message: string }) {
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        const hasSeenBanner = localStorage.getItem('hasSeenWelcomeBanner');
+        if (!hasSeenBanner) {
+            setIsVisible(true);
+        }
+    }, []);
+
+    const handleDismiss = () => {
+        localStorage.setItem('hasSeenWelcomeBanner', 'true');
+        setIsVisible(false);
+    };
+
+    if (!isVisible) {
+        return null;
+    }
+
+    return (
+        <div className="bg-primary text-primary-foreground relative">
+            <div className="container mx-auto max-w-screen-xl px-4 py-2 text-center text-sm">
+                <Megaphone className="inline-block h-4 w-4 mr-2" />
+                {message}
+            </div>
+            <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-1/2 right-2 -translate-y-1/2 h-8 w-8 hover:bg-primary/20"
+                onClick={handleDismiss}
+            >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Dismiss</span>
+            </Button>
+        </div>
+    );
+}
 
 function CategoryCardSkeleton() {
   return (
@@ -71,6 +113,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
+      {settings?.welcomeMessage && <WelcomeBanner message={settings.welcomeMessage} />}
       <main className="flex-1 pb-20 md:pb-0">
         {(settingsLoading || heroImage) && (
           <div className="container mx-auto max-w-screen-xl px-4 py-4">

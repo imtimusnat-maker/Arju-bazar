@@ -56,12 +56,12 @@ export async function initiateEmailSignUp(authInstance: Auth, email: string, pas
   const currentUser = authInstance.currentUser;
 
   const handleUserCreation = async (user: User) => {
-    // Awaits the creation of the firestore document
+    // Awaits the creation of the firestore document with the complete user data
     await createFirestoreUser(user.uid, {
         email: user.email,
-        phone: phone,
-        name: name,
-        address: address,
+        phone,
+        name,
+        address,
     });
   };
 

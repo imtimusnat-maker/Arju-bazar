@@ -91,37 +91,17 @@ function OrderDetailsContent({ order }: { order: Order }) {
     );
 }
 
-function LoadingSkeleton() {
-    return (
-        <div className="flex min-h-screen flex-col bg-gray-50">
-            <Header />
-            <main className="flex-1 flex items-center justify-center">
-                <Loader2 className="h-12 w-12 animate-spin" />
-            </main>
-            <Footer />
-        </div>
-    );
-}
-
-export default function OrderInvoicePage() {
-  const { user, isUserLoading } = useUser();
+function OrderDetailsPage({ orderId }: { orderId: string }) {
+  const { user } = useUser(); // isUserLoading is now handled by the global provider
   const firestore = useFirestore();
-  const params = useParams();
-  const orderId = params.orderId as string;
 
   const orderDocRef = useMemo(
-    () => (firestore && user && orderId ? doc(firestore, `users/${user.uid}/orders`, orderId) : null),
+    () => (firestore && user ? doc(firestore, `users/${user.uid}/orders`, orderId) : null),
     [firestore, user, orderId]
   );
   const { data: order, isLoading: isOrderLoading } = useDoc<Order>(orderDocRef);
 
-  // 1. Primary loading state: wait for user authentication to resolve.
-  // This is the most important gate to prevent premature 404s.
-  if (isUserLoading) {
-    return <LoadingSkeleton />;
-  }
-
-  // 2. After user auth is resolved, if there is no user, show a login prompt.
+  // If the user isn't logged in, redirect them. This is now safe because useUser() is reliable.
   if (!user) {
      return (
         <div className="flex min-h-screen flex-col bg-gray-50">
@@ -145,21 +125,26 @@ export default function OrderInvoicePage() {
         </div>
      );
   }
-  
-  // 3. User is logged in. Now, we handle the order fetching state.
-  // If the order is still loading, show the skeleton.
+
+  // User is logged in, now handle order fetching.
   if (isOrderLoading) {
-    return <LoadingSkeleton />;
+     return (
+        <div className="flex min-h-screen flex-col bg-gray-50">
+            <Header />
+            <main className="flex-1 flex items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin" />
+            </main>
+            <Footer />
+        </div>
+    );
   }
-  
-  // 4. Order has finished loading. If there's still no order, it's a genuine 404.
-  // This condition is now only met after we are certain the user is logged in
-  // and the data fetch from Firestore has completed.
+
+  // After loading is complete, if there's no order, it's a genuine 404.
   if (!order) {
       notFound();
   }
-
-  // 5. If we reach here, user and order are both loaded successfully. Render the page.
+  
+  // If we reach here, user and order are both loaded successfully.
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
         <Header />
@@ -178,4 +163,14 @@ export default function OrderInvoicePage() {
         <Footer />
     </div>
   );
+}
+
+
+export default function OrderInvoicePage() {
+  const params = useParams();
+  const orderId = params.orderId as string;
+
+  // The main component now just extracts the orderId and defers all logic
+  // to the child component. This helps with suspense boundaries if needed later.
+  return <OrderDetailsPage orderId={orderId} />;
 }

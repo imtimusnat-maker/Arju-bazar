@@ -6,22 +6,24 @@ import Link from 'next/link';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useAuth, useUser, initiateEmailSignUp, createFirestoreUser } from '@/firebase';
+import { useAuth, useUser, initiateEmailSignUp } from '@/firebase';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { onAuthStateChanged, AuthError, type User as FirebaseUser } from 'firebase/auth';
+import { onAuthStateChanged, AuthError } from 'firebase/auth';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Logo } from '@/components/logo';
 import { Loader2 } from 'lucide-react';
 
 const signUpSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters long'),
   phone: z.string().min(1, 'Phone number is required'),
+  address: z.string().min(1, 'Address is required'),
+  password: z.string().min(6, 'Password must be at least 6 characters long'),
 });
 
 type SignUpFormData = z.infer<typeof signUpSchema>;
@@ -36,7 +38,7 @@ export default function SignUpPage() {
 
   const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { email: '', password: '', phone: '' },
+    defaultValues: { name: '', email: '', password: '', phone: '', address: '' },
   });
 
   useEffect(() => {
@@ -79,7 +81,7 @@ export default function SignUpPage() {
     setIsSubmitting(true);
     
     try {
-        await initiateEmailSignUp(auth, data.email, data.password, data.phone);
+        await initiateEmailSignUp(auth, data.email, data.password, data.phone, data.name, data.address);
         toast({
             title: "Account Created",
             description: "Welcome! You have successfully signed up.",
@@ -117,7 +119,20 @@ export default function SignUpPage() {
             </CardHeader>
             <CardContent>
                 <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Full Name</FormLabel>
+                        <FormControl>
+                            <Input type="text" placeholder="Your full name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
                     <FormField
                     control={form.control}
                     name="email"
@@ -139,6 +154,19 @@ export default function SignUpPage() {
                             <FormLabel>Phone Number</FormLabel>
                             <FormControl>
                                 <Input type="tel" placeholder="01..." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="address"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Address</FormLabel>
+                            <FormControl>
+                                <Input type="text" placeholder="Your shipping address" {...field} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>

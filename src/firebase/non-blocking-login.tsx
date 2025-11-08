@@ -47,7 +47,7 @@ export async function createFirestoreUser(uid: string, data: { email: string | n
  * and creating the Firestore document.
  * Returns the UserCredential on success.
  */
-export async function initiateEmailSignUp(authInstance: Auth, email: string, password: string, phone: string): Promise<UserCredential | void> {
+export async function initiateEmailSignUp(authInstance: Auth, email: string, password: string, phone: string, name: string, address: string): Promise<UserCredential | void> {
   const currentUser = authInstance.currentUser;
 
   const handleUserCreation = async (user: User) => {
@@ -55,8 +55,8 @@ export async function initiateEmailSignUp(authInstance: Auth, email: string, pas
     await createFirestoreUser(user.uid, {
         email: user.email,
         phone: phone,
-        name: '', // Other fields are collected later
-        address: '',
+        name: name,
+        address: address,
     });
   };
 

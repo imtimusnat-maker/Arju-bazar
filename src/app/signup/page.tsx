@@ -1,25 +1,27 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useAuth, useUser, initiateEmailSignUp } from '@/firebase';
+import { useAuth, useUser, initiateEmailSignUp, createFirestoreUser } from '@/firebase';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { onAuthStateChanged, AuthError } from 'firebase/auth';
+import { onAuthStateChanged, AuthError, type User as FirebaseUser } from 'firebase/auth';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Logo } from '@/components/logo';
+import { Loader2 } from 'lucide-react';
 
 const signUpSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters long'),
+  phone: z.string().min(1, 'Phone number is required'),
 });
 
 type SignUpFormData = z.infer<typeof signUpSchema>;
@@ -29,10 +31,12 @@ export default function SignUpPage() {
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { email: '', password: '' },
+    defaultValues: { email: '', password: '', phone: '' },
   });
 
   useEffect(() => {
@@ -44,6 +48,7 @@ export default function SignUpPage() {
   useEffect(() => {
     if (!auth) return;
     const unsubscribe = onAuthStateChanged(auth, () => {}, (error: AuthError) => {
+        setIsSubmitting(false);
         let message = 'An unknown authentication error occurred.';
         switch (error.code) {
             case 'auth/email-already-in-use':
@@ -69,9 +74,30 @@ export default function SignUpPage() {
     return () => unsubscribe();
   }, [auth, toast]);
 
-  const onSubmit: SubmitHandler<SignUpFormData> = (data) => {
-    if (auth) {
-        initiateEmailSignUp(auth, data.email, data.password);
+  const onSubmit: SubmitHandler<SignUpFormData> = async (data) => {
+    if (!auth) return;
+    setIsSubmitting(true);
+    
+    try {
+        const userCredential = await initiateEmailSignUp(auth, data.email, data.password);
+        if (userCredential && userCredential.user) {
+            // Create a user profile in Firestore
+            await createFirestoreUser(userCredential.user.uid, {
+                email: userCredential.user.email,
+                phone: data.phone,
+                name: '', // Name and address are collected during checkout
+                address: '',
+            });
+            toast({
+                title: "Account Created",
+                description: "Welcome! You have successfully signed up.",
+            });
+            // The useEffect will handle the redirect
+        }
+    } catch (error) {
+        // Error is caught by onAuthStateChanged listener
+    } finally {
+        // isSubmitting is set to false in the error listener
     }
   };
   
@@ -109,6 +135,19 @@ export default function SignUpPage() {
                     )}
                     />
                     <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Phone Number</FormLabel>
+                            <FormControl>
+                                <Input type="tel" placeholder="01..." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
                     control={form.control}
                     name="password"
                     render={({ field }) => (
@@ -121,8 +160,8 @@ export default function SignUpPage() {
                         </FormItem>
                     )}
                     />
-                    <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                    Create Account
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="animate-spin" /> : "Create Account" }
                     </Button>
                 </form>
                 </Form>

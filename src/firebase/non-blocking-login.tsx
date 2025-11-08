@@ -8,7 +8,10 @@ import {
   EmailAuthProvider,
   type User,
   type AuthCredential,
+  type UserCredential,
 } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { getSdks } from '@/firebase';
 
 /**
  * Creates an email/password credential for linking.
@@ -27,23 +30,31 @@ export function initiateAnonymousSignIn(authInstance: Auth): void {
 
 /** 
  * Handles user sign-up, linking with an anonymous account if one exists.
- * Does not use 'await' to be non-blocking.
+ * Returns the UserCredential on success.
  */
-export function initiateEmailSignUp(authInstance: Auth, email: string, password: string): void {
+export function initiateEmailSignUp(authInstance: Auth, email: string, password: string): Promise<UserCredential | void> {
   const currentUser = authInstance.currentUser;
 
   if (currentUser && currentUser.isAnonymous) {
-    // If the user is anonymous, link the new credentials to the existing anonymous account.
     const credential = getAuthCredential(email, password);
-    linkWithCredential(currentUser, credential).catch((error) => {
-      // Handle errors, e.g., 'auth/credential-already-in-use'
-      // The onAuthStateChanged error listener in the component will catch and display this.
-    });
+    return linkWithCredential(currentUser, credential);
   } else {
-    // If there's no user or the user is not anonymous, create a new account.
-    createUserWithEmailAndPassword(authInstance, email, password);
+    return createUserWithEmailAndPassword(authInstance, email, password);
   }
 }
+
+/** 
+ * Creates a user profile document in Firestore.
+ */
+export function createFirestoreUser(uid: string, data: { email: string | null; phone: string; name: string; address: string; }) {
+    const { firestore } = getSdks(getAuth().app);
+    const userRef = doc(firestore, 'users', uid);
+    return setDoc(userRef, {
+        id: uid,
+        ...data
+    }, { merge: true });
+}
+
 
 /** 
  * Handles user sign-in. If the user is anonymous, it attempts to link.

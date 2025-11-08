@@ -30,6 +30,10 @@
           "type": "number",
           "description": "Price of the product."
         },
+        "originalPrice": {
+          "type": "number",
+          "description": "The original price of the product, for showing discounts."
+        },
         "imageUrl": {
           "type": "string",
           "description": "URL of the product image.",
@@ -43,6 +47,10 @@
         "categoryId": {
           "type": "string",
           "description": "Reference to Category. (Relationship: Category 1:N Product)"
+        },
+        "subcategoryId": {
+          "type": "string",
+          "description": "The ID of the subcategory, if any."
         },
         "stockQuantity": {
           "type": "number",
@@ -160,7 +168,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user."
+          "description": "Unique identifier for the user (same as Auth UID)."
         },
         "name": {
           "type": "string",
@@ -171,7 +179,7 @@
           "description": "Contact phone number of the user."
         },
         "email": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "Email address of the user.",
           "format": "email"
         },
@@ -190,10 +198,7 @@
       },
       "required": [
         "id",
-        "name",
-        "phone",
-        "email",
-        "address"
+        "phone"
       ]
     },
     "Order": {

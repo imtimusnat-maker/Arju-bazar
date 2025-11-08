@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useFirestore, useCollection } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query } from 'firebase/firestore';
 import type { User } from '@/lib/users';
 import { Loader2, Search } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -14,8 +14,9 @@ export default function AdminCustomersPage() {
     const firestore = useFirestore();
     const [searchTerm, setSearchTerm] = useState('');
 
+    // Query all users, not just those with orders
     const customersQuery = useMemo(
-        () => (firestore ? query(collection(firestore, 'users'), where('orderCount', '>', 0)) : null),
+        () => (firestore ? query(collection(firestore, 'users')) : null),
         [firestore]
     );
 
@@ -25,9 +26,9 @@ export default function AdminCustomersPage() {
         if (!customers) return [];
         const lowercasedTerm = searchTerm.toLowerCase();
         return customers.filter(customer =>
-            customer.name.toLowerCase().includes(lowercasedTerm) ||
+            (customer.name && customer.name.toLowerCase().includes(lowercasedTerm)) ||
             (customer.email && customer.email.toLowerCase().includes(lowercasedTerm)) ||
-            customer.phone.toLowerCase().includes(lowercasedTerm)
+            (customer.phone && customer.phone.toLowerCase().includes(lowercasedTerm))
         );
     }, [customers, searchTerm]);
 
@@ -48,7 +49,7 @@ export default function AdminCustomersPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Manage Customers</CardTitle>
-                    <CardDescription>View and manage your customer list. Only users who have placed an order are shown here.</CardDescription>
+                    <CardDescription>View and manage your customer list.</CardDescription>
                 </CardHeader>
                 <CardContent>
                    <Table>
@@ -73,13 +74,13 @@ export default function AdminCustomersPage() {
                                         <TableCell>
                                             <div className="flex items-center gap-3">
                                                 <Avatar>
-                                                    <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
+                                                    <AvatarFallback>{(customer.name || customer.email || 'U').charAt(0)}</AvatarFallback>
                                                 </Avatar>
-                                                <span className="font-medium">{customer.name}</span>
+                                                <span className="font-medium">{customer.name || 'N/A'}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <div>{customer.email}</div>
+                                            <div>{customer.email || 'No email'}</div>
                                             <div className="text-sm text-muted-foreground">{customer.phone}</div>
                                         </TableCell>
                                         <TableCell>{customer.orderCount || 0}</TableCell>

@@ -409,7 +409,7 @@ export default function AdminCategoriesPage() {
         slug,
         searchKeywords,
         categoryId: parentCategory.id,
-        categorySlug: parentCategory.slug,
+        categorySlug: parentCategory.slug, // Ensure categorySlug is saved
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
     }

@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { useParams, notFound } from 'next/navigation';
+import { useParams, notFound, useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { useFirestore, useDoc, useCollection, useMemoFirebase, useUser } from '@/firebase';
@@ -12,7 +12,7 @@ import { format } from 'date-fns';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, ShoppingBag } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
 import { Logo } from '@/components/logo';
@@ -103,7 +103,8 @@ export default function OrderInvoicePage() {
   );
   const { data: order, isLoading: isOrderLoading } = useDoc<Order>(orderDocRef);
 
-  if (isUserLoading || (user && isOrderLoading)) {
+  // 1. Primary loading state: wait for user authentication to resolve.
+  if (isUserLoading) {
     return (
       <div className="flex min-h-screen flex-col bg-gray-50">
           <Header />
@@ -112,12 +113,11 @@ export default function OrderInvoicePage() {
           </main>
           <Footer />
       </div>
-    )
+    );
   }
 
+  // 2. After user auth is resolved, if there is no user, show login prompt.
   if (!user) {
-    // This could redirect to login, but for now we'll just show an error message
-    // as guest users might click the link.
      return (
         <div className="flex min-h-screen flex-col bg-gray-50">
             <Header />
@@ -138,17 +138,12 @@ export default function OrderInvoicePage() {
             </main>
             <Footer />
         </div>
-     )
+     );
   }
   
-  // After loading and confirming there is a user, if no order is found, then it's a 404.
-  if (!isOrderLoading && !order) {
-      notFound();
-  }
-  
-  if (!order) {
-    // This case will be hit during the initial client-side render while order is loading
-    // but after user is confirmed. We show a loader to prevent calling notFound() too early.
+  // 3. User is logged in, now check order status.
+  // While order is loading, show loader.
+  if (isOrderLoading) {
     return (
         <div className="flex min-h-screen flex-col bg-gray-50">
             <Header />
@@ -157,9 +152,15 @@ export default function OrderInvoicePage() {
             </main>
             <Footer />
         </div>
-    )
+    );
+  }
+  
+  // 4. Order has finished loading. If there's still no order, it's a 404.
+  if (!order) {
+      notFound();
   }
 
+  // 5. If we reach here, user and order are both loaded successfully.
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
         <Header />

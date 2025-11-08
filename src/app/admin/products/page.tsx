@@ -567,14 +567,15 @@ export default function AdminProductsPage() {
                           <Select onValueChange={field.onChange} value={field.value || ''} disabled={!selectedCategoryId || subcategoriesLoading}>
                               <FormControl>
                               <SelectTrigger>
-                                  <SelectValue placeholder="Select a subcategory" />
+                                  <SelectValue placeholder="Select a subcategory (optional)" />
                               </SelectTrigger>
                               </FormControl>
                               <SelectContent>
+                               <SelectItem value="">None</SelectItem>
                               {subcategoriesLoading && <SelectItem value="loading" disabled>Loading...</SelectItem>}
                               {subcategories && subcategories.length > 0 ? subcategories.map(sub => (
                                   <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>
-                              )) : <SelectItem value="none" disabled>No subcategories</SelectItem>}
+                              )) : <SelectItem value="none" disabled>No subcategories found</SelectItem>}
                               </SelectContent>
                           </Select>
                           <FormMessage />

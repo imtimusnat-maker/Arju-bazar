@@ -278,7 +278,7 @@ export default function AdminProductsPage() {
       name_bn: data.name_bn || '',
       description: data.description || '',
       description_bn: data.description_bn || '',
-      originalPrice: data.originalPrice || data.price,
+      originalPrice: data.originalPrice || 0,
       imageUrl: data.imageUrl || '',
       imageCdnUrl: data.imageCdnUrl || '',
       subcategoryId: data.subcategoryId || '',
@@ -575,7 +575,7 @@ export default function AdminProductsPage() {
                               {subcategories && subcategories.length > 0 ? subcategories.map(sub => (
                                   <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>
                               )) : (
-                                !subcategoriesLoading && <SelectItem value="none" disabled>No subcategories found</SelectItem>
+                                !subcategoriesLoading && subcategories?.length === 0 && <SelectItem value="none" disabled>No subcategories found</SelectItem>
                               )}
                               </SelectContent>
                           </Select>
@@ -603,7 +603,7 @@ export default function AdminProductsPage() {
                     name="originalPrice"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Original Price</FormLabel>
+                        <FormLabel>Original Price (Optional)</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder="120.00" {...field} />
                         </FormControl>

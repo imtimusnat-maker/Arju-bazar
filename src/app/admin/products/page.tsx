@@ -273,12 +273,18 @@ export default function AdminProductsPage() {
     const category = categories?.find(c => c.id === data.categoryId);
     const searchKeywords = generateSearchKeywords(data.name, data.name_bn);
 
+    // Ensure optional fields are not undefined
     const productPayload = {
       ...data,
+      name_bn: data.name_bn || '',
+      description_bn: data.description_bn || '',
+      originalPrice: data.originalPrice || data.price,
+      imageUrl: data.imageUrl || '',
+      imageCdnUrl: data.imageCdnUrl || '',
+      subcategoryId: data.subcategoryId || '',
       slug,
       searchKeywords,
       categorySlug: category?.slug || '',
-      originalPrice: data.originalPrice || data.price,
     };
 
 

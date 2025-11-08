@@ -358,6 +358,10 @@ export default function AdminCategoriesPage() {
     if (editingCategory) {
        const categoryData = {
         ...data,
+        name_bn: data.name_bn || '',
+        description_bn: data.description_bn || '',
+        imageUrl: data.imageUrl || '',
+        imageCdnUrl: data.imageCdnUrl || '',
         slug,
         searchKeywords,
         updatedAt: serverTimestamp(),
@@ -371,6 +375,10 @@ export default function AdminCategoriesPage() {
     } else {
       const newCategoryData = {
         ...data,
+        name_bn: data.name_bn || '',
+        description_bn: data.description_bn || '',
+        imageUrl: data.imageUrl || '',
+        imageCdnUrl: data.imageCdnUrl || '',
         slug,
         searchKeywords,
         createdAt: serverTimestamp(),
@@ -395,6 +403,9 @@ export default function AdminCategoriesPage() {
     const searchKeywords = generateSearchKeywords(data.name, data.name_bn);
     const subcategoryData = {
         ...data,
+        name_bn: data.name_bn || '',
+        imageUrl: data.imageUrl || '',
+        imageCdnUrl: data.imageCdnUrl || '',
         slug,
         searchKeywords,
         categoryId: parentCategory.id,
@@ -421,6 +432,9 @@ export default function AdminCategoriesPage() {
     const searchKeywords = generateSearchKeywords(data.name, data.name_bn);
     const subcategoryData = {
         ...data,
+        name_bn: data.name_bn || '',
+        imageUrl: data.imageUrl || '',
+        imageCdnUrl: data.imageCdnUrl || '',
         slug,
         searchKeywords,
         updatedAt: serverTimestamp(),

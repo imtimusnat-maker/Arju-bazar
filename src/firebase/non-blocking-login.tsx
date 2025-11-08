@@ -11,7 +11,7 @@ import {
   type AuthCredential,
   type UserCredential,
 } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, Firestore } from 'firebase/firestore'; // Import Firestore type
 import { getSdks } from '@/firebase';
 
 /**
@@ -31,11 +31,10 @@ export function initiateAnonymousSignIn(authInstance: Auth): void {
 
 /** 
  * Creates a user profile document in Firestore.
+ * Now accepts the firestore instance directly.
  */
-export async function createFirestoreUser(uid: string, data: { email: string | null; phone: string; name: string; address: string; }) {
-    const { firestore } = getSdks(getAuth().app);
+export async function createFirestoreUser(firestore: Firestore, uid: string, data: { email: string | null; phone: string; name: string; address: string; }) {
     const userRef = doc(firestore, 'users', uid);
-    // This is now an awaited operation
     await setDoc(userRef, {
         id: uid,
         email: data.email,
@@ -55,10 +54,11 @@ export async function createFirestoreUser(uid: string, data: { email: string | n
  */
 export async function initiateEmailSignUp(authInstance: Auth, email: string, password: string, phone: string, name: string, address: string): Promise<UserCredential> {
   const currentUser = authInstance.currentUser;
+  const { firestore } = getSdks(authInstance.app); // Get firestore instance here
 
   const handleUserCreation = async (user: User) => {
-    // Awaits the creation of the firestore document with the complete user data
-    await createFirestoreUser(user.uid, {
+    // Pass the firestore instance directly
+    await createFirestoreUser(firestore, user.uid, {
         email: user.email,
         phone,
         name,

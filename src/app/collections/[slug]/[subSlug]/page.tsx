@@ -26,9 +26,9 @@ export default function SubCategoryPage() {
   const params = useParams<{ slug: string; subSlug: string }>();
   const firestore = useFirestore();
 
-  // 1. Fetch Subcategory by slug and categorySlug
+  // 1. Fetch Subcategory by its own slug AND its parent category's slug.
   const subcategoryQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || !params.slug || !params.subSlug) return null;
     return query(
       collection(firestore, 'subcategories'), 
       and(
@@ -38,12 +38,13 @@ export default function SubCategoryPage() {
       limit(1)
     );
   }, [firestore, params.slug, params.subSlug]);
+  
   const { data: subcategoryData, isLoading: subcategoryLoading } = useCollection<Subcategory>(subcategoryQuery);
   const subcategory = subcategoryData?.[0];
 
   const displaySubcategoryName = useTranslation(subcategory?.name);
   
-  // 2. Fetch products for the subcategory
+  // 2. Fetch products for the subcategory using its ID.
   const productsQuery = useMemoFirebase(() => {
     if (!firestore || !subcategory) return null;
     return query(collection(firestore, 'products'), where('subcategoryId', '==', subcategory.id));

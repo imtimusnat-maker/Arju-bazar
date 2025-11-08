@@ -130,9 +130,11 @@ const generateSearchKeywords = (name: string, name_bn?: string): string[] => {
 
 function SubcategoryList({
   categoryId,
+  categorySlug,
   onEdit,
 }: {
   categoryId: string;
+  categorySlug: string;
   onEdit: (subcategory: Subcategory) => void;
 }) {
   const firestore = useFirestore();
@@ -355,15 +357,20 @@ export default function AdminCategoriesPage() {
     const slug = data.name.toLowerCase().replace(/\s+/g, '-');
     const searchKeywords = generateSearchKeywords(data.name, data.name_bn);
     
+    const categoryPayload = {
+      ...data,
+      name_bn: data.name_bn || '',
+      description: data.description || '',
+      description_bn: data.description_bn || '',
+      imageUrl: data.imageUrl || '',
+      imageCdnUrl: data.imageCdnUrl || '',
+      slug,
+      searchKeywords,
+    };
+
     if (editingCategory) {
        const categoryData = {
-        ...data,
-        name_bn: data.name_bn || '',
-        description_bn: data.description_bn || '',
-        imageUrl: data.imageUrl || '',
-        imageCdnUrl: data.imageCdnUrl || '',
-        slug,
-        searchKeywords,
+        ...categoryPayload,
         updatedAt: serverTimestamp(),
       };
       const categoryDoc = doc(firestore, 'categories', editingCategory.id);
@@ -374,13 +381,7 @@ export default function AdminCategoriesPage() {
       });
     } else {
       const newCategoryData = {
-        ...data,
-        name_bn: data.name_bn || '',
-        description_bn: data.description_bn || '',
-        imageUrl: data.imageUrl || '',
-        imageCdnUrl: data.imageCdnUrl || '',
-        slug,
-        searchKeywords,
+        ...categoryPayload,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
@@ -437,6 +438,8 @@ export default function AdminCategoriesPage() {
         imageCdnUrl: data.imageCdnUrl || '',
         slug,
         searchKeywords,
+        // Re-affirm categorySlug in case parent category's slug changed, though unlikely.
+        categorySlug: parentCategory.slug,
         updatedAt: serverTimestamp(),
     };
 
@@ -568,6 +571,7 @@ export default function AdminCategoriesPage() {
                         <AccordionContent>
                            <SubcategoryList
                               categoryId={category.id}
+                              categorySlug={category.slug}
                               onEdit={(subcategory) => handleEditSubcategoryDialogOpen(subcategory, category)}
                             />
                         </AccordionContent>

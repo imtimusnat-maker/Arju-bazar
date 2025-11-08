@@ -28,6 +28,8 @@ export function ProductCard({ product }: ProductCardProps) {
     });
   };
   
+  const showDiscount = product.originalPrice && product.originalPrice > product.price;
+
   return (
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-md border border-gray-200 rounded-lg">
       <Link href={`/product/${product.slug}`} className="block">
@@ -40,16 +42,14 @@ export function ProductCard({ product }: ProductCardProps) {
               height={200}
               className="object-contain h-full w-full p-4"
               sizes="(max-width: 768px) 50vw, 25vw"
-              placeholder="blur"
-              blurDataURL="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
             />
           </div>
           <div className="p-4 text-center space-y-2">
             <h3 className="font-body text-sm leading-tight truncate h-10">{displayName}</h3>
             <div className="flex items-baseline justify-center gap-2">
               <p className="text-base font-bold text-foreground">Tk {product.price.toFixed(2)}</p>
-              {product.originalPrice && (
-                <p className="text-sm text-muted-foreground line-through">Tk {product.originalPrice.toFixed(2)}</p>
+              {showDiscount && (
+                <p className="text-sm text-muted-foreground line-through">Tk {product.originalPrice?.toFixed(2)}</p>
               )}
             </div>
           </div>

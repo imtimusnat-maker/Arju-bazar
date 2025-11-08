@@ -108,6 +108,7 @@ export default function ProductPage() {
 
   const whatsAppUrl = settings?.whatsappNumber ? `https://wa.me/${settings.whatsappNumber.replace(/\D/g, '')}` : '#';
 
+  const showDiscount = product.originalPrice && product.originalPrice > product.price;
 
   return (
     <>
@@ -126,7 +127,13 @@ export default function ProductPage() {
               </div>
               <div className="p-4">
                 <h1 className="text-xl font-bold mb-2">{displayName}</h1>
-                <p className="text-lg font-bold text-primary mb-6">Tk {product.price.toFixed(2)}</p>
+                <div className="flex items-baseline gap-2 mb-6">
+                    <p className="text-lg font-bold text-primary">Tk {product.price.toFixed(2)}</p>
+                    {showDiscount && (
+                        <p className="text-base text-muted-foreground line-through">Tk {product.originalPrice?.toFixed(2)}</p>
+                    )}
+                </div>
+
 
                 <div className="space-y-3">
                    <Button onClick={handleAddToCart} className="w-full h-12 bg-black text-white hover:bg-gray-800 text-lg">

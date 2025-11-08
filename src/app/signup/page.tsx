@@ -79,25 +79,22 @@ export default function SignUpPage() {
     setIsSubmitting(true);
     
     try {
-        const userCredential = await initiateEmailSignUp(auth, data.email, data.password);
-        if (userCredential && userCredential.user) {
-            // Create a user profile in Firestore
-            await createFirestoreUser(userCredential.user.uid, {
-                email: userCredential.user.email,
-                phone: data.phone,
-                name: '', // Name and address are collected during checkout
-                address: '',
-            });
-            toast({
-                title: "Account Created",
-                description: "Welcome! You have successfully signed up.",
-            });
-            // The useEffect will handle the redirect
-        }
-    } catch (error) {
-        // Error is caught by onAuthStateChanged listener
+        await initiateEmailSignUp(auth, data.email, data.password, data.phone);
+        toast({
+            title: "Account Created",
+            description: "Welcome! You have successfully signed up.",
+        });
+        // The useEffect will handle the redirect once the user state is updated.
+    } catch (error: any) {
+        // The onAuthStateChanged error listener will catch most auth errors,
+        // but we'll have a fallback here just in case.
+        toast({
+            variant: "destructive",
+            title: "Sign-up Failed",
+            description: error.message || "An unexpected error occurred.",
+        });
     } finally {
-        // isSubmitting is set to false in the error listener
+        setIsSubmitting(false);
     }
   };
   

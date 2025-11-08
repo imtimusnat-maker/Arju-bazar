@@ -142,8 +142,22 @@ export default function OrderInvoicePage() {
   }
   
   // After loading and confirming there is a user, if no order is found, then it's a 404.
-  if (!order) {
+  if (!isOrderLoading && !order) {
       notFound();
+  }
+  
+  if (!order) {
+    // This case will be hit during the initial client-side render while order is loading
+    // but after user is confirmed. We show a loader to prevent calling notFound() too early.
+    return (
+        <div className="flex min-h-screen flex-col bg-gray-50">
+            <Header />
+            <main className="flex-1 flex items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin" />
+            </main>
+            <Footer />
+        </div>
+    )
   }
 
   return (

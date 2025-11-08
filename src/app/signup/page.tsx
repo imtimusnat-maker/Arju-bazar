@@ -42,6 +42,7 @@ export default function SignUpPage() {
   });
 
   useEffect(() => {
+    // This effect can still be useful as a fallback or for users who land here while already logged in.
     if (!isUserLoading && user && !user.isAnonymous) {
       router.replace('/account');
     }
@@ -86,14 +87,16 @@ export default function SignUpPage() {
             title: "Account Created",
             description: "Welcome! You have successfully signed up.",
         });
-        // The useEffect will handle the redirect once the user state is updated.
+        // On success, the onAuthStateChanged listener will update the user state.
+        // We can now navigate directly to the account page.
+        router.push('/account');
     } catch (error: any) {
         // The onAuthStateChanged error listener will catch most auth errors,
-        // but we'll have a fallback here just in case.
-        toast({
+        // but we'll have a fallback here just in case for other issues (e.g., Firestore write failure).
+         toast({
             variant: "destructive",
             title: "Sign-up Failed",
-            description: error.message || "An unexpected error occurred.",
+            description: error.message || "An unexpected error occurred during sign-up.",
         });
     } finally {
         setIsSubmitting(false);

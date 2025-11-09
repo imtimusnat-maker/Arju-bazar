@@ -50,7 +50,6 @@ import {
   doc,
   query,
   where,
-  orderBy,
 } from 'firebase/firestore';
 import {
   addDocumentNonBlocking,
@@ -220,7 +219,7 @@ export default function AdminCategoriesPage() {
   const firestore = useFirestore();
 
   const categoriesQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'categories'), orderBy('displayOrder', 'asc')) : null),
+    () => (firestore ? collection(firestore, 'categories') : null),
     [firestore]
   );
   const { data: categories, isLoading } = useCollection<Category>(

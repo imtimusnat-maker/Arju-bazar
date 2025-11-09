@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query } from 'firebase/firestore';
 import type { Category } from '@/lib/categories';
 import { useLanguage } from '@/context/language-context';
 import { useTranslation } from '@/hooks/use-translation';
@@ -37,7 +37,7 @@ export default function CollectionsPage() {
   const { t } = useLanguage();
 
   const categoriesQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'categories'), orderBy('displayOrder', 'asc')) : null),
+    () => (firestore ? collection(firestore, 'categories') : null),
     [firestore]
   );
   const { data: categories, isLoading } = useCollection<Category>(categoriesQuery);

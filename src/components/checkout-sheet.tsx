@@ -17,7 +17,7 @@ import { User as UserIcon, Phone, MapPin, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useMemo, useEffect } from 'react';
 import type { useCart } from '@/context/cart-context';
-import { useFirestore, useDoc, useUser } from '@/firebase';
+import { useFirestore, useDoc, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, collection, writeBatch, increment, serverTimestamp, type Timestamp } from 'firebase/firestore';
 import type { Settings } from '@/lib/settings';
 import type { User } from '@/lib/users';
@@ -126,115 +126,131 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
         }
         setIsSubmitting(true);
 
-        try {
-            const batch = writeBatch(firestore);
-            const newStatus: OrderStatus = 'order placed';
-            
-            // 1. Create the private order document
-            const orderRef = doc(collection(firestore, `users/${user.uid}/orders`));
-            const orderData = {
-                id: orderRef.id,
-                userId: user.uid,
-                orderDate: serverTimestamp(),
-                updatedAt: serverTimestamp(),
-                status: newStatus,
-                totalAmount: total,
-                customerName: data.name,
-                customerPhone: data.phone,
-                shippingAddress: data.address,
-                shippingMethod: shippingLabel,
-                shippingCost: shippingCost,
-                orderNote: data.orderNote || '',
-                hiddenFromUser: false,
+        const batch = writeBatch(firestore);
+        const newStatus: OrderStatus = 'order placed';
+        
+        // 1. Create the private order document
+        const orderRef = doc(collection(firestore, `users/${user.uid}/orders`));
+        const orderData = {
+            id: orderRef.id,
+            userId: user.uid,
+            orderDate: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            status: newStatus,
+            totalAmount: total,
+            customerName: data.name,
+            customerPhone: data.phone,
+            shippingAddress: data.address,
+            shippingMethod: shippingLabel,
+            shippingCost: shippingCost,
+            orderNote: data.orderNote || '',
+            hiddenFromUser: false,
+        };
+        batch.set(orderRef, orderData);
+
+        const orderItemsCollection = collection(orderRef, 'orderItems');
+        const invoiceItems: Omit<OrderItem, 'id' | 'orderId'>[] = [];
+        
+        itemsToDisplay.forEach(item => {
+            const itemRef = doc(orderItemsCollection);
+            const orderItemData: OrderItem = {
+                id: itemRef.id,
+                orderId: orderRef.id,
+                productId: item.id,
+                quantity: item.quantity,
+                price: item.price,
+                name: item.name,
+                imageCdnUrl: item.imageCdnUrl || '',
             };
-            batch.set(orderRef, orderData);
+            batch.set(itemRef, orderItemData);
+            // Prepare item for public invoice
+            invoiceItems.push({
+                productId: item.id,
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price,
+                imageCdnUrl: item.imageCdnUrl || ''
+            });
+        });
 
-            const orderItemsCollection = collection(orderRef, 'orderItems');
-            const invoiceItems: Omit<OrderItem, 'id' | 'orderId'>[] = [];
-            
-            itemsToDisplay.forEach(item => {
-                const itemRef = doc(orderItemsCollection);
-                const orderItemData: OrderItem = {
-                    id: itemRef.id,
-                    orderId: orderRef.id,
-                    productId: item.id,
-                    quantity: item.quantity,
-                    price: item.price,
-                    name: item.name,
-                    imageCdnUrl: item.imageCdnUrl || '',
-                };
-                batch.set(itemRef, orderItemData);
-                // Prepare item for public invoice
-                invoiceItems.push({
-                    productId: item.id,
-                    name: item.name,
-                    quantity: item.quantity,
-                    price: item.price,
-                    imageCdnUrl: item.imageCdnUrl || ''
+        // 2. Create the public invoice document
+        const invoiceRef = doc(firestore, 'invoices', orderRef.id);
+        const invoiceData: Invoice = {
+          id: orderRef.id,
+          orderDate: serverTimestamp() as Timestamp, // Cast for type consistency
+          status: newStatus,
+          totalAmount: total,
+          customerName: data.name,
+          customerPhone: data.phone,
+          shippingAddress: data.address,
+          shippingMethod: shippingLabel,
+          shippingCost: shippingCost,
+          orderNote: data.orderNote || '',
+          items: invoiceItems
+        };
+        batch.set(invoiceRef, invoiceData);
+
+        // 3. Update user profile
+        const userRef = doc(firestore, 'users', user.uid);
+        const userData = {
+            id: user.uid,
+            email: user.email || '',
+            name: data.name,
+            phone: data.phone,
+            address: data.address,
+            orderCount: increment(1),
+            totalSpent: increment(total),
+        };
+        batch.set(userRef, userData, { merge: true });
+
+        // Commit the batch and handle errors
+        batch.commit()
+            .then(() => {
+                // Success actions
+                if (cartItems) {
+                    clearCart();
+                }
+                
+                if (settings) {
+                    sendSms({
+                        number: data.phone,
+                        order: { id: orderRef.id, customerName: data.name },
+                        status: newStatus,
+                        settings
+                    });
+                }
+
+                toast({
+                    title: 'Order Confirmed!',
+                    description: 'Your order has been placed successfully.',
                 });
-            });
-
-            // 2. Create the public invoice document
-            const invoiceRef = doc(firestore, 'invoices', orderRef.id);
-            const invoiceData: Invoice = {
-              id: orderRef.id,
-              orderDate: serverTimestamp() as Timestamp, // Cast for type consistency
-              status: newStatus,
-              totalAmount: total,
-              customerName: data.name,
-              customerPhone: data.phone,
-              shippingAddress: data.address,
-              shippingMethod: shippingLabel,
-              shippingCost: shippingCost,
-              orderNote: data.orderNote || '',
-              items: invoiceItems
-            };
-            batch.set(invoiceRef, invoiceData);
-
-            // 3. Update user profile
-            const userRef = doc(firestore, 'users', user.uid);
-            batch.set(userRef, {
-                id: user.uid,
-                email: user.email || '',
-                name: data.name,
-                phone: data.phone,
-                address: data.address,
-                orderCount: increment(1),
-                totalSpent: increment(total),
-            }, { merge: true });
-
-
-            await batch.commit();
-
-            // 4. Clear the cart if the order was from the cart
-            if (cartItems) {
-                clearCart();
-            }
-            
-            if (settings) {
-                sendSms({
-                    number: data.phone,
-                    order: { id: orderRef.id, customerName: data.name },
-                    status: newStatus,
-                    settings
+                onOpenChange(false);
+            })
+            .catch(error => {
+                console.error("Error placing order: ", error);
+                // Emit contextual error for permission issues
+                 errorEmitter.emit(
+                    'permission-error',
+                    new FirestorePermissionError({
+                        path: `users/${user.uid}/orders`,
+                        operation: 'write', // A batch is a 'write' operation
+                        requestResourceData: { 
+                            order: orderData,
+                            userUpdate: userData,
+                            invoice: invoiceData
+                         },
+                    })
+                );
+                
+                toast({
+                    variant: 'destructive',
+                    title: 'Order Failed',
+                    description: 'There was a problem placing your order.',
                 });
-            }
-
-            toast({
-                title: 'Order Confirmed!',
-                description: 'Your order has been placed successfully.',
+            })
+            .finally(() => {
+                setIsSubmitting(false);
             });
-            onOpenChange(false);
-        } catch (error) {
-            console.error("Error placing order: ", error);
-            toast({
-                variant: 'destructive',
-                title: 'Order Failed',
-                description: 'There was a problem placing your order.',
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
     };
 
 

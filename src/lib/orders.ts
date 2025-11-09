@@ -29,4 +29,16 @@ export interface Order {
   items?: OrderItem[]; // Optional: for client-side convenience
 }
 
-    
+export interface Invoice {
+  id: string;
+  orderDate: Timestamp;
+  status: OrderStatus;
+  totalAmount: number;
+  shippingAddress: string;
+  customerName: string;
+  customerPhone: string;
+  shippingMethod: string;
+  shippingCost: number;
+  orderNote?: string;
+  items: Omit<OrderItem, 'id' | 'orderId'>[];
+}

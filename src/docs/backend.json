@@ -324,6 +324,29 @@
         "price"
       ]
     },
+    "Invoice": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Invoice",
+      "type": "object",
+      "description": "A public-facing, denormalized copy of an order for invoice purposes.",
+      "properties": {
+        "id": { "type": "string" },
+        "orderDate": { "type": "string", "format": "date-time" },
+        "totalAmount": { "type": "number" },
+        "shippingAddress": { "type": "string" },
+        "status": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "shippingMethod": { "type": "string" },
+        "shippingCost": { "type": "number" },
+        "orderNote": { "type": "string" },
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/backend/entities/OrderItem" }
+        }
+      },
+      "required": ["id", "orderDate", "totalAmount", "status", "customerName", "customerPhone", "items"]
+    },
     "Setting": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Setting",
@@ -510,6 +533,17 @@
           ]
         }
       },
+       {
+        "path": "/invoices/{invoiceId}",
+        "definition": {
+          "entityName": "Invoice",
+          "schema": { "$ref": "#/backend/entities/Invoice" },
+          "description": "Publicly accessible, denormalized order data for sharing invoices. Read-only for the public.",
+          "params": [
+            { "name": "invoiceId", "description": "The unique identifier of the invoice, same as the order ID." }
+          ]
+        }
+      },
       {
         "path": "/settings/{settingId}",
         "definition": {
@@ -527,6 +561,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to mirror the e-commerce functionality of \"Your Shop,\" focusing on products, categories, users, orders, and order items. The structure follows best practices for security, scalability, and maintainability, particularly emphasizing authorization independence and enabling secure list operations (QAPs). \n\n**Authorization Independence:**\n*   User-specific data (orders) are stored under the `/users/{userId}` path.  This ensures that access control is based on the currently authenticated user's ID. Orders and order items do not require hierarchical `get()` calls to determine authorization.\n\n**Structural Segregation:**\n*   Each collection (`categories`, `products`, `users`, etc.) is treated as a homogeneous security zone, simplifying security rules. For example, all documents within the `/categories` collection share the same security posture (e.g., only admins can create/update).\n\n**Access Modeling:**\n*   **Private User Data:**  User-specific data is stored under the `/users/{userId}` path. This is a standard pattern for user-owned data, ensuring only the authenticated user (or an admin) can access it.\n*   **Hierarchical Ownership:** Orders and order items are nested under the user to represent the `User 1:N Order 1:N OrderItem` relationship clearly and securely.\n\n**QAPs Support:**\n*   The structure allows for efficient and secure `list` operations. Since all products are in a single `/products` collection, listing products does not require complex security rules.\n\nThe design prioritizes clarity, security, and scalability to create a robust and maintainable Firestore database for the \"Your Shop\" e-commerce application."
+    "reasoning": "The Firestore data structure is designed to mirror the e-commerce functionality of \"Your Shop,\" focusing on products, categories, users, orders, and order items. The structure follows best practices for security, scalability, and maintainability, particularly emphasizing authorization independence and enabling secure list operations (QAPs). \n\n**Authorization Independence:**\n*   User-specific data (orders) are stored under the `/users/{userId}` path.  This ensures that access control is based on the currently authenticated user's ID. Orders and order items do not require hierarchical `get()` calls to determine authorization.\n\n**Structural Segregation:**\n*   Each collection (`categories`, `products`, `users`, etc.) is treated as a homogeneous security zone, simplifying security rules. For example, all documents within the `/categories` collection share the same security posture (e.g., only admins can create/update).\n\n**Access Modeling:**\n*   **Private User Data:**  User-specific data is stored under the `/users/{userId}` path. This is a standard pattern for user-owned data, ensuring only the authenticated user (or an admin) can access it.\n*   **Hierarchical Ownership:** Orders and order items are nested under the user to represent the `User 1:N Order 1:N OrderItem` relationship clearly and securely.\n*   **Public Data:** A top-level `/invoices` collection is added to store denormalized, public-facing copies of orders. This allows for secure, public access to individual invoices without exposing private user data or requiring complex security rules on nested collections.\n\n**QAPs Support:**\n*   The structure allows for efficient and secure `list` operations. Since all products are in a single `/products` collection, listing products does not require complex security rules.\n\nThe design prioritizes clarity, security, and scalability to create a robust and maintainable Firestore database for the \"Your Shop\" e-commerce application."
   }
 }

@@ -18,7 +18,7 @@ import Image from 'next/image';
 import { useState, useMemo, useEffect } from 'react';
 import type { useCart } from '@/context/cart-context';
 import { useFirestore, useDoc, useUser } from '@/firebase';
-import { doc, collection, writeBatch, increment, serverTimestamp } from 'firebase/firestore';
+import { doc, collection, writeBatch, increment, serverTimestamp, type Timestamp } from 'firebase/firestore';
 import type { Settings } from '@/lib/settings';
 import type { User } from '@/lib/users';
 import { useToast } from '@/hooks/use-toast';
@@ -27,7 +27,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useLanguage } from '@/context/language-context';
 import { sendSms } from '@/lib/sms';
-import type { OrderStatus } from '@/lib/orders';
+import type { OrderStatus, OrderItem } from '@/lib/orders';
 
 const checkoutSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -127,7 +127,8 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
         try {
             const batch = writeBatch(firestore);
             const newStatus: OrderStatus = 'order placed';
-
+            
+            // 1. Create the private order document
             const orderRef = doc(collection(firestore, `users/${user.uid}/orders`));
             const orderData = {
                 id: orderRef.id,
@@ -142,14 +143,16 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
                 shippingMethod: shippingLabel,
                 shippingCost: shippingCost,
                 orderNote: data.orderNote || '',
-                hiddenFromUser: false, // Explicitly set to false for new orders
+                hiddenFromUser: false,
             };
             batch.set(orderRef, orderData);
 
             const orderItemsCollection = collection(orderRef, 'orderItems');
+            const invoiceItems: Omit<OrderItem, 'id' | 'orderId'>[] = [];
+            
             itemsToDisplay.forEach(item => {
                 const itemRef = doc(orderItemsCollection);
-                batch.set(itemRef, {
+                const orderItemData = {
                     id: itemRef.id,
                     productId: item.id,
                     orderId: orderRef.id,
@@ -157,9 +160,36 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
                     price: item.price,
                     name: item.name,
                     imageCdnUrl: item.imageCdnUrl || '',
+                };
+                batch.set(itemRef, orderItemData);
+                // Prepare item for public invoice
+                invoiceItems.push({
+                    productId: item.id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                    imageCdnUrl: item.imageCdnUrl || ''
                 });
             });
 
+            // 2. Create the public invoice document
+            const invoiceRef = doc(firestore, 'invoices', orderRef.id);
+            const invoiceData = {
+              id: orderRef.id,
+              orderDate: serverTimestamp() as Timestamp, // Cast for type consistency
+              status: newStatus,
+              totalAmount: total,
+              customerName: data.name,
+              customerPhone: data.phone,
+              shippingAddress: data.address,
+              shippingMethod: shippingLabel,
+              shippingCost: shippingCost,
+              orderNote: data.orderNote || '',
+              items: invoiceItems
+            };
+            batch.set(invoiceRef, invoiceData);
+
+            // 3. Update user profile
             const userRef = doc(firestore, 'users', user.uid);
             batch.set(userRef, {
                 id: user.uid,

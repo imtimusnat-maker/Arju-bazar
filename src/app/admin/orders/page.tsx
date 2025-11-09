@@ -122,7 +122,7 @@ export default function AdminOrdersPage() {
   const firestore = useFirestore();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const ordersQuery = useMemo(
+  const ordersQuery = useMemoFirebase(
     () => (firestore ? collectionGroup(firestore, 'orders') : null),
     [firestore]
   );

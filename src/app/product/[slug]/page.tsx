@@ -99,7 +99,7 @@ export default function ProductPage() {
     return query(
       collection(firestore, 'products'),
       where('categoryId', '==', product.categoryId),
-      where('id', '!=', product.id),
+      where('__name__', '!=', product.id),
       limit(5)
     );
   }, [firestore, product]);
@@ -232,3 +232,5 @@ export default function ProductPage() {
     </>
   );
 }
+
+    

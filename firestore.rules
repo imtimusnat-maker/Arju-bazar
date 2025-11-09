@@ -60,34 +60,44 @@ service cloud.firestore {
     }
 
     /**
-     * @description Grants public read access, but restricts write access to admins only.
-     * `allow get` allows reading single documents.
-     * `allow list` allows querying the collection, which is essential for search.
+     * @description Grants public read access for a single category document.
+     * Restricts write access to admins only.
      * @path /categories/{categoryId}
      */
     match /categories/{categoryId} {
       allow get: if true;
       allow write: if isAdmin();
     }
+    
+    /**
+     * @description Grants public list access for the categories collection.
+     * @path /categories
+     */
     match /categories {
       allow list: if true;
     }
     
     /**
-     * @description Grants public read access, but restricts write access to admins only for subcategories.
+     * @description Grants public read access for a single subcategory document.
+     * Restricts write access to admins only.
      * @path /subcategories/{subcategoryId}
      */
     match /subcategories/{subcategoryId} {
       allow get: if true;
       allow write: if isAdmin();
     }
+    
+    /**
+     * @description Grants public list access for the subcategories collection.
+     * @path /subcategories
+     */
     match /subcategories {
       allow list: if true;
     }
 
 
     /**
-     * @description Grants public read access, but restricts write access to admins only.
+     * @description Grants public list access for the products collection.
      * @path /products
      */
     match /products {
@@ -95,7 +105,8 @@ service cloud.firestore {
     }
 
     /**
-     * @description Grants public read access, but restricts write access to admins only.
+     * @description Grants public read access for a single product document.
+     * Restricts write access to admins only.
      * @path /products/{productId}
      */
     match /products/{productId} {

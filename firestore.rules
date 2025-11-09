@@ -109,9 +109,12 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin(); // Allow admin to list users.
-      // Allow a user to create/update/delete their own profile.
-      // This is secure because the {userId} wildcard must match the authenticated user's UID.
-      allow write: if isOwner(userId) || isAdmin();
+      // Allow any authenticated user (including anonymous) to create their own user profile.
+      allow create: if request.auth.uid == userId;
+      // Allow an existing user to update their own profile.
+      allow update: if isOwner(userId) || isAdmin();
+      // Allow a user to delete their own profile.
+      allow delete: if isOwner(userId) || isAdmin();
       
       /**
        * @description Grants access to a user's orders only to the authenticated user or an admin.
@@ -120,12 +123,10 @@ service cloud.firestore {
        */
       match /orders/{orderId} {
         // Allow owner or admin to read and delete.
-        allow read, delete: if isOwner(userId) || isAdmin();
+        allow read, update, delete: if isOwner(userId) || isAdmin();
         // Allow any authenticated user (including anonymous) to create their own orders.
         // This is secure because the parent {userId} must match their auth UID.
         allow create: if request.auth.uid == userId;
-        // Allow owner or admin to update.
-        allow update: if isOwner(userId) || isAdmin();
         
         // Collection group query for admins to list all orders.
         allow list: if isAdmin();

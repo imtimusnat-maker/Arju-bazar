@@ -129,7 +129,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
         const batch = writeBatch(firestore);
         const newStatus: OrderStatus = 'order placed';
         
-        // 1. Create the private order document
+        // 1. Create the private order document with a new generated ID
         const orderRef = doc(collection(firestore, `users/${user.uid}/orders`));
         const orderData = {
             id: orderRef.id,
@@ -232,7 +232,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
                  errorEmitter.emit(
                     'permission-error',
                     new FirestorePermissionError({
-                        path: `users/${user.uid}/orders`,
+                        path: userRef.path, // We target the user path as it's a common point of failure
                         operation: 'write', // A batch is a 'write' operation
                         requestResourceData: { 
                             order: orderData,

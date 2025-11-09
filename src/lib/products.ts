@@ -21,5 +21,3 @@ export type Product = {
   subcategoryId?: string;
   searchKeywords?: string[];
 };
-
-export const products: Product[] = [];

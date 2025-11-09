@@ -15,7 +15,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { CreditCard, ShoppingCart } from 'lucide-react';
+import { CreditCard, ShoppingCart, Loader2 } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
@@ -24,6 +24,8 @@ import type { Settings } from '@/lib/settings';
 import Link from 'next/link';
 import { useLanguage } from '@/context/language-context';
 import { useTranslation } from '@/hooks/use-translation';
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
@@ -47,6 +49,23 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
           <path d="m6.5 13.6 2.8-6.4 4.2 5.2 2.9-6.6-9.9 7.8z" fill="white"/>
     </svg>
   );
+
+const ProductPageSkeleton = () => (
+    <div className="container mx-auto max-w-lg">
+        <div className="bg-white rounded-lg overflow-hidden">
+            <Skeleton className="relative w-full aspect-square border-b" />
+            <div className="p-4 space-y-4">
+                <Skeleton className="h-7 w-3/4" />
+                <Skeleton className="h-6 w-1/4" />
+                <div className="space-y-3 pt-2">
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                </div>
+            </div>
+        </div>
+    </div>
+);
 
 
 export default function ProductPage() {
@@ -79,6 +98,7 @@ export default function ProductPage() {
     if (!firestore || !product) return null;
     return query(
       collection(firestore, 'products'),
+      where('categoryId', '==', product.categoryId),
       where('id', '!=', product.id),
       limit(5)
     );
@@ -87,7 +107,15 @@ export default function ProductPage() {
   const { data: suggestedProducts, isLoading: areSuggestionsLoading } = useCollection<Product>(suggestedProductsQuery);
 
   if (isProductLoading) {
-    return <div>Loading...</div>; // Or a proper skeleton loader
+    return (
+        <div className="flex min-h-screen flex-col bg-background pb-20 md:pb-0">
+            <Header />
+            <main className="flex-1 py-8 px-4">
+                <ProductPageSkeleton />
+            </main>
+            <Footer />
+      </div>
+    );
   }
 
   if (!product) {
@@ -184,9 +212,13 @@ export default function ProductPage() {
           <div className="container mx-auto max-w-screen-xl px-4 py-8 mt-8">
             <h2 className="text-xl font-bold mb-6">You Might Also Like</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
-              {suggestedProducts && suggestedProducts.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
+               {areSuggestionsLoading ? (
+                 Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-64 w-full" />)
+                ) : (
+                  suggestedProducts?.map((p) => (
+                    <ProductCard key={p.id} product={p} />
+                  ))
+                )}
             </div>
           </div>
         </main>

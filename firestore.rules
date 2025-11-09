@@ -112,18 +112,27 @@ service cloud.firestore {
       
       /**
        * @description Grants access to a user's orders only to the authenticated user or an admin.
-       * A collection group query on 'orders' is permitted for admins.
+       * A collection group query on 'orders' is permitted for admins and for public invoice viewing.
        * @path /users/{userId}/orders/{orderId}
        */
       match /orders/{orderId} {
-        allow get, list, create, update, delete: if isOwner(userId) || isAdmin();
+        // Allow owner or admin full access
+        allow read, write: if isOwner(userId) || isAdmin();
+        
+        // Collection group queries
+        // - Admins can list all orders.
+        // - Any user can get a single order (for public invoices)
+        allow get: if isAdmin() || request.query.limit == 1; // Public access for single doc lookup
+        allow list: if isAdmin();
 
         /**
          * @description Grants access to order items, inheriting parent permissions.
+         * Public read access is granted for invoice viewing.
          * @path /users/{userId}/orders/{orderId}/orderItems/{orderItemId}
          */
         match /orderItems/{orderItemId} {
-          allow read, write: if isOwner(userId) || isAdmin();
+           allow read: if true; // Publicly readable for invoices
+           allow write: if isOwner(userId) || isAdmin();
         }
       }
     }

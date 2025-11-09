@@ -251,7 +251,7 @@ export default function MyOrdersPage() {
                                          </div>
                                      </AccordionTrigger>
                                      <Button asChild variant="outline" size="sm" className="mr-4">
-                                        <Link href={`/account/orders/${order.id}`}>
+                                        <Link href={`/invoice/${order.id}`}>
                                             <FileText className="mr-2 h-4 w-4" />
                                             View Invoice
                                         </Link>

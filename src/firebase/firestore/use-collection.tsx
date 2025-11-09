@@ -62,9 +62,14 @@ export function useCollection<T = any>(
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
   useEffect(() => {
+    // CRITICAL FIX: If the query is not ready, do not proceed.
+    // This prevents a race condition where an invalid query is sent to onSnapshot,
+    // which defaults to a root-level query and causes a permission error.
     if (!memoizedTargetRefOrQuery) {
+      // Set loading to true because we are expecting the query to be provided shortly.
+      // If we set it to false, UI might flash a "no data" state.
+      setIsLoading(true);
       setData(null);
-      setIsLoading(false);
       setError(null);
       return;
     }

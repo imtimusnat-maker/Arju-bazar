@@ -120,6 +120,10 @@
             "type": "string",
             "description": "URL-friendly version of the category name."
         },
+        "displayOrder": {
+            "type": "number",
+            "description": "A number to control the display order of categories. Lower numbers appear first."
+        },
         "searchKeywords": {
           "type": "array",
           "description": "An array of lowercase words from the category name for searching.",

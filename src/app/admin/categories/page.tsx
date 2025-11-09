@@ -50,6 +50,7 @@ import {
   doc,
   query,
   where,
+  orderBy,
 } from 'firebase/firestore';
 import {
   addDocumentNonBlocking,
@@ -78,6 +79,7 @@ const categorySchema = z.object({
   name_bn: z.string().optional(),
   description: z.string().min(1, 'Description is required'),
   description_bn: z.string().optional(),
+  displayOrder: z.coerce.number().optional(),
   imageUrl: z.string().optional(),
   imageCdnUrl: z.string().optional(),
 });
@@ -217,12 +219,12 @@ export default function AdminCategoriesPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
 
-  const categoriesCollection = useMemoFirebase(
-    () => (firestore ? collection(firestore, 'categories') : null),
+  const categoriesQuery = useMemoFirebase(
+    () => (firestore ? query(collection(firestore, 'categories'), orderBy('displayOrder', 'asc')) : null),
     [firestore]
   );
   const { data: categories, isLoading } = useCollection<Category>(
-    categoriesCollection
+    categoriesQuery
   );
   
   const filteredCategories = useMemo(() => {
@@ -247,6 +249,7 @@ export default function AdminCategoriesPage() {
       name_bn: '',
       description: '',
       description_bn: '',
+      displayOrder: 0,
       imageUrl: '',
       imageCdnUrl: '',
     },
@@ -270,7 +273,12 @@ export default function AdminCategoriesPage() {
     if (catNameEn && isCategoryDialogOpen) {
         fetch(`/api/translate?text=${encodeURIComponent(catNameEn)}&targetLang=bn`)
             .then(res => res.json())
-            .then(data => categoryForm.setValue('name_bn', data.translation));
+            .then(data => {
+                if (data.translation) {
+                    categoryForm.setValue('name_bn', data.translation)
+                }
+            })
+            .catch(console.error);
     }
   }, [catNameEn, isCategoryDialogOpen, categoryForm]);
 
@@ -278,7 +286,12 @@ export default function AdminCategoriesPage() {
     if (catDescEn && isCategoryDialogOpen) {
         fetch(`/api/translate?text=${encodeURIComponent(catDescEn)}&targetLang=bn`)
             .then(res => res.json())
-            .then(data => categoryForm.setValue('description_bn', data.translation));
+            .then(data => {
+                if (data.translation) {
+                    categoryForm.setValue('description_bn', data.translation)
+                }
+            })
+            .catch(console.error);
     }
   }, [catDescEn, isCategoryDialogOpen, categoryForm]);
 
@@ -289,7 +302,12 @@ export default function AdminCategoriesPage() {
     if (subcatNameEn && (isSubcategoryDialogOpen || isEditSubcategoryDialogOpen)) {
         fetch(`/api/translate?text=${encodeURIComponent(subcatNameEn)}&targetLang=bn`)
             .then(res => res.json())
-            .then(data => subcategoryForm.setValue('name_bn', data.translation));
+            .then(data => {
+                if (data.translation) {
+                    subcategoryForm.setValue('name_bn', data.translation)
+                }
+            })
+            .catch(console.error);
     }
   }, [subcatNameEn, isSubcategoryDialogOpen, isEditSubcategoryDialogOpen, subcategoryForm]);
 
@@ -303,6 +321,7 @@ export default function AdminCategoriesPage() {
         name_bn: category.name_bn || '',
         description: category.description,
         description_bn: category.description_bn || '',
+        displayOrder: category.displayOrder || 0,
         imageUrl: category.imageUrl,
         imageCdnUrl: category.imageCdnUrl,
       });
@@ -312,6 +331,7 @@ export default function AdminCategoriesPage() {
         name_bn: '',
         description: '',
         description_bn: '',
+        displayOrder: (categories?.length || 0) + 1,
         imageUrl: '',
         imageCdnUrl: '',
       });
@@ -362,6 +382,7 @@ export default function AdminCategoriesPage() {
       name_bn: data.name_bn || '',
       description: data.description || '',
       description_bn: data.description_bn || '',
+      displayOrder: data.displayOrder || 0,
       imageUrl: data.imageUrl || '',
       imageCdnUrl: data.imageCdnUrl || '',
       slug,
@@ -502,7 +523,7 @@ export default function AdminCategoriesPage() {
         <CardHeader>
           <CardTitle>Manage Categories</CardTitle>
           <CardDescription>
-            Here you can add, edit, and manage product categories and subcategories.
+            Here you can add, edit, and manage product categories and subcategories. Categories are sorted by their display order.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -515,6 +536,7 @@ export default function AdminCategoriesPage() {
                        <div className="flex items-center w-full">
                         <AccordionTrigger className="flex-1 py-2">
                             <div className="flex items-center gap-4">
+                               <span className="text-sm font-bold text-muted-foreground w-8 text-center">{category.displayOrder}</span>
                                 <Image
                                     src={category.imageCdnUrl || 'https://placehold.co/400'}
                                     alt={category.name}
@@ -663,6 +685,20 @@ export default function AdminCategoriesPage() {
                         )}
                     />
                   </div>
+
+                  <FormField
+                      control={categoryForm.control}
+                      name="displayOrder"
+                      render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>Display Order</FormLabel>
+                          <FormControl>
+                          <Input type="number" placeholder="0" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
                   
                   <FormItem>
                     <FormLabel>Category Image</FormLabel>

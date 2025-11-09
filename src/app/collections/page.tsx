@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import type { Category } from '@/lib/categories';
 import { useLanguage } from '@/context/language-context';
 import { useTranslation } from '@/hooks/use-translation';
@@ -36,11 +36,11 @@ export default function CollectionsPage() {
   const firestore = useFirestore();
   const { t } = useLanguage();
 
-  const categoriesCollection = useMemoFirebase(
-    () => (firestore ? collection(firestore, 'categories') : null),
+  const categoriesQuery = useMemoFirebase(
+    () => (firestore ? query(collection(firestore, 'categories'), orderBy('displayOrder', 'asc')) : null),
     [firestore]
   );
-  const { data: categories, isLoading } = useCollection<Category>(categoriesCollection);
+  const { data: categories, isLoading } = useCollection<Category>(categoriesQuery);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

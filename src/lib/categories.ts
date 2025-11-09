@@ -21,6 +21,7 @@ export type Category = {
   description: string;
   description_bn?: string;
   slug: string;
+  displayOrder?: number;
   imageUrl?: string;
   imageCdnUrl?: string;
   createdAt: Timestamp;

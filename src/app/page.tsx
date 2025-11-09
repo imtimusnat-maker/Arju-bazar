@@ -8,7 +8,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import type { Category } from '@/lib/categories';
 import type { Settings } from '@/lib/settings';
-import { collection, doc } from 'firebase/firestore';
+import { collection, doc, query, orderBy } from 'firebase/firestore';
 import { useLanguage } from '@/context/language-context';
 import { useTranslation } from '@/hooks/use-translation';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -92,7 +92,7 @@ export default function Home() {
   const firestore = useFirestore();
 
   const categoriesCollection = useMemoFirebase(
-    () => (firestore ? collection(firestore, 'categories') : null),
+    () => (firestore ? query(collection(firestore, 'categories'), orderBy('displayOrder', 'asc')) : null),
     [firestore]
   );
   const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(categoriesCollection);

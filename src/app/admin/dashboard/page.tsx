@@ -28,7 +28,7 @@ export default function AdminDashboardPage() {
                 uniqueCustomers: 0,
             };
         }
-        const completedOrders = orders.filter(o => o.status === 'completed');
+        const completedOrders = orders.filter(o => o.status === 'order complete');
         const totalRevenue = completedOrders.reduce((acc, order) => acc + order.totalAmount, 0);
         const totalSales = orders.length;
         const uniqueCustomers = new Set(orders.map(o => o.userId)).size;
@@ -94,7 +94,7 @@ export default function AdminDashboardPage() {
                         <Activity className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">+{orders?.filter(o => o.status === 'pending').length}</div>
+                        <div className="text-2xl font-bold">+{orders?.filter(o => o.status === 'order placed').length}</div>
                         <p className="text-xs text-muted-foreground">Awaiting processing</p>
                     </CardContent>
                 </Card>
@@ -123,7 +123,7 @@ export default function AdminDashboardPage() {
                                             <div className="text-sm text-muted-foreground">{order.customerPhone}</div>
                                         </TableCell>
                                         <TableCell>{format(order.orderDate.toDate(), 'PPP')}</TableCell>
-                                        <TableCell><Badge variant={order.status === 'completed' ? 'default' : 'secondary'}>{order.status}</Badge></TableCell>
+                                        <TableCell><Badge variant={order.status === 'order complete' ? 'default' : 'secondary'}>{order.status}</Badge></TableCell>
                                         <TableCell className="text-right">Tk {order.totalAmount.toFixed(2)}</TableCell>
                                     </TableRow>
                                 ))}

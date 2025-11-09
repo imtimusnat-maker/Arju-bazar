@@ -28,6 +28,7 @@ import { z } from 'zod';
 import { useLanguage } from '@/context/language-context';
 import { sendSms } from '@/lib/sms';
 import type { OrderStatus, OrderItem } from '@/lib/orders';
+import { useCart as useCartContext } from '@/context/cart-context';
 
 const checkoutSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -38,7 +39,7 @@ const checkoutSchema = z.object({
 
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
-type CartItem = ReturnType<typeof useCart>['cart'][0];
+type CartItem = ReturnType<typeof useCartContext>['cart'][0];
 
 interface CheckoutSheetProps {
   isOpen: boolean;
@@ -55,6 +56,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
     const { user } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
+    const { clearCart } = useCartContext();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { t } = useLanguage();
 
@@ -131,7 +133,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
             // 1. Create the private order document
             const orderRef = doc(collection(firestore, `users/${user.uid}/orders`));
             const orderData = {
-                id: orderRef.id,
+                id: orderRef.id, // Ensure the ID is part of the document data
                 userId: user.uid,
                 orderDate: serverTimestamp(),
                 updatedAt: serverTimestamp(),
@@ -203,6 +205,11 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
 
 
             await batch.commit();
+
+            // 4. Clear the cart if the order was from the cart
+            if (cartItems) {
+                clearCart();
+            }
             
             if (settings) {
                 sendSms({
@@ -345,3 +352,5 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
     </Sheet>
   );
 }
+
+    

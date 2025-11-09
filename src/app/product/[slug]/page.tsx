@@ -70,7 +70,7 @@ const ProductPageSkeleton = () => (
 
 export default function ProductPage() {
   const params = useParams<{ slug: string }>();
-  const productId = params.slug; // The slug is now the ID
+  const productId = params.slug; // The slug is the product ID
   const firestore = useFirestore();
 
   const productDocRef = useMemoFirebase(() => {
@@ -232,3 +232,5 @@ export default function ProductPage() {
     </div>
   );
 }
+
+    

@@ -93,17 +93,10 @@ export function useCollection<T = any>(
         const isCollectionRef = (ref: any): ref is CollectionReference => ref.path !== undefined;
 
         let path: string;
-
+        
         if (isCollectionRef(memoizedTargetRefOrQuery)) {
-          // If it's a CollectionReference, we can safely access its path.
           path = memoizedTargetRefOrQuery.path;
         } else {
-          // This is a robust way to handle a Query object without internal properties.
-          // A Query object in v9+ does not publicly expose its full path with constraints.
-          // However, we can signal that the error occurred on a query.
-          // The most useful piece of information for debugging a LIST permission error
-          // is often the collection ID, which we can't get reliably from a complex query
-          // without making the hook's API more complex.
           path = 'a Firestore query';
         }
 

@@ -131,7 +131,8 @@ service cloud.firestore {
          * @path /users/{userId}/orders/{orderId}/orderItems/{orderItemId}
          */
         match /orderItems/{orderItemId} {
-           allow read: if true; // Publicly readable for invoices
+           allow get: if true; // Publicly readable for invoices
+           allow list: if true; // Allow public listing for invoice items.
            allow write: if isOwner(userId) || isAdmin();
         }
       }

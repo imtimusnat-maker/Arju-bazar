@@ -1,10 +1,11 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
+import React, { useMemo } from 'react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query } from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
 import type { Category } from '@/lib/categories';
 import { useLanguage } from '@/context/language-context';
 import { useTranslation } from '@/hooks/use-translation';
@@ -42,6 +43,11 @@ export default function CollectionsPage() {
   );
   const { data: categories, isLoading } = useCollection<Category>(categoriesQuery);
 
+  const sortedCategories = useMemo(() => {
+    if (!categories) return [];
+    return [...categories].sort((a, b) => (a.displayOrder ?? Infinity) - (b.displayOrder ?? Infinity));
+  }, [categories]);
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
@@ -56,7 +62,7 @@ export default function CollectionsPage() {
                      <div className="h-4 bg-gray-200 rounded-md w-3/4 mx-auto"></div>
                   </div>
                 ))
-              ) : (categories?.map((category) => (
+              ) : (sortedCategories?.map((category) => (
                   <CategoryCard key={category.id} category={category} />
               )))}
           </div>

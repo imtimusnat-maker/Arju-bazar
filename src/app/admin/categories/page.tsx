@@ -218,27 +218,32 @@ export default function AdminCategoriesPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
 
-  const categoriesQuery = useMemoFirebase(
+  const categoriesCollection = useMemoFirebase(
     () => (firestore ? collection(firestore, 'categories') : null),
     [firestore]
   );
   const { data: categories, isLoading } = useCollection<Category>(
-    categoriesQuery
+    categoriesCollection
   );
   
-  const filteredCategories = useMemo(() => {
+  const sortedCategories = useMemo(() => {
     if (!categories) return [];
-    if (!debouncedSearchTerm) return categories;
+    return [...categories].sort((a, b) => (a.displayOrder ?? Infinity) - (b.displayOrder ?? Infinity));
+  }, [categories]);
+
+  const filteredCategories = useMemo(() => {
+    if (!sortedCategories) return [];
+    if (!debouncedSearchTerm) return sortedCategories;
 
     const searchKeywords = debouncedSearchTerm.toLowerCase().split(/\s+/).filter(Boolean);
-    if (searchKeywords.length === 0) return categories;
+    if (searchKeywords.length === 0) return sortedCategories;
 
-    return categories.filter(category =>
+    return sortedCategories.filter(category =>
       searchKeywords.every(keyword =>
         category.searchKeywords?.some(categoryKeyword => categoryKeyword.includes(keyword))
       )
     );
-  }, [categories, debouncedSearchTerm]);
+  }, [sortedCategories, debouncedSearchTerm]);
 
 
   const categoryForm = useForm<CategoryFormData>({

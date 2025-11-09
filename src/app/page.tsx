@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Header } from '@/components/layout/header';
@@ -8,14 +8,12 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import type { Category } from '@/lib/categories';
 import type { Settings } from '@/lib/settings';
-import { collection, doc, query } from 'firebase/firestore';
+import { collection, doc } from 'firebase/firestore';
 import { useLanguage } from '@/context/language-context';
 import { useTranslation } from '@/hooks/use-translation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { X, Megaphone } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
 
 function WelcomeBanner({ message }: { message: string }) {
     const [isVisible, setIsVisible] = useState(false);
@@ -97,6 +95,11 @@ export default function Home() {
   );
   const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(categoriesCollection);
 
+  const sortedCategories = useMemo(() => {
+    if (!categories) return [];
+    return [...categories].sort((a, b) => (a.displayOrder ?? Infinity) - (b.displayOrder ?? Infinity));
+  }, [categories]);
+
   const settingsDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'settings', 'global') : null),
     [firestore]
@@ -139,7 +142,7 @@ export default function Home() {
                   <CategoryCardSkeleton key={index} />
                 ))
               ) : (
-                categories?.map((category) => <CategoryCard key={category.id} category={category} />)
+                sortedCategories?.map((category) => <CategoryCard key={category.id} category={category} />)
               )}
             </div>
           </div>

@@ -1,4 +1,4 @@
-'use client';
+
 import type { ImagePlaceholder } from '@/lib/placeholder-images';
 import type { Timestamp } from 'firebase/firestore';
 

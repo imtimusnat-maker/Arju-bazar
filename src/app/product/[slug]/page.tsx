@@ -70,15 +70,15 @@ const ProductPageSkeleton = () => (
 
 export default function ProductPage() {
   const params = useParams<{ slug: string }>();
+  const productId = params.slug; // The slug is now the ID
   const firestore = useFirestore();
 
-  const productQuery = useMemoFirebase(() => {
-    if (!firestore || !params.slug) return null;
-    return query(collection(firestore, 'products'), where('slug', '==', params.slug), limit(1));
-  }, [firestore, params.slug]);
+  const productDocRef = useMemoFirebase(() => {
+    if (!firestore || !productId) return null;
+    return doc(firestore, 'products', productId);
+  }, [firestore, productId]);
 
-  const { data: productData, isLoading: isProductLoading } = useCollection<Product>(productQuery);
-  const product = productData?.[0];
+  const { data: product, isLoading: isProductLoading } = useDoc<Product>(productDocRef);
   
   const displayName = useTranslation(product?.name);
   const displayDescription = useTranslation(product?.description);
@@ -139,8 +139,8 @@ export default function ProductPage() {
   const showDiscount = product.originalPrice && product.originalPrice > product.price;
 
   return (
-    <>
-      <div key={params.slug} className="flex min-h-screen flex-col bg-background pb-20 md:pb-0">
+    <div key={productId}>
+      <div className="flex min-h-screen flex-col bg-background pb-20 md:pb-0">
         <Header />
         <main className="flex-1 py-8 px-4">
           <div className="container mx-auto max-w-lg">
@@ -229,6 +229,6 @@ export default function ProductPage() {
         onOpenChange={setCheckoutOpen}
         product={product}
       />
-    </>
+    </div>
   );
 }

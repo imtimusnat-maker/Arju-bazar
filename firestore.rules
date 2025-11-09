@@ -119,8 +119,8 @@ service cloud.firestore {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin(); // Allow admin to list users.
       allow create: if request.auth.uid == userId;
-      allow update: if isOwner(userId) || isAdmin(); // Changed isExistingOwner to isOwner to allow creation on first order
-      allow delete: if isOwner(userId) || isAdmin(); // Changed isExistingOwner to isOwner
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isOwner(userId) || isAdmin();
       
       /**
        * @description Grants access to a user's orders only to the authenticated user or an admin.

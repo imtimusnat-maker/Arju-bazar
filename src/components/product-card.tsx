@@ -57,7 +57,7 @@ export function ProductCard({ product }: ProductCardProps) {
       </Link>
       <div className="px-4 pb-4">
         <Button onClick={handleAddToCart} className="w-full bg-primary text-primary-foreground h-9 rounded-md text-sm font-semibold">
-          Quick Add
+          Add to Cart
         </Button>
       </div>
     </Card>

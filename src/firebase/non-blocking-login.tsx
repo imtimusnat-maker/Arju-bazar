@@ -13,6 +13,8 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, Firestore } from 'firebase/firestore'; // Import Firestore type
 import { getSdks } from '@/firebase';
+import { errorEmitter } from './error-emitter';
+import { FirestorePermissionError } from './errors';
 
 /**
  * Creates an email/password credential for linking.
@@ -33,9 +35,9 @@ export function initiateAnonymousSignIn(authInstance: Auth): void {
  * Creates a user profile document in Firestore.
  * Now accepts the firestore instance directly.
  */
-export async function createFirestoreUser(firestore: Firestore, uid: string, data: { email: string | null; phone: string; name: string; address: string; }) {
+export function createFirestoreUser(firestore: Firestore, uid: string, data: { email: string | null; phone: string; name: string; address: string; }) {
     const userRef = doc(firestore, 'users', uid);
-    await setDoc(userRef, {
+    return setDoc(userRef, {
         id: uid,
         email: data.email,
         name: data.name,
@@ -43,7 +45,18 @@ export async function createFirestoreUser(firestore: Firestore, uid: string, dat
         address: data.address,
         orderCount: 0,
         totalSpent: 0
-    }, { merge: true });
+    }, { merge: true }).catch(error => {
+         errorEmitter.emit(
+            'permission-error',
+            new FirestorePermissionError({
+                path: userRef.path,
+                operation: 'create',
+                requestResourceData: data,
+            })
+        );
+        // Re-throw the original error if you need to handle it further up the chain
+        throw error;
+    });
 }
 
 

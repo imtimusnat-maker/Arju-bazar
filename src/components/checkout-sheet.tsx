@@ -18,7 +18,7 @@ import Image from 'next/image';
 import { useState, useMemo, useEffect } from 'react';
 import type { useCart } from '@/context/cart-context';
 import { useFirestore, useDoc, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { doc, collection, writeBatch, increment, serverTimestamp, type Timestamp } from 'firebase/firestore';
+import { doc, collection, writeBatch, serverTimestamp, type Timestamp } from 'firebase/firestore';
 import type { Settings } from '@/lib/settings';
 import type { User } from '@/lib/users';
 import { useToast } from '@/hooks/use-toast';
@@ -190,19 +190,6 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
         };
         batch.set(invoiceRef, invoiceData);
 
-        // 3. Update user profile
-        const userRef = doc(firestore, 'users', user.uid);
-        const userData = {
-            id: user.uid,
-            email: user.email || '',
-            name: data.name,
-            phone: data.phone,
-            address: data.address,
-            orderCount: increment(1),
-            totalSpent: increment(total),
-        };
-        batch.set(userRef, userData, { merge: true });
-
         // Commit the batch and handle errors
         batch.commit()
             .then(() => {
@@ -232,11 +219,10 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
                  errorEmitter.emit(
                     'permission-error',
                     new FirestorePermissionError({
-                        path: userRef.path, // We target the user path as it's a common point of failure
+                        path: `users/${user.uid}/orders`,
                         operation: 'write', // A batch is a 'write' operation
                         requestResourceData: { 
                             order: orderData,
-                            userUpdate: userData,
                             invoice: invoiceData
                          },
                     })

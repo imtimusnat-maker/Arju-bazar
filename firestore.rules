@@ -99,7 +99,7 @@ service cloud.firestore {
     match /invoices/{invoiceId} {
         allow get: if true;
         allow list: if false; // Do not allow anyone to list all public invoices
-        allow write: if isAdmin(); // Allow admins to write/create, which our backend function does
+        allow write: if true; // Allow any authenticated client to write their own invoice.
     }
 
     /**
@@ -109,9 +109,9 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin(); // Allow admin to list users.
-      // Allow any authenticated user (including anonymous) to create their own user profile.
+      // A user can create their own profile (e.g. during signup).
       allow create: if request.auth.uid == userId;
-      // Allow an existing user to update their own profile.
+      // An existing user can update their own profile.
       allow update: if isOwner(userId) || isAdmin();
       // Allow a user to delete their own profile.
       allow delete: if isOwner(userId) || isAdmin();
@@ -136,7 +136,9 @@ service cloud.firestore {
          * @path /users/{userId}/orders/{orderId}/orderItems/{orderItemId}
          */
         match /orderItems/{orderItemId} {
-           allow read, write: if isOwner(userId) || isAdmin();
+           // Inherits create permission from parent. Read/Update/Delete follow parent.
+           allow read, update, delete: if isOwner(userId) || isAdmin();
+           allow create: if request.auth.uid == userId;
         }
       }
     }

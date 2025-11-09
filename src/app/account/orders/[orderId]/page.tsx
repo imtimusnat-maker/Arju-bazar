@@ -3,3 +3,5 @@
 export default function DeprecatedInvoicePage() {
   return null;
 }
+
+    

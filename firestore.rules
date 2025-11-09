@@ -67,8 +67,10 @@ service cloud.firestore {
      */
     match /categories/{categoryId} {
       allow get: if true;
-      allow list: if true;
       allow write: if isAdmin();
+    }
+    match /categories {
+      allow list: if true;
     }
     
     /**
@@ -77,8 +79,19 @@ service cloud.firestore {
      */
     match /subcategories/{subcategoryId} {
       allow get: if true;
-      allow list: if true;
       allow write: if isAdmin();
+    }
+    match /subcategories {
+      allow list: if true;
+    }
+
+
+    /**
+     * @description Grants public read access, but restricts write access to admins only.
+     * @path /products
+     */
+    match /products {
+      allow list: if true;
     }
 
     /**
@@ -87,7 +100,6 @@ service cloud.firestore {
      */
     match /products/{productId} {
       allow get: if true;
-      allow list: if true;
       allow write: if isAdmin();
     }
     

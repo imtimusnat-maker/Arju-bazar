@@ -27,7 +27,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useLanguage } from '@/context/language-context';
 import { sendSms } from '@/lib/sms';
-import type { OrderStatus, OrderItem } from '@/lib/orders';
+import type { OrderStatus, OrderItem, Invoice } from '@/lib/orders';
 import { useCart as useCartContext } from '@/context/cart-context';
 
 const checkoutSchema = z.object({
@@ -133,7 +133,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
             // 1. Create the private order document
             const orderRef = doc(collection(firestore, `users/${user.uid}/orders`));
             const orderData = {
-                id: orderRef.id, // Ensure the ID is part of the document data
+                id: orderRef.id,
                 userId: user.uid,
                 orderDate: serverTimestamp(),
                 updatedAt: serverTimestamp(),
@@ -154,10 +154,10 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
             
             itemsToDisplay.forEach(item => {
                 const itemRef = doc(orderItemsCollection);
-                const orderItemData = {
+                const orderItemData: OrderItem = {
                     id: itemRef.id,
-                    productId: item.id,
                     orderId: orderRef.id,
+                    productId: item.id,
                     quantity: item.quantity,
                     price: item.price,
                     name: item.name,
@@ -176,7 +176,7 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
 
             // 2. Create the public invoice document
             const invoiceRef = doc(firestore, 'invoices', orderRef.id);
-            const invoiceData = {
+            const invoiceData: Invoice = {
               id: orderRef.id,
               orderDate: serverTimestamp() as Timestamp, // Cast for type consistency
               status: newStatus,
@@ -352,5 +352,3 @@ export function CheckoutSheet({ isOpen, onOpenChange, product, cartItems }: Chec
     </Sheet>
   );
 }
-
-    

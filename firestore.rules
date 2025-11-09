@@ -131,7 +131,7 @@ service cloud.firestore {
         // Allow owner or admin to read and delete.
         allow read, delete: if isOwner(userId) || isAdmin();
         // Allow any authenticated user (including anonymous) to create their own orders.
-        allow create: if isOwner(userId);
+        allow create: if request.auth.uid == userId;
         // Allow owner or admin to update.
         allow update: if isOwner(userId) || isAdmin();
         

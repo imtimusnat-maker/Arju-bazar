@@ -44,15 +44,6 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-     /**
-      * @description Checks if the user is the owner of an existing document.
-      * @param {string} userId The user ID to compare against the authenticated user's UID.
-      * @return {boolean} True if the user is the owner and the document exists, false otherwise.
-      */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
     /**
      * @description Checks if the authenticated user is the designated admin.
      * @return {boolean} True if the user is the admin, false otherwise.
@@ -118,9 +109,9 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin(); // Allow admin to list users.
-      allow create: if request.auth.uid == userId;
-      allow update: if isOwner(userId) || isAdmin();
-      allow delete: if isOwner(userId) || isAdmin();
+      // Allow a user to write (create, update, delete) their own profile.
+      // This is secure because the {userId} wildcard must match the authenticated user's UID.
+      allow write: if isOwner(userId) || isAdmin();
       
       /**
        * @description Grants access to a user's orders only to the authenticated user or an admin.

@@ -140,7 +140,7 @@ export default function ProductPage() {
 
   return (
     <>
-      <div className="flex min-h-screen flex-col bg-background pb-20 md:pb-0">
+      <div key={params.slug} className="flex min-h-screen flex-col bg-background pb-20 md:pb-0">
         <Header />
         <main className="flex-1 py-8 px-4">
           <div className="container mx-auto max-w-lg">

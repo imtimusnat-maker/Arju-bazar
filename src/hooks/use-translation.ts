@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/language-context';
-import { useDebounce } from './use-debounce';
 
 // Simple in-memory cache
 const translationCache: Record<string, string> = {};
@@ -18,8 +17,8 @@ async function fetchTranslation(text: string, targetLang: 'bn'): Promise<string>
   try {
     const response = await fetch(`/api/translate?text=${encodeURIComponent(text)}&targetLang=${targetLang}`);
     if (!response.ok) {
-      // Don't log to console on simple non-200 responses, as this can happen with rate limits.
-      // Let the fallback handle it gracefully.
+       // Don't log to console on simple non-200 responses, as this can happen with rate limits.
+       // Let the fallback handle it gracefully.
       return text; // Fallback to original text on error
     }
     const data = await response.json();
@@ -41,34 +40,28 @@ export function useTranslation(originalText: string | undefined | null) {
   const { language } = useLanguage();
   const [translatedText, setTranslatedText] = useState(originalText || '');
 
-  // Debounce the original text to prevent rapid API calls
-  const debouncedOriginalText = useDebounce(originalText, 300);
-
-  const translate = useCallback(async () => {
-    if (language === 'bn' && debouncedOriginalText) {
-      const translation = await fetchTranslation(debouncedOriginalText, 'bn');
-      setTranslatedText(translation);
-    } else {
-      setTranslatedText(debouncedOriginalText || '');
-    }
-  }, [language, debouncedOriginalText]);
-
   useEffect(() => {
-    // When the language changes, immediately try to translate the current (non-debounced) text
-    if (language === 'bn' && originalText) {
-        (async () => {
-            const translation = await fetchTranslation(originalText, 'bn');
-            setTranslatedText(translation);
-        })();
-    } else {
-         setTranslatedText(originalText || '');
-    }
-  }, [language, originalText]);
+    let isCancelled = false;
 
-  useEffect(() => {
-    // Effect for handling debounced text changes for auto-translation as user types
+    const translate = async () => {
+      if (language === 'bn' && originalText) {
+        const translation = await fetchTranslation(originalText, 'bn');
+        if (!isCancelled) {
+          setTranslatedText(translation);
+        }
+      } else {
+        if (!isCancelled) {
+          setTranslatedText(originalText || '');
+        }
+      }
+    };
+
     translate();
-  }, [translate]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [language, originalText]);
 
   return translatedText;
 }

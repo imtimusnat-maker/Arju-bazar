@@ -61,28 +61,31 @@ service cloud.firestore {
 
     /**
      * @description Grants public read access for categories and restricts write access to admins.
-     * @path /categories/{categoryId}
+     * @path /categories
      */
     match /categories/{categoryId} {
-      allow get, list: if true;
+      allow get: if true;
+      allow list: if true;
       allow write: if isAdmin();
     }
     
     /**
      * @description Grants public read access for subcategories and restricts write access to admins.
-     * @path /subcategories/{subcategoryId}
+     * @path /subcategories
      */
     match /subcategories/{subcategoryId} {
-      allow get, list: if true;
+      allow get: if true;
+      allow list: if true;
       allow write: if isAdmin();
     }
 
     /**
      * @description Grants public read access for products and restricts write access to admins.
-     * @path /products/{productId}
+     * @path /products
      */
     match /products/{productId} {
-      allow get, list: if true;
+      allow get: if true;
+      allow list: if true;
       allow write: if isAdmin();
     }
     

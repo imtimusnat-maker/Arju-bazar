@@ -128,7 +128,7 @@ export default function AdminOrdersPage() {
   );
   const { data: orders, isLoading } = useCollection<Order>(ordersQuery);
 
-  const settingsDocRef = useMemo(
+  const settingsDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'settings', 'global') : null),
     [firestore]
   );
@@ -214,7 +214,7 @@ export default function AdminOrdersPage() {
   ];
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex-1 flex flex-col">
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex items-center justify-between mb-6 gap-4">
             <h1 className="text-2xl font-bold">Orders</h1>

@@ -89,19 +89,28 @@ export function useCollection<T = any>(
         setIsLoading(false);
       },
       (error: FirestoreError) => {
-        // This logic extracts the path from either a ref or a query
-        const path: string =
-          memoizedTargetRefOrQuery.type === 'collection'
-            ? (memoizedTargetRefOrQuery as CollectionReference).path
-            : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString()
+        // This is a type guard to check if the ref is a CollectionReference.
+        const isCollectionRef = (ref: any): ref is CollectionReference => typeof ref.path === 'string';
+
+        let path: string;
+
+        if (isCollectionRef(memoizedTargetRefOrQuery)) {
+          // If it's a CollectionReference, we can safely access its path.
+          path = memoizedTargetRefOrQuery.path;
+        } else {
+          // For a Query, we can't reliably get the full path with constraints via the public API.
+          // However, for a permission error, knowing the base collection is often enough.
+          // This is a limitation of the public SDK, so we provide a safe fallback.
+          path = 'a Firestore query';
+        }
 
         const contextualError = new FirestorePermissionError({
           operation: 'list',
           path,
-        })
+        });
 
-        setError(contextualError)
-        setIsLoading(false)
+        setError(contextualError);
+        setIsLoading(false);
 
         // trigger global error propagation
         errorEmitter.emit('permission-error', contextualError);

@@ -85,6 +85,8 @@ const productSchema = z.object({
   price: z.coerce.number().min(0, 'Price must be a positive number'),
   originalPrice: z.coerce.number().optional(),
   stockQuantity: z.coerce.number().int().min(0, 'Stock must be a whole number'),
+  size: z.string().optional(),
+  age: z.string().optional(),
   imageUrl: z.string().optional(),
   imageCdnUrl: z.string().optional(),
   categoryId: z.string().min(1, 'Please select a category'),
@@ -175,6 +177,8 @@ export default function AdminProductsPage() {
       price: 0,
       originalPrice: 0,
       stockQuantity: 0,
+      size: '',
+      age: '',
       imageUrl: '',
       imageCdnUrl: '',
       categoryId: '',
@@ -202,7 +206,12 @@ export default function AdminProductsPage() {
     if (nameEn && isDialogOpen) {
         fetch(`/api/translate?text=${encodeURIComponent(nameEn)}&targetLang=bn`)
             .then(res => res.json())
-            .then(data => form.setValue('name_bn', data.translation));
+            .then(data => {
+                if (data.translation) {
+                    form.setValue('name_bn', data.translation)
+                }
+            })
+            .catch(console.error);
     }
   }, [nameEn, form, isDialogOpen]);
 
@@ -210,7 +219,12 @@ export default function AdminProductsPage() {
     if (descriptionEn && isDialogOpen) {
         fetch(`/api/translate?text=${encodeURIComponent(descriptionEn)}&targetLang=bn`)
             .then(res => res.json())
-            .then(data => form.setValue('description_bn', data.translation));
+            .then(data => {
+                if (data.translation) {
+                    form.setValue('description_bn', data.translation)
+                }
+            })
+            .catch(console.error);
     }
   }, [descriptionEn, form, isDialogOpen]);
 
@@ -233,6 +247,8 @@ export default function AdminProductsPage() {
         price: product.price,
         originalPrice: product.originalPrice || undefined,
         stockQuantity: product.stockQuantity,
+        size: product.size || '',
+        age: product.age || '',
         imageUrl: product.imageUrl,
         imageCdnUrl: product.imageCdnUrl,
         categoryId: product.categoryId,
@@ -247,6 +263,8 @@ export default function AdminProductsPage() {
         price: 0,
         originalPrice: 0,
         stockQuantity: 0,
+        size: '',
+        age: '',
         imageUrl: '',
         imageCdnUrl: '',
         categoryId: '',
@@ -279,6 +297,8 @@ export default function AdminProductsPage() {
       description: data.description || '',
       description_bn: data.description_bn || '',
       originalPrice: data.originalPrice || 0,
+      size: data.size || '',
+      age: data.age || '',
       imageUrl: data.imageUrl || '',
       imageCdnUrl: data.imageCdnUrl || '',
       subcategoryId: data.subcategoryId || '',
@@ -624,6 +644,34 @@ export default function AdminProductsPage() {
                       </FormItem>
                     )}
                   />
+                </div>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="size"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Size (Optional)</FormLabel>
+                            <FormControl>
+                            <Input placeholder="e.g. S, M, L, XL" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="age"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Age (Optional)</FormLabel>
+                            <FormControl>
+                            <Input placeholder="e.g. 2-4 Years" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
                 </div>
 
                 <FormItem>

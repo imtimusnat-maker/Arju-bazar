@@ -30,6 +30,18 @@
           "type": "number",
           "description": "Price of the product."
         },
+        "originalPrice": {
+          "type": "number",
+          "description": "The original price of the product, for showing discounts."
+        },
+        "size": {
+            "type": "string",
+            "description": "The size of the product (e.g., S, M, L, XL)."
+        },
+        "age": {
+            "type": "string",
+            "description": "The appropriate age range for the product (e.g., '2-4 Years')."
+        },
         "imageUrl": {
           "type": "string",
           "description": "URL of the product image.",
@@ -43,6 +55,10 @@
         "categoryId": {
           "type": "string",
           "description": "Reference to Category. (Relationship: Category 1:N Product)"
+        },
+        "subcategoryId": {
+          "type": "string",
+          "description": "The ID of the subcategory, if any."
         },
         "stockQuantity": {
           "type": "number",
@@ -112,6 +128,10 @@
             "type": "string",
             "description": "URL-friendly version of the category name."
         },
+        "displayOrder": {
+            "type": "number",
+            "description": "A number to control the display order of categories. Lower numbers appear first."
+        },
         "searchKeywords": {
           "type": "array",
           "description": "An array of lowercase words from the category name for searching.",
@@ -160,7 +180,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user."
+          "description": "Unique identifier for the user (same as Auth UID)."
         },
         "name": {
           "type": "string",
@@ -171,7 +191,7 @@
           "description": "Contact phone number of the user."
         },
         "email": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "Email address of the user.",
           "format": "email"
         },
@@ -190,10 +210,7 @@
       },
       "required": [
         "id",
-        "name",
-        "phone",
-        "email",
-        "address"
+        "phone"
       ]
     },
     "Order": {
@@ -215,6 +232,11 @@
           "description": "Date the order was placed.",
           "format": "date-time"
         },
+         "updatedAt": {
+          "type": "string",
+          "description": "Timestamp of the last update to the order.",
+          "format": "date-time"
+        },
         "totalAmount": {
           "type": "number",
           "description": "Total amount of the order."
@@ -226,7 +248,7 @@
         "status": {
           "type": "string",
           "description": "Status of the order.",
-          "enum": ["pending", "shipped", "completed", "cancelled"]
+          "enum": ["order placed", "order confirmed", "order delivered", "order complete", "cancelled"]
         },
         "customerName": {
             "type": "string",
@@ -243,12 +265,21 @@
         "shippingCost": {
             "type": "number",
             "description": "The cost of shipping for the order."
+        },
+        "orderNote": {
+            "type": "string",
+            "description": "Optional note provided by the customer during checkout."
+        },
+        "hiddenFromUser": {
+          "type": "boolean",
+          "description": "If true, the order will not be displayed in the user's order history."
         }
       },
       "required": [
         "id",
         "userId",
         "orderDate",
+        "updatedAt",
         "totalAmount",
         "shippingAddress",
         "status",
@@ -301,6 +332,29 @@
         "price"
       ]
     },
+    "Invoice": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Invoice",
+      "type": "object",
+      "description": "A public-facing, denormalized copy of an order for invoice purposes.",
+      "properties": {
+        "id": { "type": "string" },
+        "orderDate": { "type": "string", "format": "date-time" },
+        "totalAmount": { "type": "number" },
+        "shippingAddress": { "type": "string" },
+        "status": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "shippingMethod": { "type": "string" },
+        "shippingCost": { "type": "number" },
+        "orderNote": { "type": "string" },
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/backend/entities/OrderItem" }
+        }
+      },
+      "required": ["id", "orderDate", "totalAmount", "status", "customerName", "customerPhone", "items"]
+    },
     "Setting": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Setting",
@@ -351,6 +405,22 @@
             },
             "required": ["id", "label", "price"]
           }
+        },
+        "smsGreetingPlaced": {
+          "type": "string",
+          "description": "Custom greeting for SMS when an order is placed. Can include [customerName]."
+        },
+        "smsGreetingConfirmed": {
+          "type": "string",
+          "description": "Custom greeting for SMS when an order is confirmed. Can include [customerName]."
+        },
+        "smsGreetingDelivered": {
+          "type": "string",
+          "description": "Custom greeting for SMS when an order is delivered. Can include [customerName]."
+        },
+        "welcomeMessage": {
+            "type": "string",
+            "description": "A welcome message to be shown to new visitors."
         }
       },
       "required": [
@@ -471,6 +541,17 @@
           ]
         }
       },
+       {
+        "path": "/invoices/{invoiceId}",
+        "definition": {
+          "entityName": "Invoice",
+          "schema": { "$ref": "#/backend/entities/Invoice" },
+          "description": "Publicly accessible, denormalized order data for sharing invoices. Read-only for the public.",
+          "params": [
+            { "name": "invoiceId", "description": "The unique identifier of the invoice, same as the order ID." }
+          ]
+        }
+      },
       {
         "path": "/settings/{settingId}",
         "definition": {
@@ -488,6 +569,8 @@
         }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to mirror the e-commerce functionality of \"Your Shop,\" focusing on products, categories, users, orders, and order items. The structure follows best practices for security, scalability, and maintainability, particularly emphasizing authorization independence and enabling secure list operations (QAPs). \n\n**Authorization Independence:**\n*   User-specific data (orders) are stored under the `/users/{userId}` path.  This ensures that access control is based on the currently authenticated user's ID. Orders and order items do not require hierarchical `get()` calls to determine authorization.\n\n**Structural Segregation:**\n*   Each collection (`categories`, `products`, `users`, etc.) is treated as a homogeneous security zone, simplifying security rules. For example, all documents within the `/categories` collection share the same security posture (e.g., only admins can create/update).\n\n**Access Modeling:**\n*   **Private User Data:**  User-specific data is stored under the `/users/{userId}` path. This is a standard pattern for user-owned data, ensuring only the authenticated user (or an admin) can access it.\n*   **Hierarchical Ownership:** Orders and order items are nested under the user to represent the `User 1:N Order 1:N OrderItem` relationship clearly and securely.\n\n**QAPs Support:**\n*   The structure allows for efficient and secure `list` operations. Since all products are in a single `/products` collection, listing products does not require complex security rules.\n\nThe design prioritizes clarity, security, and scalability to create a robust and maintainable Firestore database for the \"Your Shop\" e-commerce application."
+    "reasoning": "The Firestore data structure is designed to mirror the e-commerce functionality of \"Your Shop,\" focusing on products, categories, users, orders, and order items. The structure follows best practices for security, scalability, and maintainability, particularly emphasizing authorization independence and enabling secure list operations (QAPs). \n\n**Authorization Independence:**\n*   User-specific data (orders) are stored under the `/users/{userId}` path.  This ensures that access control is based on the currently authenticated user's ID. Orders and order items do not require hierarchical `get()` calls to determine authorization.\n\n**Structural Segregation:**\n*   Each collection (`categories`, `products`, `users`, etc.) is treated as a homogeneous security zone, simplifying security rules. For example, all documents within the `/categories` collection share the same security posture (e.g., only admins can create/update).\n\n**Access Modeling:**\n*   **Private User Data:**  User-specific data is stored under the `/users/{userId}` path. This is a standard pattern for user-owned data, ensuring only the authenticated user (or an admin) can access it.\n*   **Hierarchical Ownership:** Orders and order items are nested under the user to represent the `User 1:N Order 1:N OrderItem` relationship clearly and securely.\n*   **Public Data:** A top-level `/invoices` collection is added to store denormalized, public-facing copies of orders. This allows for secure, public access to individual invoices without exposing private user data or requiring complex security rules on nested collections.\n\n**QAPs Support:**\n*   The structure allows for efficient and secure `list` operations. Since all products are in a single `/products` collection, listing products does not require complex security rules.\n\nThe design prioritizes clarity, security, and scalability to create a robust and maintainable Firestore database for the \"Your Shop\" e-commerce application."
   }
 }
+
+    

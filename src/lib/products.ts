@@ -11,6 +11,8 @@ export type Product = {
   description_bn?: string;
   stockQuantity: number;
   originalPrice?: number;
+  size?: string;
+  age?: string;
   imageUrl: string;
   imageCdnUrl: string;
   createdAt: Timestamp;
@@ -21,3 +23,5 @@ export type Product = {
   subcategoryId?: string;
   searchKeywords?: string[];
 };
+
+    

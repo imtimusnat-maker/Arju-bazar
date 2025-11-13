@@ -4,8 +4,6 @@ import React, { useMemo, useEffect, type ReactNode } from 'react';
 import { FirebaseProvider, useUser } from '@/firebase/provider';
 import { initializeFirebase, initiateAnonymousSignIn } from '@/firebase';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { Header } from '@/components/layout/header';
-import { Footer } from '@/components/layout/footer';
 import { Logo } from '@/components/logo';
 
 const AppSkeletonLoader = () => {
@@ -29,17 +27,17 @@ function AuthGate({ children }: { children: ReactNode }) {
 }
 
 
-export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
+export function FirebaseClientProvider({ children }: { children: React.ReactNode }) {
   const firebaseServices = useMemo(() => {
     return initializeFirebase();
   }, []);
 
   useEffect(() => {
     const auth = getAuth(firebaseServices.firebaseApp);
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       // If no user is logged in (after initial check), sign them in anonymously.
       if (!user) {
-        initiateAnonymousSignIn(auth);
+        await initiateAnonymousSignIn(auth);
       }
     });
 

@@ -11,7 +11,7 @@ import {
   type AuthCredential,
   type UserCredential,
 } from 'firebase/auth';
-import { doc, setDoc, Firestore } from 'firebase/firestore'; // Import Firestore type
+import { doc, setDoc, Firestore, serverTimestamp, increment } from 'firebase/firestore'; // Import Firestore type
 import { getSdks } from '@/firebase';
 import { errorEmitter } from './error-emitter';
 import { FirestorePermissionError } from './errors';
@@ -26,9 +26,9 @@ function getAuthCredential(email: string, password: string): AuthCredential {
     return EmailAuthProvider.credential(email, password);
 }
 
-/** Initiate anonymous sign-in (non-blocking). */
-export function initiateAnonymousSignIn(authInstance: Auth): void {
-  signInAnonymously(authInstance);
+/** Initiate anonymous sign-in (now blocking). */
+export async function initiateAnonymousSignIn(authInstance: Auth): Promise<void> {
+  await signInAnonymously(authInstance);
 }
 
 /** 
@@ -37,6 +37,7 @@ export function initiateAnonymousSignIn(authInstance: Auth): void {
  */
 export function createFirestoreUser(firestore: Firestore, uid: string, data: { email: string | null; phone: string; name: string; address: string; }) {
     const userRef = doc(firestore, 'users', uid);
+    // This creates the user document upon signup.
     return setDoc(userRef, {
         id: uid,
         email: data.email,
